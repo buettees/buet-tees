@@ -53,7 +53,7 @@ header{
 
 .cart-btn{
   background:var(--burg);border:none;color:var(--w);
-  padding:9px 22px;cursor:pointer;
+  padding:9px 22px;cursor:pointer;border-radius:8px;
   font-family:'Montserrat',sans-serif;
   font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
   display:flex;align-items:center;gap:10px;
@@ -123,7 +123,7 @@ header{
 .hero-cta{
   margin-left:auto;
   background:var(--black);border:none;color:var(--w);
-  padding:15px 34px;cursor:pointer;
+  padding:15px 34px;cursor:pointer;border-radius:8px;
   font-family:'Montserrat',sans-serif;
   font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
   transition:background 0.15s;
@@ -176,13 +176,15 @@ header{
 .pcard{
   background:var(--w);cursor:pointer;
   position:relative;overflow:hidden;
-  transition:background 0.18s;
+  transition:background 0.18s,box-shadow 0.18s,transform 0.18s;
+  border-radius:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.07);
 }
-.pcard:hover{background:var(--w2);}
+.pcard:hover{background:var(--w);box-shadow:0 8px 32px rgba(0,0,0,0.13);transform:translateY(-3px);}
 .pcard:hover .pimg img{transform:scale(1.05);}
 .pcard:hover .pov{opacity:1;}
 
-.pimg{aspect-ratio:1;overflow:hidden;background:var(--w2);position:relative;}
+.pimg{aspect-ratio:1;overflow:hidden;background:var(--w2);position:relative;border-radius:16px 16px 0 0;}
 .pimg img{width:100%;height:100%;object-fit:cover;transition:transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94);}
 
 .pov{
@@ -206,7 +208,7 @@ header{
 .pinfo{
   padding:16px 18px 20px;
   background:var(--w);
-  border-top:2px solid var(--black);
+  border-top:1px solid var(--w3);
 }
 .pname{
   font-size:13px;font-weight:700;text-transform:uppercase;
@@ -225,6 +227,10 @@ header{
   transition:background 0.15s;
 }
 .psbtn:hover{background:var(--burg);}
+.pqty{display:flex;align-items:center;border:1.5px solid var(--black);border-radius:100px;overflow:hidden;}
+.pqminus,.pqplus{background:none;border:none;color:var(--black);width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:600;transition:background 0.12s;}
+.pqminus:hover,.pqplus:hover{background:var(--black);color:var(--w);}
+.pqnum{min-width:28px;text-align:center;font-size:13px;font-weight:700;color:var(--black);}
 .lerr{grid-column:1/-1;text-align:center;padding:80px;color:var(--g2);font-size:12px;background:var(--w);}
 
 /* ── INFO STRIP — BURGUNDY ── */
@@ -292,7 +298,7 @@ footer{
 .vlbl{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--g2);margin-bottom:10px;}
 .vopts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
 .vb{
-  padding:9px 18px;border:1px solid var(--w3);background:var(--w);color:var(--black);
+  padding:9px 18px;border:1px solid var(--w3);background:var(--w);color:var(--black);border-radius:100px;
   font-family:'Montserrat',sans-serif;
   font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
   cursor:pointer;transition:all 0.12s;
@@ -306,7 +312,7 @@ footer{
 .qval{width:44px;height:38px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--black);border-left:1px solid var(--w3);border-right:1px solid var(--w3);}
 .atcbtn{
   width:100%;padding:16px;
-  background:var(--burg);border:none;color:var(--w);cursor:pointer;
+  background:var(--burg);border:none;color:var(--w);cursor:pointer;border-radius:12px;
   font-family:'Montserrat',sans-serif;
   font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
   transition:background 0.15s;
@@ -341,7 +347,7 @@ footer{
 .cdtrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
 .cdtlbl{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--g2);}
 .cdtamt{font-size:26px;font-weight:800;letter-spacing:-0.5px;color:var(--black);}
-.cobtn{width:100%;padding:15px;background:var(--burg);border:none;color:var(--w);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;}
+.cobtn{width:100%;padding:15px;background:var(--burg);border:none;color:var(--w);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;border-radius:12px;}
 .cobtn:hover{background:var(--burg2);}
 .cobtn:disabled{opacity:0.25;cursor:not-allowed;}
 
@@ -359,11 +365,11 @@ footer{
 .sprice{font-size:15px;font-weight:800;letter-spacing:-0.3px;color:var(--black);white-space:nowrap;}
 .strows{margin-top:12px;}
 .strow{display:flex;justify-content:space-between;font-size:11px;color:var(--g2);padding:3px 0;font-weight:400;}
-.stfin{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--black);margin-top:10px;padding-top:12px;}
+.stfin{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--w3);margin-top:10px;padding-top:12px;}
 .stfin-l{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--black);}
 .stfin-v{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--black);}
 .zgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.zo{border:1px solid var(--w3);background:var(--w);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.12s;}
+.zo{border:1px solid var(--w3);background:var(--w);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.12s;border-radius:12px;}
 .zo:hover{border-color:var(--burg);}
 .zo.on{border-color:var(--burg);background:var(--burg);}
 .zo.on .zn,.zo.on .zf{color:var(--w);}
@@ -621,7 +627,11 @@ function render(){
             <div class="pprice">${C} ${dp.toLocaleString()}</div>
             ${p.discountedPrice?`<div class="porig">${C} ${p.price.toLocaleString()}</div>`:""}
           </div>
-          <button class="psbtn" onclick="event.stopPropagation();openP('${p.id}')">Select</button>
+          <div class="pqty" onclick="event.stopPropagation()">
+            <button class="pqminus" onclick="pqChange('${p.id}',-1)">−</button>
+            <span class="pqnum" id="pq-${p.id}">0</span>
+            <button class="pqplus" onclick="pqChange('${p.id}',1)">+</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -728,6 +738,22 @@ async function place(){
   }catch{toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
+
+// Per-card quantity state
+const cardQty = {};
+function pqChange(id, delta) {
+  if (!cardQty[id]) cardQty[id] = 0;
+  cardQty[id] = Math.max(0, cardQty[id] + delta);
+  const el = document.getElementById('pq-' + id);
+  if (el) el.textContent = cardQty[id];
+  // If qty > 0 and product has only 1 size/color option, auto-add
+  // Otherwise open product modal when going from 0→1
+  if (delta === 1 && cardQty[id] === 1) {
+    openP(id);
+    cardQty[id] = 0;
+    if (el) el.textContent = 0;
+  }
+}
 loadProducts();upd();
 </script>
 </body>

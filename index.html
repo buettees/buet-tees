@@ -522,6 +522,106 @@ footer{
   footer{padding:48px 28px 36px;}
   .ft-grid{grid-template-columns:1fr 1fr;gap:32px;}
 }
+
+/* ── CUSTOM SECTION ── */
+.custom-section{background:var(--black);padding:72px 40px 80px;border-top:1px solid rgba(255,255,255,0.06);}
+.custom-eyebrow{font-size:11px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.custom-eyebrow::before{content:'';width:20px;height:1px;background:rgba(255,255,255,0.25);}
+.custom-title{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--w);line-height:1;margin-bottom:48px;}
+
+.custom-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px;}
+
+.ccard{
+  background:var(--black2);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:28px 24px;
+  cursor:pointer;transition:border-color 0.2s,background 0.2s;
+  position:relative;overflow:hidden;
+}
+.ccard:hover{border-color:var(--burg);background:rgba(109,0,26,0.12);}
+.ccard.active{border-color:var(--w);background:rgba(255,255,255,0.04);}
+.ccard-badge{
+  position:absolute;top:0;right:0;
+  background:var(--burg);color:var(--w);
+  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  padding:5px 12px;border-radius:0 16px 0 8px;
+}
+.ccard-icon{
+  width:48px;height:48px;border-radius:12px;
+  background:rgba(255,255,255,0.06);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;font-size:22px;
+}
+.ccard-title{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--w);margin-bottom:6px;}
+.ccard-desc{font-size:11px;color:rgba(255,255,255,0.4);line-height:1.7;font-weight:300;margin-bottom:16px;}
+.ccard-price{font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;}
+.ccard-price em{color:var(--w);font-style:normal;font-size:15px;}
+
+.custom-divider{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:40px 0;}
+
+.custom-fullbox{
+  background:var(--burg);border-radius:16px;
+  padding:36px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:20px;
+}
+.cfb-left{}
+.cfb-tag{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+.cfb-title{font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--w);margin-bottom:6px;}
+.cfb-desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.7;font-weight:300;max-width:420px;}
+.cfb-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.cfb-btn{
+  padding:12px 22px;cursor:pointer;
+  font-family:'Montserrat',sans-serif;
+  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  border-radius:8px;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  border:none;
+}
+.cfb-btn-primary{background:var(--black);color:var(--w);}
+.cfb-btn-primary:hover{background:rgba(0,0,0,0.7);}
+.cfb-btn-secondary{background:rgba(255,255,255,0.15);color:var(--w);border:1px solid rgba(255,255,255,0.3);}
+.cfb-btn-secondary:hover{background:rgba(255,255,255,0.25);}
+
+/* Custom order modal */
+.cm{
+  background:var(--w);width:100%;max-width:560px;
+  max-height:94vh;overflow-y:auto;
+  animation:su 0.22s ease;
+  border-top:3px solid var(--burg);
+}
+@media(min-width:640px){.cm{border-top:none;border-left:3px solid var(--burg);border-radius:2px;}}
+.cm-hd{background:var(--black);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--burg);position:sticky;top:0;z-index:2;}
+.cm-title{font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--w);}
+.cm-body{padding:24px 24px 44px;}
+.cm-type-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.cm-type{border:1px solid var(--w3);background:var(--w);border-radius:10px;padding:14px 12px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.cm-type:hover{border-color:var(--burg);}
+.cm-type.on{border-color:var(--burg);background:rgba(109,0,26,0.06);}
+.cm-type-name{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--black);margin-bottom:3px;}
+.cm-type-price{font-size:10px;color:var(--g2);}
+.cm-type.on .cm-type-price{color:var(--burg);}
+
+.cm-sec{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin:20px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--w3);}
+.cm-sec:first-child{margin-top:0;}
+
+.design-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.dpick{
+  border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;
+  font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;
+  color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;
+}
+.dpick:hover{border-color:var(--burg);}
+.dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
+
+.cm-note{font-size:11px;color:var(--g2);line-height:1.7;margin-bottom:16px;padding:12px 14px;background:var(--w2);border-radius:8px;border-left:2px solid var(--burg);}
+
+@media(max-width:639px){
+  .custom-section{padding:44px 16px 52px;}
+  .custom-cards{grid-template-columns:1fr;gap:12px;}
+  .custom-fullbox{padding:24px 20px;flex-direction:column;align-items:flex-start;}
+  .cfb-title{font-size:18px;}
+  .cm{border-radius:20px 20px 0 0;}
+  .cm-type-row{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 <body>
@@ -531,6 +631,7 @@ footer{
   <div class="logo">BUET<div class="logo-sep"></div>TEES</div>
   <nav class="nav-mid">
     <span class="nav-a" onclick="document.querySelector('.collection').scrollIntoView({behavior:'smooth'})">Collection</span>
+    <span class="nav-a" onclick="document.querySelector('.custom-section').scrollIntoView({behavior:'smooth'})">Custom</span>
     <span class="nav-a" onclick="document.querySelector('.istrip').scrollIntoView({behavior:'smooth'})">Info</span>
   </nav>
   <button class="cart-btn" onclick="openCart()">
@@ -588,6 +689,51 @@ footer{
   </div>
 </div>
 
+
+<!-- CUSTOM TEES -->
+<div class="custom-section">
+  <div class="custom-eyebrow">Build your own</div>
+  <div class="custom-title">Custom Orders</div>
+
+  <div class="custom-cards">
+
+    <div class="ccard" onclick="openCustomModal('back')">
+      <div class="ccard-badge">Same price</div>
+      <div class="ccard-icon">◑</div>
+      <div class="ccard-title">Back side design</div>
+      <div class="ccard-desc">Get your chosen design printed on the back of the tee instead of the front. Same price, different placement.</div>
+      <div class="ccard-price">Same as catalog price</div>
+    </div>
+
+    <div class="ccard" onclick="openCustomModal('both')">
+      <div class="ccard-badge">+৳100</div>
+      <div class="ccard-icon">◈</div>
+      <div class="ccard-title">Both sides design</div>
+      <div class="ccard-desc">Pick one design for the front and another for the back. Mix and match from our full catalog.</div>
+      <div class="ccard-price">Catalog price <em>+ ৳100</em></div>
+    </div>
+
+  </div>
+
+  <div class="custom-fullbox">
+    <div class="cfb-left">
+      <div class="cfb-tag">Fully custom</div>
+      <div class="cfb-title">Your own design?</div>
+      <div class="cfb-desc">Have a design that's not in our catalog? Send us your artwork and we'll print it exactly as you want. Message us or send a mail to discuss pricing and details.</div>
+    </div>
+    <div class="cfb-actions">
+      <a class="cfb-btn cfb-btn-primary" href="https://facebook.com/buettees" target="_blank">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        Message on Facebook
+      </a>
+      <a class="cfb-btn cfb-btn-secondary" href="mailto:buettees@gmail.com">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+        Send Email
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- INFO STRIP -->
 <div class="istrip">
   <div class="is-item"><div class="is-num">FREE</div><div class="is-lbl">Campus Delivery</div></div>
@@ -621,6 +767,64 @@ footer{
     <div class="ft-bk">bKash <span>01782761981</span></div>
   </div>
 </footer>
+
+
+<!-- CUSTOM ORDER MODAL -->
+<div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
+  <div class="cm">
+    <div class="cm-hd">
+      <div class="cm-title" id="cmTitle">Back Side Order</div>
+      <button class="cdx" onclick="closeCM()">✕</button>
+    </div>
+    <div class="cm-body">
+
+      <div class="cm-sec" id="cmSec1">Select design</div>
+      <div class="design-picker" id="cmDesignFront"></div>
+
+      <div id="cmBackSection" style="display:none">
+        <div class="cm-sec">Select back design</div>
+        <div class="design-picker" id="cmDesignBack"></div>
+      </div>
+
+      <div class="cm-note" id="cmPriceNote"></div>
+
+      <div class="cm-sec">Delivery Zone</div>
+      <div class="zgrid">
+        <div class="zo on" id="cz-campus"  onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
+        <div class="zo"    id="cz-dhaka"   onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
+        <div class="zo"    id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
+      </div>
+
+      <div class="cm-sec">Size & Color</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="flex:1;min-width:120px;">
+          <div class="fl" style="margin-bottom:6px;">Size</div>
+          <select class="fi" id="cmSize"><option>S</option><option>M</option><option selected>L</option><option>XL</option><option>XXL</option></select>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <div class="fl" style="margin-bottom:6px;">Color</div>
+          <select class="fi" id="cmColor"><option>Black</option><option>White</option><option>Navy Blue</option></select>
+        </div>
+      </div>
+
+      <div class="cm-sec">Your Details</div>
+      <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
+      <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
+      <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
+      <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
+
+      <div class="cm-sec">Payment — bKash Only</div>
+      <div class="bkcard">
+        <div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div>
+        <div class="bklbl">bKash number</div>
+        <div class="bknum">01782761981</div>
+      </div>
+      <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
+
+      <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
+    </div>
+  </div>
+</div>
 
 <!-- PRODUCT MODAL -->
 <div class="mbg" id="pmbg" onclick="if(event.target===this)closePM()">
@@ -890,6 +1094,125 @@ function pqChange(id, delta) {
     upd();
   }
 }
+
+// ── CUSTOM ORDER ──
+let customType = 'back'; // 'back' or 'both'
+let cmSelFront = null, cmSelBack = null, cmZone = 'campus';
+const BASE_PRICE = 500; // fallback if no products loaded yet
+
+function openCustomModal(type) {
+  customType = type;
+  cmSelFront = null; cmSelBack = null; cmZone = 'campus';
+  document.getElementById('cmTitle').textContent = type === 'back' ? 'Back Side Order' : 'Both Sides Order';
+  document.getElementById('cmSec1').textContent = type === 'back' ? 'Select design (will be printed on back)' : 'Select front design';
+  document.getElementById('cmBackSection').style.display = type === 'both' ? '' : 'none';
+
+  // Populate design pickers from loaded products
+  const names = prods.length ? prods.map(p => p.name) : ['BT1 Eat Sleep Survive Repeat','BT2','BT3','BT4'];
+  const makeBtn = (name, targetId, selVar) =>
+    `<button class="dpick" onclick="cmPickDesign('${targetId}','${name}',this)">${name}</button>`;
+
+  document.getElementById('cmDesignFront').innerHTML = names.map(n => makeBtn(n,'front',n)).join('');
+  document.getElementById('cmDesignBack').innerHTML  = names.map(n => makeBtn(n,'back',n)).join('');
+
+  // Reset zones
+  ['campus','dhaka','outside'].forEach(x => document.getElementById('cz-'+x).classList.toggle('on', x==='campus'));
+  cmZone = 'campus';
+  updateCMPrice();
+  document.getElementById('cmBtn').disabled = false;
+  document.getElementById('cmBtn').textContent = 'Place Order';
+  document.getElementById('cmBg').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function cmPickDesign(side, name, el) {
+  const container = side === 'front' ? document.getElementById('cmDesignFront') : document.getElementById('cmDesignBack');
+  container.querySelectorAll('.dpick').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  if (side === 'front') cmSelFront = name; else cmSelBack = name;
+  updateCMPrice();
+}
+
+function setCZ(z) {
+  cmZone = z;
+  ['campus','dhaka','outside'].forEach(x => document.getElementById('cz-'+x).classList.toggle('on', x===z));
+  updateCMPrice();
+}
+
+function updateCMPrice() {
+  const basePrice = cmSelFront && prods.length
+    ? (prods.find(p => p.name === cmSelFront)?.discountedPrice || prods.find(p => p.name === cmSelFront)?.price || BASE_PRICE)
+    : BASE_PRICE;
+  const extra = customType === 'both' ? 100 : 0;
+  const delivery = DF[cmZone];
+  const total = basePrice + extra + delivery;
+  const delStr = delivery === 0 ? 'Free' : '৳' + delivery;
+
+  let noteHtml = '';
+  if (customType === 'back') {
+    noteHtml = `<strong>Back side print</strong> — same price as catalog.<br>
+    Design: <strong>${cmSelFront || 'not selected'}</strong><br>
+    Delivery: ${delStr} &nbsp;·&nbsp; <strong>Total: ৳${total.toLocaleString()}</strong>`;
+  } else {
+    noteHtml = `<strong>Both sides print</strong> — catalog price + ৳100.<br>
+    Front: <strong>${cmSelFront || 'not selected'}</strong> &nbsp;·&nbsp; Back: <strong>${cmSelBack || 'not selected'}</strong><br>
+    Delivery: ${delStr} &nbsp;·&nbsp; <strong>Total: ৳${total.toLocaleString()}</strong>`;
+  }
+  document.getElementById('cmPriceNote').innerHTML = noteHtml;
+}
+
+function closeCM() {
+  document.getElementById('cmBg').classList.remove('on');
+  document.body.style.overflow = '';
+}
+
+async function placeCustomOrder() {
+  const name  = document.getElementById('cmName').value.trim();
+  const phone = document.getElementById('cmPhone').value.trim();
+  const email = document.getElementById('cmEmail').value.trim();
+  const addr  = document.getElementById('cmAddr').value.trim();
+  const trx   = document.getElementById('cmTrx').value.trim();
+  const size  = document.getElementById('cmSize').value;
+  const color = document.getElementById('cmColor').value;
+
+  if (!cmSelFront) { toast('Please select a design'); return; }
+  if (customType === 'both' && !cmSelBack) { toast('Please select a back design'); return; }
+  if (!name || !phone || !email || !addr) { toast('Please fill all required fields'); return; }
+  if (!trx) { toast('Please enter your bKash TrxID'); return; }
+
+  const basePrice = prods.length
+    ? (prods.find(p => p.name === cmSelFront)?.discountedPrice || prods.find(p => p.name === cmSelFront)?.price || BASE_PRICE)
+    : BASE_PRICE;
+  const extra = customType === 'both' ? 100 : 0;
+  const delivery = DF[cmZone];
+  const total = basePrice + extra + delivery;
+  const oid = nid();
+
+  let itemDesc = customType === 'back'
+    ? `Back side print: ${cmSelFront} (${size}/${color})`
+    : `Both sides: Front=${cmSelFront}, Back=${cmSelBack} (${size}/${color}) +৳100`;
+
+  const payload = {
+    orderId: oid, name, phone, email, address: addr,
+    items: itemDesc,
+    subtotal: basePrice + extra,
+    deliveryZone: DL[cmZone], deliveryFee: delivery, total,
+    payment: 'bKash', trxId: trx, status: 'Pending'
+  };
+
+  const btn = document.getElementById('cmBtn');
+  btn.disabled = true; btn.textContent = 'Placing order...';
+
+  try {
+    await fetch(U, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    closeCM();
+    toast('Order placed! ID: ' + oid);
+  } catch {
+    toast('Something went wrong. Try again.');
+    btn.disabled = false; btn.textContent = 'Place Order';
+  }
+}
+
 loadProducts();upd();
 </script>
 </body>

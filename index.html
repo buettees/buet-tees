@@ -830,6 +830,11 @@ footer{
       <div class="pm-div"></div>
       <div class="vlbl">Size</div><div class="vopts" id="szop"></div>
       <div class="vlbl">Color</div><div class="vopts" id="clop"></div>
+      <div class="vlbl">Print side</div>
+      <div class="vopts">
+        <button class="vb on" id="side-front" onclick="pickSide('front')">Front</button>
+        <button class="vb" id="side-back" onclick="pickSide('back')">Back</button>
+      </div>
       <div class="qrow">
         <div class="vlbl" style="margin:0">Qty</div>
         <div class="qctrl">
@@ -943,7 +948,7 @@ function render(){
 }
 function openP(id){
   const p=prods.find(x=>x.id===id);if(!p)return;
-  cur=p;selSz=p.sizes[0]||null;selCl=p.colors[0]||null;qty=1;selSide='front';
+  cur=p;selSz=p.sizes[0]||null;selCl=p.colors[0]||null;qty=1;selSide="front";selSide='front';
   const dp=p.discountedPrice||p.price;
   document.getElementById("pmimg").src=p.image;
   document.getElementById("pmimg").alt=p.name;
@@ -955,11 +960,14 @@ function openP(id){
   if(p.discountedPrice){oe.style.display="";oe.textContent=`${C} ${p.price.toLocaleString()}`;}else{oe.style.display="none";}
   document.getElementById("szop").innerHTML=p.sizes.map(s=>`<button class="vb ${s===selSz?"on":""}" onclick="pickSz('${s}')">${s}</button>`).join("");
   document.getElementById("clop").innerHTML=p.colors.map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
+  document.getElementById("side-front").classList.add("on");document.getElementById("side-back").classList.remove("on");
   document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
 }
 function closePM(){document.getElementById("pmbg").classList.remove("on");document.body.style.overflow="";}
 function pickSz(s){selSz=s;document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.textContent===s));}
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}
+let selSide="front";
+function pickSide(s){selSide=s;document.getElementById("side-front").classList.toggle("on",s==="front");document.getElementById("side-back").classList.toggle("on",s==="back");}
 function chQ(d){qty=Math.max(1,qty+d);document.getElementById("qval").textContent=qty;}
 function atc(){
   if(!cur)return;
@@ -1029,7 +1037,7 @@ async function place(){
   const oid=nid();
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const fee=DF[zone],total=sub+fee;
-  const items=cart.map(i=>`${i.name} (${[i.size,i.color].filter(Boolean).join("/")} ×${i.qty})`).join(" | ");
+  const items=cart.map(i=>`${i.name} (${[i.size,i.color].filter(Boolean).join("/")}${i.side?" "+i.side+" print":""} ×${i.qty})`).join(" | ");
   const payload={orderId:oid,name,phone,email,address:addr,items,subtotal:sub,deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"};
   const btn=document.getElementById("pbtn");
   btn.disabled=true;btn.textContent="Placing order...";

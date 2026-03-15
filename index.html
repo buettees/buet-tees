@@ -742,16 +742,44 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 // Per-card quantity state
 const cardQty = {};
 function pqChange(id, delta) {
+  const p = prods.find(x => x.id === id);
+  if (!p) return;
   if (!cardQty[id]) cardQty[id] = 0;
-  cardQty[id] = Math.max(0, cardQty[id] + delta);
+  const newQty = Math.max(0, cardQty[id] + delta);
   const el = document.getElementById('pq-' + id);
-  if (el) el.textContent = cardQty[id];
-  // If qty > 0 and product has only 1 size/color option, auto-add
-  // Otherwise open product modal when going from 0→1
-  if (delta === 1 && cardQty[id] === 1) {
-    openP(id);
-    cardQty[id] = 0;
-    if (el) el.textContent = 0;
+
+  if (delta === 1) {
+    // Add one unit directly with default size/color
+    const sz = p.sizes[0] || null;
+    const cl = p.colors[0] || null;
+    const key = id + '-' + sz + '-' + cl;
+    const price = p.discountedPrice || p.price;
+    const ex = cart.find(i => i.key === key);
+    if (ex) { ex.qty += 1; } 
+    else { cart.push({key, id, name:p.name, image:p.image, size:sz, color:cl, price, qty:1}); }
+    cardQty[id] = newQty + 1 > 0 ? (cardQty[id] || 0) + 1 : 0;
+    // recount from cart
+    const total = cart.filter(i => i.id === id).reduce((s,i) => s+i.qty, 0);
+    cardQty[id] = total;
+    if (el) el.textContent = total;
+    upd();
+    toast('Added — ' + (sz||'') + (sz&&cl?' / ':'') + (cl||''));
+  } else {
+    // Remove one unit
+    const total = cart.filter(i => i.id === id).reduce((s,i) => s+i.qty, 0);
+    if (total === 0) return;
+    // Remove from last matching cart entry
+    for (let i = cart.length - 1; i >= 0; i--) {
+      if (cart[i].id === id) {
+        cart[i].qty -= 1;
+        if (cart[i].qty <= 0) cart.splice(i, 1);
+        break;
+      }
+    }
+    const newTotal = cart.filter(i => i.id === id).reduce((s,i) => s+i.qty, 0);
+    cardQty[id] = newTotal;
+    if (el) el.textContent = newTotal;
+    upd();
   }
 }
 loadProducts();upd();

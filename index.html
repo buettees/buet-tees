@@ -410,6 +410,118 @@ footer{
   z-index:999;transition:transform 0.26s cubic-bezier(0.25,0.46,0.45,0.94);white-space:nowrap;
 }
 .toast.on{transform:translateX(-50%) translateY(0);}
+
+/* ── MOBILE ── */
+@media(max-width:639px){
+
+  /* Header */
+  header{padding:0 16px;height:52px;}
+  .logo{font-size:13px;letter-spacing:5px;}
+  .cart-btn{padding:7px 14px;font-size:10px;letter-spacing:2px;}
+
+  /* Hero */
+  .hero{min-height:auto;padding:40px 20px 44px;}
+  .hero-geo{display:none;}
+  .hero-geo2{display:none;}
+  .hero-kicker{margin-bottom:14px;}
+  .hero-kicker-txt{font-size:10px;letter-spacing:3px;}
+  .hero-h1{font-size:clamp(48px,14vw,80px);margin-bottom:28px;letter-spacing:-1px;}
+  .hero-h1 .l3{padding:3px 8px 1px;}
+  .hero-stats{
+    flex-wrap:wrap;gap:0;
+    padding-top:20px;
+  }
+  .hstat{
+    padding:0 16px 0 0;margin-right:16px;margin-bottom:12px;
+    border-right:1px solid rgba(255,255,255,0.12);
+  }
+  .hstat-n{font-size:15px;}
+  .hstat-l{font-size:10px;}
+  .hero-cta{
+    width:100%;margin-top:8px;margin-left:0;
+    padding:14px;text-align:center;
+  }
+
+  /* Ticker */
+  .ticker-t span{padding:0 16px;font-size:9px;}
+
+  /* Collection */
+  .collection{padding:40px 16px 48px;}
+  .col-hd{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:28px;}
+  .col-title{font-size:28px;}
+  .pgrid{
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+  .pname{font-size:12px;}
+  .pcat{font-size:9px;margin-bottom:10px;}
+  .pprice{font-size:17px;}
+  .psbtn{padding:6px 10px;font-size:9px;letter-spacing:1px;}
+  .pinfo{padding:12px 12px 14px;}
+  .pbadge{font-size:8px;padding:3px 7px;}
+
+  /* Info strip */
+  .istrip{grid-template-columns:repeat(2,1fr);}
+  .is-item{padding:22px 16px;}
+  .is-num{font-size:20px;}
+  .is-lbl{font-size:9px;}
+
+  /* Footer */
+  footer{padding:36px 20px 28px;}
+  .ft-logo{font-size:18px;letter-spacing:4px;}
+  .ft-tag{font-size:10px;}
+  .ft-ch{font-size:9px;}
+  .ft-ci{font-size:10px;}
+  .ft-bot{flex-direction:column;align-items:flex-start;gap:8px;}
+
+  /* Product modal */
+  .pm{border-radius:20px 20px 0 0;max-height:96vh;}
+  .pm-body{padding:18px 18px 32px;}
+  .pm-name{font-size:18px;}
+  .pm-price{font-size:26px;}
+  .vopts{gap:6px;}
+  .vb{padding:8px 14px;font-size:10px;}
+  .atcbtn{padding:15px;font-size:11px;}
+
+  /* Cart drawer */
+  .cdrawer{max-width:100%;}
+  .cdhd{padding:16px 18px;}
+  .cditems{padding:14px 18px;}
+  .cdft{padding:14px 18px;}
+  .cdtamt{font-size:22px;}
+  .cobtn{font-size:11px;}
+
+  /* Checkout modal */
+  .coin{border-radius:20px 20px 0 0;max-height:96vh;}
+  .cohd{padding:16px 18px;}
+  .cobody{padding:18px 18px 40px;}
+  .zgrid{gap:6px;}
+  .zn{font-size:11px;}
+  .zf{font-size:9px;}
+  .fi{padding:11px 12px;font-size:13px;}
+  .bknum{font-size:22px;letter-spacing:1px;}
+  .pbtn{padding:15px;font-size:11px;}
+  .stfin-v{font-size:20px;}
+
+  /* Success */
+  .sucwrap{padding:40px 20px;}
+  .suctitle{font-size:26px;}
+  .sucval{font-size:22px;letter-spacing:3px;}
+
+  /* Toast */
+  .toast{font-size:10px;padding:10px 16px;bottom:16px;white-space:normal;text-align:center;max-width:80vw;}
+}
+
+/* Tablet 640–900px */
+@media(min-width:640px) and (max-width:900px){
+  .hero{padding:48px 28px 52px;}
+  .hero-h1{font-size:clamp(52px,11vw,100px);}
+  .collection{padding:52px 28px 60px;}
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:24px;}
+  header{padding:0 28px;}
+  footer{padding:48px 28px 36px;}
+  .ft-grid{grid-template-columns:1fr 1fr;gap:32px;}
+}
 </style>
 </head>
 <body>
@@ -627,11 +739,7 @@ function render(){
             <div class="pprice">${C} ${dp.toLocaleString()}</div>
             ${p.discountedPrice?`<div class="porig">${C} ${p.price.toLocaleString()}</div>`:""}
           </div>
-          <div class="pqty" onclick="event.stopPropagation()">
-            <button class="pqminus" onclick="pqChange('${p.id}',-1)">−</button>
-            <span class="pqnum" id="pq-${p.id}">0</span>
-            <button class="pqplus" onclick="pqChange('${p.id}',1)">+</button>
-          </div>
+
         </div>
       </div>
     </div>`;

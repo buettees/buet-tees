@@ -106,20 +106,16 @@ header{
 }
 .hero-h1 .l1{display:block;color:var(--w);}
 .hero-h1 .l2{display:block;color:var(--w);}
-
-  display:inline-block;
-  color:var(--black);
-  background:var(--w);
-  padding:2px 10px 0;
-  margin-left:-4px;
-}
+.hero-h1 .l3{display:inline-block;color:var(--black);background:var(--w);padding:4px 12px 2px;margin-left:-4px;}
 .hero-stats{
-  display:flex;align-items:center;flex-wrap:wrap;
-  border-top:1px solid rgba(255,255,255,0.12);padding-top:28px;
+  display:flex;align-items:center;flex-wrap:nowrap;gap:0;
+  border-top:1px solid rgba(255,255,255,0.12);padding-top:24px;
+  overflow-x:auto;
 }
 .hstat{
-  padding:0 28px 0 0;margin-right:28px;
+  padding:0 24px 0 0;margin-right:24px;
   border-right:1px solid rgba(255,255,255,0.12);
+  flex-shrink:0;
 }
 .hstat:last-of-type{border:none;margin:0;}
 .hstat-n{font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--w);line-height:1;}

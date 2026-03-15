@@ -697,14 +697,6 @@ footer{
 
   <div class="custom-cards">
 
-    <div class="ccard" onclick="openCustomModal('back')">
-      <div class="ccard-badge">Same price</div>
-      <div class="ccard-icon">◑</div>
-      <div class="ccard-title">Back side design</div>
-      <div class="ccard-desc">Get your chosen design printed on the back of the tee instead of the front. Same price, different placement.</div>
-      <div class="ccard-price">Same as catalog price</div>
-    </div>
-
     <div class="ccard" onclick="openCustomModal('both')">
       <div class="ccard-badge">+৳100</div>
       <div class="ccard-icon">◈</div>
@@ -951,7 +943,7 @@ function render(){
 }
 function openP(id){
   const p=prods.find(x=>x.id===id);if(!p)return;
-  cur=p;selSz=p.sizes[0]||null;selCl=p.colors[0]||null;qty=1;
+  cur=p;selSz=p.sizes[0]||null;selCl=p.colors[0]||null;qty=1;selSide='front';
   const dp=p.discountedPrice||p.price;
   document.getElementById("pmimg").src=p.image;
   document.getElementById("pmimg").alt=p.name;
@@ -971,11 +963,11 @@ function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.c
 function chQ(d){qty=Math.max(1,qty+d);document.getElementById("qval").textContent=qty;}
 function atc(){
   if(!cur)return;
-  const key=`${cur.id}-${selSz}-${selCl}`;
+  const key=`${cur.id}-${selSz}-${selCl}-${selSide}`;
   const ex=cart.find(i=>i.key===key);
   const price=cur.discountedPrice||cur.price;
-  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cur.image,size:selSz,color:selCl,price,qty});}
-  upd();closePM();toast(`Added — ${[selSz,selCl].filter(Boolean).join(" / ")}`);
+  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cur.image,size:selSz,color:selCl,side:selSide,price,qty});}
+  upd();closePM();toast(`Added — ${[selSz,selCl].filter(Boolean).join(" / ")} · ${selSide} print`);
 }
 function rmItem(i){cart.splice(i,1);upd();}
 function upd(){

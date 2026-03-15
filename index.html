@@ -828,6 +828,7 @@ footer{
       <div class="pm-price" id="pmprice"></div>
       <div class="pm-orig"  id="pmorig" style="display:none"></div>
       <div class="pm-div"></div>
+      <div id="catRow" style="display:none"><div class="vlbl">Category</div><div class="vopts" id="catOpts"></div><div class="pm-div"></div></div>
       <div class="vlbl">Size</div><div class="vopts" id="szop"></div>
       <div class="vlbl">Color</div><div class="vopts" id="clop"></div>
       <div class="vlbl">Print side</div>
@@ -946,22 +947,45 @@ function render(){
     </div>`;
   }).join("");
 }
-function openP(id){
-  const p=prods.find(x=>x.id===id);if(!p)return;
-  cur=p;selSz=p.sizes[0]||null;selCl=p.colors[0]||null;qty=1;selSide="front";selSide='front';
-  const dp=p.discountedPrice||p.price;
-  document.getElementById("pmimg").src=p.image;
+let selCatIdx=0;
+function loadCatData(p,idx){
+  const cat=(p.categories&&p.categories[idx])?p.categories[idx]:p;
+  selCatIdx=idx;
+  selSz=cat.sizes[0]||null;
+  selCl=cat.colors[0]||null;
+  const dp=cat.discountedPrice||cat.price;
+  document.getElementById("pmimg").src=cat.image||p.image;
   document.getElementById("pmimg").alt=p.name;
   document.getElementById("pmname").textContent=p.name;
-  document.getElementById("pmcat").textContent=p.category;
+  document.getElementById("pmcat").textContent=cat.category||p.category;
   document.getElementById("pmprice").textContent=`${C} ${dp.toLocaleString()}`;
   document.getElementById("qval").textContent="1";
   const oe=document.getElementById("pmorig");
-  if(p.discountedPrice){oe.style.display="";oe.textContent=`${C} ${p.price.toLocaleString()}`;}else{oe.style.display="none";}
-  document.getElementById("szop").innerHTML=p.sizes.map(s=>`<button class="vb ${s===selSz?"on":""}" onclick="pickSz('${s}')">${s}</button>`).join("");
-  document.getElementById("clop").innerHTML=p.colors.map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
-  document.getElementById("side-front").classList.add("on");document.getElementById("side-back").classList.remove("on");
-  document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
+  if(cat.discountedPrice){oe.style.display="";oe.textContent=`${C} ${cat.price.toLocaleString()}`;}else{oe.style.display="none";}
+  document.getElementById("szop").innerHTML=cat.sizes.map(s=>`<button class="vb ${s===selSz?"on":""}" onclick="pickSz('${s}')">${s}</button>`).join("");
+  document.getElementById("clop").innerHTML=cat.colors.map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
+}
+function pickCat(i){
+  selCatIdx=i;
+  document.querySelectorAll("#catOpts .vb").forEach((b,idx)=>b.classList.toggle("on",idx===i));
+  loadCatData(cur,i);
+}
+function openP(id){
+  const p=prods.find(x=>x.id===id);if(!p)return;
+  cur=p;qty=1;selSide="front";selCatIdx=0;
+  const catRow=document.getElementById("catRow");
+  const catOpts=document.getElementById("catOpts");
+  if(p.categories&&p.categories.length>1){
+    catRow.style.display="";
+    catOpts.innerHTML=p.categories.map((c,i)=>`<button class="vb ${i===0?"on":""}" onclick="pickCat(${i})">${c.category}</button>`).join("");
+  }else{
+    catRow.style.display="none";
+  }
+  loadCatData(p,0);
+  document.getElementById("side-front").classList.add("on");
+  document.getElementById("side-back").classList.remove("on");
+  document.getElementById("pmbg").classList.add("on");
+  document.body.style.overflow="hidden";
 }
 function closePM(){document.getElementById("pmbg").classList.remove("on");document.body.style.overflow="";}
 function pickSz(s){selSz=s;document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.textContent===s));}
@@ -971,11 +995,14 @@ function pickSide(s){selSide=s;document.getElementById("side-front").classList.t
 function chQ(d){qty=Math.max(1,qty+d);document.getElementById("qval").textContent=qty;}
 function atc(){
   if(!cur)return;
-  const key=`${cur.id}-${selSz}-${selCl}-${selSide}`;
+  const cat=(cur.categories&&cur.categories[selCatIdx])?cur.categories[selCatIdx]:cur;
+  const catName=cat.category||cur.category;
+  const key=`${cur.id}-${catName}-${selSz}-${selCl}-${selSide}`;
   const ex=cart.find(i=>i.key===key);
-  const price=cur.discountedPrice||cur.price;
-  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cur.image,size:selSz,color:selCl,side:selSide,price,qty});}
-  upd();closePM();toast(`Added — ${[selSz,selCl].filter(Boolean).join(" / ")} · ${selSide} print`);
+  const price=cat.discountedPrice||cat.price;
+  const img=cat.image||cur.image;
+  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:img,category:catName,size:selSz,color:selCl,side:selSide,price,qty});}
+  upd();closePM();toast(`Added — ${catName} · ${[selSz,selCl].filter(Boolean).join(" / ")} · ${selSide} print`);
 }
 function rmItem(i){cart.splice(i,1);upd();}
 function upd(){
@@ -1037,7 +1064,7 @@ async function place(){
   const oid=nid();
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const fee=DF[zone],total=sub+fee;
-  const items=cart.map(i=>`${i.name} (${[i.size,i.color].filter(Boolean).join("/")}${i.side?" "+i.side+" print":""} ×${i.qty})`).join(" | ");
+  const items=cart.map(i=>`${i.name} ${i.category?"["+i.category+"] ":""}(${[i.size,i.color].filter(Boolean).join("/")}${i.side?" "+i.side+" print":""} ×${i.qty})`).join(" | ");
   const payload={orderId:oid,name,phone,email,address:addr,items,subtotal:sub,deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"};
   const btn=document.getElementById("pbtn");
   btn.disabled=true;btn.textContent="Placing order...";

@@ -909,7 +909,7 @@ footer{
 <div class="toast" id="toast"></div>
 
 <script>
-const U="https://script.google.com/macros/s/AKfycby2slGrxMzPcpg1zvNtvsZiYdh9HND1ZVfGBtqWN_A2N10zzQR8z7GA9yhY9VwqgJ1J/exec";
+const U="https://script.google.com/macros/s/AKfycbzzlQP9w3cxFmxGUkRuLNiuszykfQGOxS9gNund1hYDLYZ25_wJYSndhTE7-jjI3T4e/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus";
 function nid(){
@@ -1072,17 +1072,20 @@ async function place(){
   const btn=document.getElementById("pbtn");
   btn.disabled=true;btn.textContent="Placing order...";
   try{
-    const resp = await fetch(U,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    // Step 1: get next order ID from server before submitting
     let realId = oid;
     try{
-      const json = await resp.json();
-      if(json.orderId) realId = json.orderId;
+      const idResp = await fetch(U + "?action=nextId");
+      const idJson = await idResp.json();
+      if(idJson.nextId) { realId = idJson.nextId; payload.orderId = realId; }
     }catch(e){}
+    // Step 2: submit order with no-cors (required for Apps Script)
+    await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     document.getElementById("sucid").textContent=realId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
     cart=[];upd();
-  }catch{toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
+  }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 

@@ -909,10 +909,13 @@ footer{
 <div class="toast" id="toast"></div>
 
 <script>
-const U="https://script.google.com/macros/s/AKfycbxIhOxTjc-h-Z5DdTaz9Utx7qxvZnv0BXJ5TGlbLhSMLuoxvuGkoGLTfquT-dCYTIYv/exec";
+const U="https://script.google.com/macros/s/AKfycby2slGrxMzPcpg1zvNtvsZiYdh9HND1ZVfGBtqWN_A2N10zzQR8z7GA9yhY9VwqgJ1J/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus";
-function nid(){let n=parseInt(localStorage.getItem("btc")||"0")+1;localStorage.setItem("btc",n);return"BT-"+n;}
+function nid(){
+  // Temp ID for display only — real ID comes from server
+  return "BT-" + Date.now().toString().slice(-4);
+}
 async function loadProducts(){
   try{
     const r=await fetch(U);const d=await r.json();
@@ -1069,8 +1072,13 @@ async function place(){
   const btn=document.getElementById("pbtn");
   btn.disabled=true;btn.textContent="Placing order...";
   try{
-    await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    document.getElementById("sucid").textContent=oid;
+    const resp = await fetch(U,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    let realId = oid;
+    try{
+      const json = await resp.json();
+      if(json.orderId) realId = json.orderId;
+    }catch(e){}
+    document.getElementById("sucid").textContent=realId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
     cart=[];upd();

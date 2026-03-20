@@ -564,7 +564,7 @@ async function place(){
   const items=cart.map(i=>`${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`).join(" | ");
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    let realId="BT-?";
+    let realId="ORDER-?";
     try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
     await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items,subtotal:sub,deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"})});
     document.getElementById("sucid").textContent=realId;
@@ -609,7 +609,7 @@ async function placeCustomOrder(){
   const cat0=fp&&fp.categories&&fp.categories[0]?fp.categories[0]:null;
   const base=cat0?(cat0.discountedPrice||cat0.price||500):500;
   const delivery=DF[cmZone],total=base+100+delivery;
-  let realId="BT-?";
+  let realId="ORDER-?";
   try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
   const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
   try{

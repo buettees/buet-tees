@@ -602,6 +602,8 @@ function openCustomModal(type){
   customType=type;
   cmSelFront=null;cmSelBack=null;cmZone='campus';
   cmFrontType='Regular';cmBackType='Regular';
+  document.getElementById('cmFrontCats').style.display='none';document.getElementById('cmFrontCats').innerHTML='';
+  document.getElementById('cmBackCats').style.display='none';document.getElementById('cmBackCats').innerHTML='';
   const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
   document.getElementById('cmDesignFront').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('front','${n}',this)">${n}</button>`).join('');
   document.getElementById('cmDesignBack').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('back','${n}',this)">${n}</button>`).join('');
@@ -612,15 +614,46 @@ function openCustomModal(type){
 }
 
 // KEY FIX: store the product type when a design is selected
-function cmPickDesign(side,name,el){
-  const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+function cmPickDesign(side, name, el) {
+  const container = side === 'front' ? document.getElementById('cmDesignFront') : document.getElementById('cmDesignBack');
+  container.querySelectorAll('.dpick').forEach(b => b.classList.remove('on'));
   el.classList.add('on');
-  // Get category/type from products data
-  const prod=prods.find(p=>p.name===name);
-  const type=prod&&prod.categories&&prod.categories[0]?prod.categories[0].category:"Regular";
-  if(side==='front'){cmSelFront=name;cmFrontType=type;}
-  else{cmSelBack=name;cmBackType=type;}
+  // Get the product
+  const prod = prods.find(p => p.name === name);
+  const cats = prod && prod.categories ? prod.categories : [];
+  const catsContainerId = side === 'front' ? 'cmFrontCats' : 'cmBackCats';
+  const catsEl = document.getElementById(catsContainerId);
+
+  if (cats.length > 1) {
+    // Show category picker
+    const defaultType = cats[0].category;
+    if (side === 'front') { cmSelFront = name; cmFrontType = defaultType; }
+    else { cmSelBack = name; cmBackType = defaultType; }
+    catsEl.style.display = '';
+    catsEl.innerHTML = '<div class="vlbl" style="font-size:11px;margin-bottom:6px;">Type for ' + name + '</div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
+      cats.map((c, i) =>
+        `<button class="dpick ${i === 0 ? 'on' : ''}" onclick="cmPickType('${side}','${c.category}',this)">${c.category}</button>`
+      ).join('') +
+      '</div>';
+  } else {
+    // Only one category — use it directly
+    const type = cats.length ? cats[0].category : 'Regular';
+    if (side === 'front') { cmSelFront = name; cmFrontType = type; }
+    else { cmSelBack = name; cmBackType = type; }
+    catsEl.style.display = 'none';
+    catsEl.innerHTML = '';
+  }
+  updateCMPrice();
+}
+
+function cmPickType(side, type, el) {
+  const name = side === 'front' ? cmSelFront : cmSelBack;
+  const catsEl = document.getElementById(side === 'front' ? 'cmFrontCats' : 'cmBackCats');
+  catsEl.querySelectorAll('.dpick').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  if (side === 'front') cmFrontType = type;
+  else cmBackType = type;
   updateCMPrice();
 }
 

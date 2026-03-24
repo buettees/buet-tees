@@ -627,41 +627,48 @@ function openCustomModal(type){
 }
 
 function cmPickDesign(side, name, el){
-  // Highlight selected button
   const container = side==='front'
     ? document.getElementById('cmDesignFront')
     : document.getElementById('cmDesignBack');
   container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
 
-  // Find product and its categories
   const prod = prods.find(p=>p.name===name);
-  const cats = prod && prod.categories ? prod.categories : [];
+  const cats = prod && prod.categories && prod.categories.length ? prod.categories : [];
   const catsElId = side==='front' ? 'cmFrontCats' : 'cmBackCats';
   const catsEl = document.getElementById(catsElId);
 
-  if(cats.length > 1){
-    // Multiple categories — show type picker (Regular / Drop / Hoodie)
+  // ALWAYS show type picker if product has categories data
+  // Even 1 category is shown so customer confirms the type
+  if(cats.length >= 1){
     const defaultType = cats[0].category;
     if(side==='front'){ cmSelFront=name; cmFrontType=defaultType; }
     else{ cmSelBack=name; cmBackType=defaultType; }
 
     catsEl.style.display = '';
     catsEl.innerHTML =
-      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:10px 0 6px;">` +
-      `Type for ${name}</div>` +
-      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">` +
+      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;` +
+      `color:#999;margin:10px 0 6px;border-top:1px solid #eee;padding-top:10px;">` +
+      `Type for ${name}:</div>` +
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">` +
       cats.map((c,i)=>
         `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${side}','${c.category}',this)">${c.category}</button>`
       ).join('') +
       `</div>`;
   } else {
-    // Single category — auto select, hide picker
-    const type = cats.length ? cats[0].category : 'Regular';
-    if(side==='front'){ cmSelFront=name; cmFrontType=type; }
-    else{ cmSelBack=name; cmBackType=type; }
-    catsEl.style.display = 'none';
-    catsEl.innerHTML = '';
+    // No product data loaded yet — show manual type buttons as fallback
+    if(side==='front'){ cmSelFront=name; cmFrontType='Regular'; }
+    else{ cmSelBack=name; cmBackType='Regular'; }
+    catsEl.style.display = '';
+    catsEl.innerHTML =
+      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;` +
+      `color:#999;margin:10px 0 6px;border-top:1px solid #eee;padding-top:10px;">` +
+      `Type for ${name}:</div>` +
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">` +
+      ['Regular','Drop','Hoodie'].map((t,i)=>
+        `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${side}','${t}',this)">${t}</button>`
+      ).join('') +
+      `</div>`;
   }
   updateCMPrice();
 }

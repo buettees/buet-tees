@@ -333,7 +333,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
     <div class="cm-body">
 
-      <div class="cm-sec">Shirt Type</div>
+      <div class="cm-sec" style="margin-top:0">Shirt Type</div>
       <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
 
       <div class="cm-sec">Select Front Design</div>
@@ -635,6 +635,7 @@ function openCustomModal(type){
   updateCMPrice();
   document.getElementById('cmBtn').disabled=false;
   document.getElementById('cmBtn').textContent='Place Order';
+  document.querySelector('#cmBg .cm').scrollTop = 0;
   document.getElementById('cmBg').classList.add('on');
   document.body.style.overflow='hidden';
 }

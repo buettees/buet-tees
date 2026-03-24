@@ -435,9 +435,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 </div>
 <div class="toast" id="toast"></div>
 <script>
-const U="https://script.google.com/macros/s/AKfycby0v_Q1CQ87gH0voEBz3FBNQAoUL9jCxaIEKh6ub88NQPGH6c6PFCzuDiw7fWuqpG81/exec";
+const U="https://script.google.com/macros/s/AKfycbxOLRVGjJkCiCSYfcJilTV9I7WmGd94AJvQVPke5GstQGqQewOECeRaYlnjOLn6Capm/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
+
 async function loadProducts(){
   try{
     const r=await fetch(U);const d=await r.json();
@@ -446,6 +447,7 @@ async function loadProducts(){
     render();
   }catch(e){document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }
+
 function render(){
   const g=document.getElementById("pgrid");
   if(!prods.length){g.innerHTML='<div class="lerr">No products yet.</div>';return;}
@@ -472,6 +474,7 @@ function render(){
     </div>`;
   }).join("");
 }
+
 function loadCatData(p,idx){
   const cat=(p.categories&&p.categories[idx])?p.categories[idx]:p;
   selCatIdx=idx;selSz=cat.sizes&&cat.sizes[0]?cat.sizes[0]:null;selCl=cat.colors&&cat.colors[0]?cat.colors[0]:null;
@@ -485,7 +488,9 @@ function loadCatData(p,idx){
   document.getElementById("szop").innerHTML=(cat.sizes||[]).map(s=>`<button class="vb ${s===selSz?"on":""}" onclick="pickSz('${s}')">${s}</button>`).join("");
   document.getElementById("clop").innerHTML=(cat.colors||[]).map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
 }
+
 function pickCat(i){document.querySelectorAll("#catOpts .vb").forEach((b,idx)=>b.classList.toggle("on",idx===i));loadCatData(cur,i);}
+
 function openP(id){
   const p=prods.find(x=>x.id===id);if(!p)return;
   cur=p;qty=1;selSide="front";selCatIdx=0;
@@ -498,11 +503,13 @@ function openP(id){
   document.getElementById("side-front").classList.add("on");document.getElementById("side-back").classList.remove("on");
   document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
 }
+
 function closePM(){document.getElementById("pmbg").classList.remove("on");document.body.style.overflow="";}
 function pickSz(s){selSz=s;document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.textContent===s));}
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}
 function pickSide(s){selSide=s;document.getElementById("side-front").classList.toggle("on",s==="front");document.getElementById("side-back").classList.toggle("on",s==="back");}
 function chQ(d){qty=Math.max(1,qty+d);document.getElementById("qval").textContent=qty;}
+
 function atc(){
   if(!cur)return;
   const cat=(cur.categories&&cur.categories[selCatIdx])?cur.categories[selCatIdx]:cur;
@@ -513,7 +520,9 @@ function atc(){
   if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,qty});}
   upd();closePM();toast(`Added — ${catName} · ${[selSz,selCl].filter(Boolean).join("/")} · ${selSide} print`);
 }
+
 function rmItem(i){cart.splice(i,1);upd();}
+
 function upd(){
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);const cnt=cart.reduce((s,i)=>s+i.qty,0);
   const b=document.getElementById("cbadge");b.textContent=cnt;b.classList.toggle("on",cnt>0);
@@ -531,15 +540,18 @@ function upd(){
       </div>
     </div>`).join("");
 }
+
 function openCart(){document.getElementById("cdrawer").classList.add("on");document.getElementById("dbg").classList.add("on");document.body.style.overflow="hidden";}
 function closeCart(){document.getElementById("cdrawer").classList.remove("on");document.getElementById("dbg").classList.remove("on");document.body.style.overflow="";}
 function sz2(z){zone=z;["campus","dhaka","outside"].forEach(x=>document.getElementById("z-"+x).classList.toggle("on",x===z));updSum();}
+
 function updSum(){
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);const fee=DF[zone];
   document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${(sub+fee).toLocaleString()}`;
 }
+
 function openCO(){
   closeCart();
   document.getElementById("coitems").innerHTML=cart.map(i=>`
@@ -553,7 +565,9 @@ function openCO(){
   document.getElementById("pbtn").disabled=false;document.getElementById("pbtn").textContent="Place Order";
   document.getElementById("cobg").classList.add("on");document.body.style.overflow="hidden";
 }
+
 function closeCO(){document.getElementById("cobg").classList.remove("on");document.body.style.overflow="";}
+
 async function place(){
   const name=document.getElementById("fn").value.trim(),phone=document.getElementById("fp").value.trim();
   const email=document.getElementById("fe").value.trim(),addr=document.getElementById("fa").value.trim();
@@ -572,32 +586,57 @@ async function place(){
     cart=[];upd();
   }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
+
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
+
+// ── BOTH SIDES custom order ──────────────────────────────────
+// KEY FIX: track front/back type (Regular/Drop/Hoodie) separately
 let customType='both',cmSelFront=null,cmSelBack=null,cmZone='campus';
+let cmFrontType='Regular',cmBackType='Regular'; // NEW — track product type
+
 function openCustomModal(type){
-  customType=type;cmSelFront=null;cmSelBack=null;cmZone='campus';
+  customType=type;
+  cmSelFront=null;cmSelBack=null;cmZone='campus';
+  cmFrontType='Regular';cmBackType='Regular';
   const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
   document.getElementById('cmDesignFront').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('front','${n}',this)">${n}</button>`).join('');
   document.getElementById('cmDesignBack').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('back','${n}',this)">${n}</button>`).join('');
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
-  updateCMPrice();document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
+  updateCMPrice();
+  document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
   document.getElementById('cmBg').classList.add('on');document.body.style.overflow='hidden';
 }
+
+// KEY FIX: store the product type when a design is selected
 function cmPickDesign(side,name,el){
   const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));el.classList.add('on');
-  if(side==='front')cmSelFront=name;else cmSelBack=name;updateCMPrice();
+  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  // Get category/type from products data
+  const prod=prods.find(p=>p.name===name);
+  const type=prod&&prod.categories&&prod.categories[0]?prod.categories[0].category:"Regular";
+  if(side==='front'){cmSelFront=name;cmFrontType=type;}
+  else{cmSelBack=name;cmBackType=type;}
+  updateCMPrice();
 }
+
 function setCZ(z){cmZone=z;['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x===z));updateCMPrice();}
+
 function updateCMPrice(){
   const fp=prods.find(p=>p.name===cmSelFront);
   const cat0=fp&&fp.categories&&fp.categories[0]?fp.categories[0]:null;
   const base=cat0?(cat0.discountedPrice||cat0.price||500):500;
   const delivery=DF[cmZone],total=base+100+delivery;
   const delStr=delivery===0?'Free':'৳'+delivery;
-  document.getElementById('cmPriceNote').innerHTML=`<strong>Both sides</strong> — catalog price + ৳100.<br>Front: <strong>${cmSelFront||'not selected'}</strong> · Back: <strong>${cmSelBack||'not selected'}</strong><br>Delivery: ${delStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
+  document.getElementById('cmPriceNote').innerHTML=
+    `<strong>Both sides</strong> — catalog price + ৳100.<br>`+
+    `Front: <strong>${cmSelFront||'not selected'}</strong>${cmSelFront?` [${cmFrontType}]`:''} &nbsp;·&nbsp; `+
+    `Back: <strong>${cmSelBack||'not selected'}</strong>${cmSelBack?` [${cmBackType}]`:''}<br>`+
+    `Delivery: ${delStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
 }
+
 function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
+
 async function placeCustomOrder(){
   const name=document.getElementById('cmName').value.trim(),phone=document.getElementById('cmPhone').value.trim();
   const email=document.getElementById('cmEmail').value.trim(),addr=document.getElementById('cmAddr').value.trim();
@@ -612,11 +651,23 @@ async function placeCustomOrder(){
   let realId="ORDER-?";
   try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
   const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
+
+  // KEY FIX: include [Type] for both front and back in items string
+  const itemsStr=`Both sides: Front=${cmSelFront} [${cmFrontType}], Back=${cmSelBack} [${cmBackType}] (${size}/${color}) +৳100`;
+
   try{
-    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:`Both sides: Front=${cmSelFront}, Back=${cmSelBack} (${size}/${color}) +৳100`,subtotal:base+100,deliveryZone:DL[cmZone],deliveryFee:delivery,total,payment:'bKash',trxId:trx,status:'Pending'})});
+    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        orderId:realId,name,phone,email,address:addr,
+        items:itemsStr,
+        subtotal:base+100,deliveryZone:DL[cmZone],deliveryFee:delivery,total,
+        payment:'bKash',trxId:trx,status:'Pending'
+      })
+    });
     closeCM();toast('Order placed! ID: '+realId);
   }catch{toast('Something went wrong. Try again.');btn.disabled=false;btn.textContent='Place Order';}
 }
+
 loadProducts();upd();
 </script>
 </body>

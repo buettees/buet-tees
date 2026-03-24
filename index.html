@@ -595,118 +595,159 @@ async function place(){
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
 // ── BOTH SIDES custom order ──────────────────────────────────
-// KEY FIX: track front/back type (Regular/Drop/Hoodie) separately
-let customType='both',cmSelFront=null,cmSelBack=null,cmZone='campus';
-let cmFrontType='Regular',cmBackType='Regular'; // NEW — track product type
+let customType='both', cmSelFront=null, cmSelBack=null, cmZone='campus';
+let cmFrontType='Regular', cmBackType='Regular';
 
 function openCustomModal(type){
   customType=type;
-  cmSelFront=null;cmSelBack=null;cmZone='campus';
-  cmFrontType='Regular';cmBackType='Regular';
-  document.getElementById('cmFrontCats').style.display='none';document.getElementById('cmFrontCats').innerHTML='';
-  document.getElementById('cmBackCats').style.display='none';document.getElementById('cmBackCats').innerHTML='';
-  const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
-  document.getElementById('cmDesignFront').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('front','${n}',this)">${n}</button>`).join('');
-  document.getElementById('cmDesignBack').innerHTML=names.map(n=>`<button class="dpick" onclick="cmPickDesign('back','${n}',this)">${n}</button>`).join('');
+  cmSelFront=null; cmSelBack=null; cmZone='campus';
+  cmFrontType='Regular'; cmBackType='Regular';
+
+  // Build design buttons for front and back
+  const names = prods.length ? prods.map(p=>p.name) : ['BT1','BT2','BT3'];
+  document.getElementById('cmDesignFront').innerHTML = names.map(n=>
+    `<button class="dpick" onclick="cmPickDesign('front','${n}',this)">${n}</button>`
+  ).join('');
+  document.getElementById('cmDesignBack').innerHTML = names.map(n=>
+    `<button class="dpick" onclick="cmPickDesign('back','${n}',this)">${n}</button>`
+  ).join('');
+
+  // Clear any previous category pickers
+  ['cmFrontCats','cmBackCats'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='none';el.innerHTML='';}
+  });
+
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
   updateCMPrice();
-  document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
-  document.getElementById('cmBg').classList.add('on');document.body.style.overflow='hidden';
+  document.getElementById('cmBtn').disabled=false;
+  document.getElementById('cmBtn').textContent='Place Order';
+  document.getElementById('cmBg').classList.add('on');
+  document.body.style.overflow='hidden';
 }
 
-// KEY FIX: store the product type when a design is selected
-function cmPickDesign(side, name, el) {
-  const container = side === 'front' ? document.getElementById('cmDesignFront') : document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick').forEach(b => b.classList.remove('on'));
+function cmPickDesign(side, name, el){
+  // Highlight selected button
+  const container = side==='front'
+    ? document.getElementById('cmDesignFront')
+    : document.getElementById('cmDesignBack');
+  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  // Get the product
-  const prod = prods.find(p => p.name === name);
-  const cats = prod && prod.categories ? prod.categories : [];
-  const catsContainerId = side === 'front' ? 'cmFrontCats' : 'cmBackCats';
-  const catsEl = document.getElementById(catsContainerId);
 
-  if (cats.length > 1) {
-    // Show category picker
+  // Find product and its categories
+  const prod = prods.find(p=>p.name===name);
+  const cats = prod && prod.categories ? prod.categories : [];
+  const catsElId = side==='front' ? 'cmFrontCats' : 'cmBackCats';
+  const catsEl = document.getElementById(catsElId);
+
+  if(cats.length > 1){
+    // Multiple categories — show type picker (Regular / Drop / Hoodie)
     const defaultType = cats[0].category;
-    if (side === 'front') { cmSelFront = name; cmFrontType = defaultType; }
-    else { cmSelBack = name; cmBackType = defaultType; }
+    if(side==='front'){ cmSelFront=name; cmFrontType=defaultType; }
+    else{ cmSelBack=name; cmBackType=defaultType; }
+
     catsEl.style.display = '';
-    catsEl.innerHTML = '<div class="vlbl" style="font-size:11px;margin-bottom:6px;">Type for ' + name + '</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;">' +
-      cats.map((c, i) =>
-        `<button class="dpick ${i === 0 ? 'on' : ''}" onclick="cmPickType('${side}','${c.category}',this)">${c.category}</button>`
+    catsEl.innerHTML =
+      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:10px 0 6px;">` +
+      `Type for ${name}</div>` +
+      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">` +
+      cats.map((c,i)=>
+        `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${side}','${c.category}',this)">${c.category}</button>`
       ).join('') +
-      '</div>';
+      `</div>`;
   } else {
-    // Only one category — use it directly
+    // Single category — auto select, hide picker
     const type = cats.length ? cats[0].category : 'Regular';
-    if (side === 'front') { cmSelFront = name; cmFrontType = type; }
-    else { cmSelBack = name; cmBackType = type; }
+    if(side==='front'){ cmSelFront=name; cmFrontType=type; }
+    else{ cmSelBack=name; cmBackType=type; }
     catsEl.style.display = 'none';
     catsEl.innerHTML = '';
   }
   updateCMPrice();
 }
 
-function cmPickType(side, type, el) {
-  const name = side === 'front' ? cmSelFront : cmSelBack;
-  const catsEl = document.getElementById(side === 'front' ? 'cmFrontCats' : 'cmBackCats');
-  catsEl.querySelectorAll('.dpick').forEach(b => b.classList.remove('on'));
+function cmPickType(side, type, el){
+  // Highlight selected type button
+  const catsEl = document.getElementById(side==='front' ? 'cmFrontCats' : 'cmBackCats');
+  catsEl.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  if (side === 'front') cmFrontType = type;
-  else cmBackType = type;
+  if(side==='front') cmFrontType=type;
+  else cmBackType=type;
   updateCMPrice();
 }
 
-function setCZ(z){cmZone=z;['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x===z));updateCMPrice();}
+function setCZ(z){
+  cmZone=z;
+  ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x===z));
+  updateCMPrice();
+}
 
 function updateCMPrice(){
-  const fp=prods.find(p=>p.name===cmSelFront);
-  const cat0=fp&&fp.categories&&fp.categories[0]?fp.categories[0]:null;
-  const base=cat0?(cat0.discountedPrice||cat0.price||500):500;
-  const delivery=DF[cmZone],total=base+100+delivery;
-  const delStr=delivery===0?'Free':'৳'+delivery;
-  document.getElementById('cmPriceNote').innerHTML=
-    `<strong>Both sides</strong> — catalog price + ৳100.<br>`+
-    `Front: <strong>${cmSelFront||'not selected'}</strong>${cmSelFront?` [${cmFrontType}]`:''} &nbsp;·&nbsp; `+
-    `Back: <strong>${cmSelBack||'not selected'}</strong>${cmSelBack?` [${cmBackType}]`:''}<br>`+
+  const fp = prods.find(p=>p.name===cmSelFront);
+  const cat0 = fp&&fp.categories&&fp.categories[0] ? fp.categories[0] : null;
+  const base = cat0 ? (cat0.discountedPrice||cat0.price||500) : 500;
+  const delivery = DF[cmZone], total = base+100+delivery;
+  const delStr = delivery===0 ? 'Free' : '৳'+delivery;
+  document.getElementById('cmPriceNote').innerHTML =
+    `<strong>Both sides</strong> — catalog price + ৳100.<br>` +
+    `Front: <strong>${cmSelFront||'not selected'}</strong>${cmSelFront ? ` [${cmFrontType}]` : ''} &nbsp;·&nbsp; ` +
+    `Back: <strong>${cmSelBack||'not selected'}</strong>${cmSelBack ? ` [${cmBackType}]` : ''}<br>` +
     `Delivery: ${delStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
 }
 
 function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
 
 async function placeCustomOrder(){
-  const name=document.getElementById('cmName').value.trim(),phone=document.getElementById('cmPhone').value.trim();
-  const email=document.getElementById('cmEmail').value.trim(),addr=document.getElementById('cmAddr').value.trim();
-  const trx=document.getElementById('cmTrx').value.trim(),size=document.getElementById('cmSize').value,color=document.getElementById('cmColor').value;
-  if(!cmSelFront||!cmSelBack){toast('Please select both designs');return;}
+  const name=document.getElementById('cmName').value.trim();
+  const phone=document.getElementById('cmPhone').value.trim();
+  const email=document.getElementById('cmEmail').value.trim();
+  const addr=document.getElementById('cmAddr').value.trim();
+  const trx=document.getElementById('cmTrx').value.trim();
+  const size=document.getElementById('cmSize').value;
+  const color=document.getElementById('cmColor').value;
+
+  if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
   if(!name||!phone||!email||!addr){toast('Please fill all required fields');return;}
   if(!trx){toast('Please enter your bKash TrxID');return;}
-  const fp=prods.find(p=>p.name===cmSelFront);
-  const cat0=fp&&fp.categories&&fp.categories[0]?fp.categories[0]:null;
-  const base=cat0?(cat0.discountedPrice||cat0.price||500):500;
-  const delivery=DF[cmZone],total=base+100+delivery;
-  let realId="ORDER-?";
-  try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
-  const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
 
-  // KEY FIX: include [Type] for both front and back in items string
+  const fp = prods.find(p=>p.name===cmSelFront);
+  const cat0 = fp&&fp.categories&&fp.categories[0] ? fp.categories[0] : null;
+  const base = cat0 ? (cat0.discountedPrice||cat0.price||500) : 500;
+  const delivery = DF[cmZone], total = base+100+delivery;
+
+  let realId="ORDER-?";
+  try{
+    const ir=await fetch(U+"?action=nextId");
+    const ij=await ir.json();
+    if(ij.orderId) realId=ij.orderId;
+  }catch(e){}
+
+  const btn=document.getElementById('cmBtn');
+  btn.disabled=true; btn.textContent='Placing order...';
+
+  // Items string includes [Type] for both front and back
   const itemsStr=`Both sides: Front=${cmSelFront} [${cmFrontType}], Back=${cmSelBack} [${cmBackType}] (${size}/${color}) +৳100`;
 
   try{
-    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+    await fetch(U,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        orderId:realId,name,phone,email,address:addr,
+        orderId:realId, name, phone, email, address:addr,
         items:itemsStr,
-        subtotal:base+100,deliveryZone:DL[cmZone],deliveryFee:delivery,total,
-        payment:'bKash',trxId:trx,status:'Pending'
+        subtotal:base+100, deliveryZone:DL[cmZone], deliveryFee:delivery,
+        total, payment:'bKash', trxId:trx, status:'Pending'
       })
     });
-    closeCM();toast('Order placed! ID: '+realId);
-  }catch{toast('Something went wrong. Try again.');btn.disabled=false;btn.textContent='Place Order';}
+    closeCM();
+    toast('Order placed! ID: '+realId);
+  }catch{
+    toast('Something went wrong. Try again.');
+    btn.disabled=false; btn.textContent='Place Order';
+  }
 }
 
-loadProducts();upd();
+loadProducts(); upd();
 </script>
 </body>
 </html>

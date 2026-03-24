@@ -330,37 +330,44 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 </footer>
 <div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
   <div class="cm">
-    <div class="cm-hd"><div class="cm-title" id="cmTitle">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
+    <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
     <div class="cm-body">
-      <div class="cm-sec" id="cmSec1">Select front design</div>
+
+      <div class="cm-sec">Shirt Type</div>
+      <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+
+      <div class="cm-sec">Select Front Design</div>
       <div class="design-picker" id="cmDesignFront"></div>
-<div id="cmFrontCats" style="display:none;"></div>
-<div id="cmBackSection">
-  <div class="cm-sec">Select back design</div>
-  <div class="design-picker" id="cmDesignBack"></div>
-  <div id="cmBackCats" style="display:none;"></div>
-</div>
+
+      <div class="cm-sec">Select Back Design</div>
+      <div class="design-picker" id="cmDesignBack"></div>
+
       <div class="cm-note" id="cmPriceNote"></div>
+
       <div class="cm-sec">Delivery Zone</div>
       <div class="zgrid">
         <div class="zo on" id="cz-campus" onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
         <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
         <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
       </div>
+
       <div class="cm-sec">Size & Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"><option>S</option><option>M</option><option selected>L</option><option>XL</option><option>XXL</option></select></div>
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"><option>Black</option><option>White</option><option>Navy Blue</option></select></div>
       </div>
+
       <div class="cm-sec">Your Details</div>
       <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
       <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
       <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
       <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
+
       <div class="cm-sec">Payment — bKash Only</div>
       <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
       <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
       <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
+
     </div>
   </div>
 </div>
@@ -595,28 +602,34 @@ async function place(){
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
 // ── BOTH SIDES custom order ──────────────────────────────────
-let customType='both', cmSelFront=null, cmSelBack=null, cmZone='campus';
-let cmFrontType='Regular', cmBackType='Regular';
+let cmSelFront=null, cmSelBack=null, cmZone='campus', cmShirtType='Regular';
 
 function openCustomModal(type){
-  customType=type;
-  cmSelFront=null; cmSelBack=null; cmZone='campus';
-  cmFrontType='Regular'; cmBackType='Regular';
+  cmSelFront=null; cmSelBack=null; cmZone='campus'; cmShirtType='Regular';
 
-  // Build design buttons for front and back
-  const names = prods.length ? prods.map(p=>p.name) : ['BT1','BT2','BT3'];
-  document.getElementById('cmDesignFront').innerHTML = names.map(n=>
-    `<button class="dpick" onclick="cmPickDesign('front','${n}',this)">${n}</button>`
-  ).join('');
-  document.getElementById('cmDesignBack').innerHTML = names.map(n=>
-    `<button class="dpick" onclick="cmPickDesign('back','${n}',this)">${n}</button>`
-  ).join('');
-
-  // Clear any previous category pickers
-  ['cmFrontCats','cmBackCats'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.style.display='none';el.innerHTML='';}
+  // Collect all unique categories across all products
+  const allTypes = [];
+  prods.forEach(p=>{
+    (p.categories||[]).forEach(c=>{
+      if(!allTypes.includes(c.category)) allTypes.push(c.category);
+    });
   });
+  const typeList = allTypes.length ? allTypes : ['Regular','Drop','Hoodie'];
+
+  // Shirt type picker — single shared selector
+  document.getElementById('cmTypePicker').innerHTML = typeList.map((t,i)=>
+    `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
+  ).join('');
+  cmShirtType = typeList[0];
+
+  // Design buttons — show only product names
+  const names = prods.length ? prods.map(p=>p.name) : ['BT1','BT2','BT3'];
+  document.getElementById('cmDesignFront').innerHTML = names.map((n,i)=>
+    `<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`
+  ).join('');
+  document.getElementById('cmDesignBack').innerHTML = names.map((n,i)=>
+    `<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`
+  ).join('');
 
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
   updateCMPrice();
@@ -626,60 +639,22 @@ function openCustomModal(type){
   document.body.style.overflow='hidden';
 }
 
-function cmPickDesign(side, name, el){
+function cmPickType(type, el){
+  document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  cmShirtType = type;
+  updateCMPrice();
+}
+
+function cmPickDesign(side, idx, el){
   const container = side==='front'
     ? document.getElementById('cmDesignFront')
     : document.getElementById('cmDesignBack');
   container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-
-  const prod = prods.find(p=>p.name===name);
-  const cats = prod && prod.categories && prod.categories.length ? prod.categories : [];
-  const catsElId = side==='front' ? 'cmFrontCats' : 'cmBackCats';
-  const catsEl = document.getElementById(catsElId);
-
-  // ALWAYS show type picker if product has categories data
-  // Even 1 category is shown so customer confirms the type
-  if(cats.length >= 1){
-    const defaultType = cats[0].category;
-    if(side==='front'){ cmSelFront=name; cmFrontType=defaultType; }
-    else{ cmSelBack=name; cmBackType=defaultType; }
-
-    catsEl.style.display = '';
-    catsEl.innerHTML =
-      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;` +
-      `color:#999;margin:10px 0 6px;border-top:1px solid #eee;padding-top:10px;">` +
-      `Type for ${name}:</div>` +
-      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">` +
-      cats.map((c,i)=>
-        `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${side}','${c.category}',this)">${c.category}</button>`
-      ).join('') +
-      `</div>`;
-  } else {
-    // No product data loaded yet — show manual type buttons as fallback
-    if(side==='front'){ cmSelFront=name; cmFrontType='Regular'; }
-    else{ cmSelBack=name; cmBackType='Regular'; }
-    catsEl.style.display = '';
-    catsEl.innerHTML =
-      `<div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;` +
-      `color:#999;margin:10px 0 6px;border-top:1px solid #eee;padding-top:10px;">` +
-      `Type for ${name}:</div>` +
-      `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">` +
-      ['Regular','Drop','Hoodie'].map((t,i)=>
-        `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${side}','${t}',this)">${t}</button>`
-      ).join('') +
-      `</div>`;
-  }
-  updateCMPrice();
-}
-
-function cmPickType(side, type, el){
-  // Highlight selected type button
-  const catsEl = document.getElementById(side==='front' ? 'cmFrontCats' : 'cmBackCats');
-  catsEl.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  if(side==='front') cmFrontType=type;
-  else cmBackType=type;
+  const name = prods[idx] ? prods[idx].name : el.textContent;
+  if(side==='front') cmSelFront=name;
+  else cmSelBack=name;
   updateCMPrice();
 }
 
@@ -690,15 +665,20 @@ function setCZ(z){
 }
 
 function updateCMPrice(){
-  const fp = prods.find(p=>p.name===cmSelFront);
-  const cat0 = fp&&fp.categories&&fp.categories[0] ? fp.categories[0] : null;
-  const base = cat0 ? (cat0.discountedPrice||cat0.price||500) : 500;
+  // Find price based on selected shirt type
+  let base = 500;
+  if(cmSelFront && prods.length){
+    const fp = prods.find(p=>p.name===cmSelFront);
+    if(fp){
+      const cat = fp.categories.find(c=>c.category===cmShirtType) || fp.categories[0];
+      if(cat) base = cat.discountedPrice||cat.price||500;
+    }
+  }
   const delivery = DF[cmZone], total = base+100+delivery;
-  const delStr = delivery===0 ? 'Free' : '৳'+delivery;
+  const delStr = delivery===0?'Free':'৳'+delivery;
   document.getElementById('cmPriceNote').innerHTML =
-    `<strong>Both sides</strong> — catalog price + ৳100.<br>` +
-    `Front: <strong>${cmSelFront||'not selected'}</strong>${cmSelFront ? ` [${cmFrontType}]` : ''} &nbsp;·&nbsp; ` +
-    `Back: <strong>${cmSelBack||'not selected'}</strong>${cmSelBack ? ` [${cmBackType}]` : ''}<br>` +
+    `<strong>Both sides</strong> — ${cmShirtType} · catalog price + ৳100.<br>`+
+    `Front: <strong>${cmSelFront||'not selected'}</strong> &nbsp;·&nbsp; Back: <strong>${cmSelBack||'not selected'}</strong><br>`+
     `Delivery: ${delStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
 }
 
@@ -717,34 +697,29 @@ async function placeCustomOrder(){
   if(!name||!phone||!email||!addr){toast('Please fill all required fields');return;}
   if(!trx){toast('Please enter your bKash TrxID');return;}
 
-  const fp = prods.find(p=>p.name===cmSelFront);
-  const cat0 = fp&&fp.categories&&fp.categories[0] ? fp.categories[0] : null;
-  const base = cat0 ? (cat0.discountedPrice||cat0.price||500) : 500;
-  const delivery = DF[cmZone], total = base+100+delivery;
+  let base=500;
+  if(prods.length){
+    const fp=prods.find(p=>p.name===cmSelFront);
+    if(fp){
+      const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];
+      if(cat) base=cat.discountedPrice||cat.price||500;
+    }
+  }
+  const delivery=DF[cmZone], total=base+100+delivery;
 
   let realId="ORDER-?";
-  try{
-    const ir=await fetch(U+"?action=nextId");
-    const ij=await ir.json();
-    if(ij.orderId) realId=ij.orderId;
-  }catch(e){}
+  try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
 
   const btn=document.getElementById('cmBtn');
   btn.disabled=true; btn.textContent='Placing order...';
 
-  // Items string includes [Type] for both front and back
-  const itemsStr=`Both sides: Front=${cmSelFront} [${cmFrontType}], Back=${cmSelBack} [${cmBackType}] (${size}/${color}) +৳100`;
+  const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
 
   try{
-    await fetch(U,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        orderId:realId, name, phone, email, address:addr,
-        items:itemsStr,
-        subtotal:base+100, deliveryZone:DL[cmZone], deliveryFee:delivery,
-        total, payment:'bKash', trxId:trx, status:'Pending'
-      })
+    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:itemsStr,
+        subtotal:base+100,deliveryZone:DL[cmZone],deliveryFee:delivery,
+        total,payment:'bKash',trxId:trx,status:'Pending'})
     });
     closeCM();
     toast('Order placed! ID: '+realId);

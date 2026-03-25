@@ -328,6 +328,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
+
+<!-- Both Sides Custom Modal -->
 <div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
   <div class="cm">
     <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
@@ -353,8 +355,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
       <div class="cm-sec">Size & Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"><option>S</option><option>M</option><option selected>L</option><option>XL</option><option>XXL</option></select></div>
-        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"><option>Black</option><option>White</option><option>Navy Blue</option></select></div>
+        <div style="flex:1;min-width:120px;">
+          <div class="fl" style="margin-bottom:6px;">Size</div>
+          <select class="fi" id="cmSize"></select>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <div class="fl" style="margin-bottom:6px;">Color</div>
+          <select class="fi" id="cmColor"></select>
+        </div>
       </div>
 
       <div class="cm-sec">Your Details</div>
@@ -371,6 +379,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
 </div>
+
+<!-- Product Modal -->
 <div class="mbg" id="pmbg" onclick="if(event.target===this)closePM()">
   <div class="pm">
     <div class="pm-img"><img id="pmimg" src="" alt=""/><button class="pm-x" onclick="closePM()">&#10005;</button></div>
@@ -396,6 +406,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
 </div>
+
+<!-- Cart Drawer -->
 <div class="dbg" id="dbg" onclick="closeCart()"></div>
 <div class="cdrawer" id="cdrawer">
   <div class="cdhd"><div class="cdhd-t">Your Cart</div><button class="cdx" onclick="closeCart()">&#10005;</button></div>
@@ -405,6 +417,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <button class="cobtn" id="cobtn" onclick="openCO()" disabled>Checkout</button>
   </div>
 </div>
+
+<!-- Checkout Modal -->
 <div class="mbg" id="cobg" onclick="if(event.target===this)closeCO()">
   <div class="coin">
     <div id="coform">
@@ -445,7 +459,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script>
 const U="https://script.google.com/macros/s/AKfycbyXI8yXHQsmrqDK7OY5PGle94r2MhJN51MfOZdUVzNi8D0eict8z6q8Qto5lLqG4zLm/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
@@ -616,13 +632,13 @@ function openCustomModal(type){
   });
   const typeList = allTypes.length ? allTypes : ['Regular','Drop','Hoodie'];
 
-  // Shirt type picker — single shared selector
+  // Shirt type picker
   document.getElementById('cmTypePicker').innerHTML = typeList.map((t,i)=>
     `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
   ).join('');
   cmShirtType = typeList[0];
 
-  // Design buttons — show only product names
+  // Design buttons
   const names = prods.length ? prods.map(p=>p.name) : ['BT1','BT2','BT3'];
   document.getElementById('cmDesignFront').innerHTML = names.map((n,i)=>
     `<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`
@@ -632,7 +648,11 @@ function openCustomModal(type){
   ).join('');
 
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
+
+  // ← Populate size & color based on first shirt type
+  updateCMSizeColor();
   updateCMPrice();
+
   document.getElementById('cmBtn').disabled=false;
   document.getElementById('cmBtn').textContent='Place Order';
   document.querySelector('#cmBg .cm').scrollTop = 0;
@@ -640,10 +660,27 @@ function openCustomModal(type){
   document.body.style.overflow='hidden';
 }
 
+// ── NEW: dynamically update Size & Color dropdowns ──────────
+function updateCMSizeColor(){
+  // Use front design if selected, otherwise fall back to first product
+  const refName = cmSelFront || (prods.length ? prods[0].name : null);
+  const refProd = prods.find(p=>p.name===refName) || prods[0];
+  const cat = refProd
+    ? (refProd.categories.find(c=>c.category===cmShirtType) || refProd.categories[0])
+    : null;
+
+  const sizes  = (cat && cat.sizes  && cat.sizes.length)  ? cat.sizes  : ['S','M','L','XL','XXL'];
+  const colors = (cat && cat.colors && cat.colors.length) ? cat.colors : ['Black','White'];
+
+  document.getElementById('cmSize').innerHTML  = sizes.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('cmColor').innerHTML = colors.map(c=>`<option>${c}</option>`).join('');
+}
+
 function cmPickType(type, el){
   document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   cmShirtType = type;
+  updateCMSizeColor(); // ← refresh sizes & colors for new type
   updateCMPrice();
 }
 
@@ -654,8 +691,12 @@ function cmPickDesign(side, idx, el){
   container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   const name = prods[idx] ? prods[idx].name : el.textContent;
-  if(side==='front') cmSelFront=name;
-  else cmSelBack=name;
+  if(side==='front'){
+    cmSelFront=name;
+    updateCMSizeColor(); // ← refresh when front design changes
+  } else {
+    cmSelBack=name;
+  }
   updateCMPrice();
 }
 
@@ -666,7 +707,6 @@ function setCZ(z){
 }
 
 function updateCMPrice(){
-  // Find price based on selected shirt type
   let base = 500;
   if(cmSelFront && prods.length){
     const fp = prods.find(p=>p.name===cmSelFront);

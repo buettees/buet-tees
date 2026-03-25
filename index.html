@@ -17,6 +17,8 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 @media(min-width:640px){.nav-mid{display:flex;}}
 .nav-a{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;transition:color 0.15s;}
 .nav-a:hover{color:var(--w);}
+.nav-a.affiliate-nav{color:rgba(109,0,26,0.8);border:1px solid rgba(109,0,26,0.5);padding:5px 12px;border-radius:4px;}
+.nav-a.affiliate-nav:hover{color:var(--w);background:var(--burg);border-color:var(--burg);}
 .cart-btn{background:var(--burg);border:none;color:var(--w);padding:9px 22px;cursor:pointer;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px;transition:background 0.15s;}
 .cart-btn:hover{background:var(--burg2);}
 .cbadge{background:var(--w);color:var(--burg);border-radius:50%;width:16px;height:16px;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;}
@@ -81,18 +83,69 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 .is-num{font-size:26px;font-weight:800;color:var(--w);line-height:1;}
 .is-num em{font-style:normal;}
 .is-lbl{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-top:6px;}
+
+/* ── Affiliate Section ────────────────────────────────────── */
+.aff-section{background:var(--black);padding:72px 40px 80px;border-top:1px solid rgba(255,255,255,0.06);}
+.aff-eyebrow{font-size:11px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.aff-eyebrow::before{content:'';width:20px;height:1px;background:rgba(255,255,255,0.25);}
+.aff-title{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--w);line-height:1;margin-bottom:16px;}
+.aff-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.9;max-width:560px;margin-bottom:48px;font-weight:300;}
+.aff-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}
+@media(max-width:640px){.aff-grid{grid-template-columns:1fr;}}
+.aff-card{background:var(--black2);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px 24px;}
+.aff-card-tag{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--burg);margin-bottom:12px;}
+.aff-card-title{font-size:18px;font-weight:800;text-transform:uppercase;color:var(--w);margin-bottom:16px;}
+.aff-card-rows{display:flex;flex-direction:column;gap:8px;}
+.aff-card-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;}
+.aff-card-item{font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;}
+.aff-card-comm{font-size:14px;font-weight:700;color:var(--w);}
+.aff-cta-box{background:var(--burg);border-radius:16px;padding:36px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.aff-cta-text .tag{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px;}
+.aff-cta-text .title{font-size:22px;font-weight:900;text-transform:uppercase;color:var(--w);margin-bottom:6px;}
+.aff-cta-text .desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.7;font-weight:300;}
+.aff-register-btn{padding:14px 28px;background:var(--black);color:var(--w);border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-radius:8px;transition:background 0.15s;}
+.aff-register-btn:hover{background:var(--black3);}
+
 footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40px 40px;}
-.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:40px;}
+.ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px;}
 @media(max-width:640px){.ft-grid{grid-template-columns:1fr;gap:32px;}}
 .ft-logo{font-size:20px;font-weight:900;letter-spacing:6px;text-transform:uppercase;color:var(--w);margin-bottom:14px;}
 .ft-logo em{font-style:normal;}
 .ft-tag{font-size:11px;color:rgba(255,255,255,0.3);line-height:2.2;font-weight:300;}
 .ft-ch{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);margin-bottom:16px;}
 .ft-ci{font-size:11px;color:rgba(255,255,255,0.3);line-height:2.4;font-weight:300;}
+.ft-ci a{color:rgba(109,0,26,0.9);cursor:pointer;text-decoration:none;font-weight:600;}
+.ft-ci a:hover{color:var(--w);}
 .ft-bot{border-top:1px solid rgba(255,255,255,0.06);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .ft-copy{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
 .ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
 .ft-bk span{color:var(--w);}
+
+/* ── Affiliate Registration Modal ─────────────────────────── */
+.aff-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
+.aff-modal-bg.on{display:flex;}
+@media(min-width:640px){.aff-modal-bg{align-items:center;padding:24px;}}
+.aff-modal{background:var(--w);width:100%;max-width:520px;max-height:94vh;overflow-y:auto;animation:su 0.22s ease;border-top:3px solid var(--burg);}
+@media(min-width:640px){.aff-modal{border-top:none;border-left:3px solid var(--burg);}}
+.aff-modal-hd{background:var(--black);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--burg);position:sticky;top:0;z-index:2;}
+.aff-modal-title{font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--w);}
+.aff-modal-body{padding:24px 24px 44px;}
+.aff-modal-sec{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin:20px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--w3);}
+.aff-modal-sec:first-child{margin-top:0;}
+.aff-note{font-size:11px;color:var(--g2);line-height:1.7;margin-bottom:16px;padding:12px 14px;background:var(--w2);border-radius:8px;border-left:2px solid var(--burg);}
+.aff-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.aff-type-card{border:1.5px solid var(--w3);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.15s;}
+.aff-type-card:hover{border-color:var(--burg);}
+.aff-type-card.on{border-color:var(--burg);background:rgba(109,0,26,0.05);}
+.aff-type-label{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--black);margin-bottom:4px;}
+.aff-type-desc{font-size:11px;color:var(--g2);line-height:1.5;}
+.aff-promo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.aff-promo-btn{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;font-family:'Montserrat',sans-serif;}
+.aff-promo-btn:hover{border-color:var(--burg);}
+.aff-promo-btn.on{background:var(--black);color:var(--w);border-color:var(--black);}
+.aff-pay-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+
+/* Shared form styles */
 .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
 .mbg.on{display:flex;}
 @media(min-width:640px){.mbg{align-items:center;padding:24px;}}
@@ -222,6 +275,17 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .dpick{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;}
 .dpick:hover{border-color:var(--burg);}
 .dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
+
+/* Affiliate code row in checkout */
+.aff-code-row{background:var(--w2);border:1px solid var(--w3);border-radius:10px;padding:14px;margin-bottom:12px;}
+.aff-code-inner{display:flex;gap:8px;align-items:flex-end;}
+.aff-code-inner .fi{border-radius:0;flex:1;text-transform:uppercase;letter-spacing:2px;}
+.aff-check-btn{padding:12px 16px;background:var(--black);border:none;color:var(--w);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;transition:background 0.15s;}
+.aff-check-btn:hover{background:var(--burg);}
+.aff-code-status{font-size:11px;margin-top:8px;font-weight:600;letter-spacing:1px;}
+.aff-code-status.ok{color:#2e7d32;}
+.aff-code-status.err{color:var(--burg);}
+
 @media(max-width:639px){
   header{padding:0 16px;height:52px;}.logo{font-size:13px;letter-spacing:5px;}.cart-btn{padding:7px 14px;font-size:10px;}
   .hero{min-height:auto;padding:40px 20px 44px;}.hero-geo,.hero-geo2{display:none;}
@@ -236,12 +300,17 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .custom-section{padding:44px 16px 52px;}.custom-cards{grid-template-columns:1fr;}
   .custom-fullbox{padding:24px 20px;flex-direction:column;align-items:flex-start;}
   .cm{border-radius:20px 20px 0 0;}
+  .aff-section{padding:44px 16px 52px;}.aff-grid{grid-template-columns:1fr;}
+  .aff-cta-box{flex-direction:column;align-items:flex-start;padding:24px 20px;}
+  .aff-modal{border-radius:20px 20px 0 0;}
+  .aff-type-grid{grid-template-columns:1fr;}
   .toast{font-size:10px;padding:10px 16px;bottom:16px;white-space:normal;text-align:center;max-width:80vw;}
 }
 @media(min-width:640px) and (max-width:900px){
   .hero{padding:48px 28px 52px;}.collection{padding:52px 28px 60px;}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:24px;}
   header{padding:0 28px;}footer{padding:48px 28px 36px;}.ft-grid{grid-template-columns:1fr 1fr;gap:32px;}
+  .aff-section{padding:52px 28px 60px;}
 }
 </style>
 </head>
@@ -252,12 +321,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <span class="nav-a" onclick="document.querySelector('.collection').scrollIntoView({behavior:'smooth'})">Collection</span>
     <span class="nav-a" onclick="document.querySelector('.custom-section').scrollIntoView({behavior:'smooth'})">Custom</span>
     <span class="nav-a" onclick="document.querySelector('.istrip').scrollIntoView({behavior:'smooth'})">Info</span>
+    <span class="nav-a affiliate-nav" onclick="openAffModal()">Affiliate</span>
   </nav>
   <button class="cart-btn" onclick="openCart()">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
     Cart <span class="cbadge" id="cbadge">0</span>
   </button>
 </header>
+
 <div class="hero">
   <div class="hero-geo"></div><div class="hero-geo2"></div>
   <div class="hero-inner">
@@ -272,12 +343,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
 </div>
+
 <div class="ticker">
   <div class="ticker-t">
     <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
     <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
   </div>
 </div>
+
 <div class="collection">
   <div class="col-hd">
     <div><div class="col-eyebrow">Current Drop</div><div class="col-title">All Pieces</div></div>
@@ -290,6 +363,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
   </div>
 </div>
+
 <div class="custom-section">
   <div class="custom-eyebrow">Build your own</div>
   <div class="custom-title">Custom Orders</div>
@@ -314,20 +388,146 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
 </div>
+
+<!-- ── Affiliate Section ──────────────────────────────────── -->
+<div class="aff-section" id="affiliate">
+  <div class="aff-eyebrow">Earn with us</div>
+  <div class="aff-title">Affiliate Program</div>
+  <div class="aff-sub">Promote BUET Tees and earn commission on every successful order. Choose between storage and no-storage options based on how you want to work.</div>
+  <div class="aff-grid">
+    <div class="aff-card">
+      <div class="aff-card-tag">Option 1 — With Storage</div>
+      <div class="aff-card-title">Store &amp; Sell</div>
+      <div class="aff-card-rows">
+        <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳20 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳25 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳35 / sale</span></div>
+      </div>
+    </div>
+    <div class="aff-card">
+      <div class="aff-card-tag">Option 2 — No Storage</div>
+      <div class="aff-card-title">Promote &amp; Earn</div>
+      <div class="aff-card-rows">
+        <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳30 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳40 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳50 / sale</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="aff-cta-box">
+    <div class="aff-cta-text">
+      <div class="tag">Join the team</div>
+      <div class="title">Become an Affiliate</div>
+      <div class="desc">Register now and get your unique affiliate code instantly. Share it with customers to earn commission on every order.</div>
+    </div>
+    <button class="aff-register-btn" onclick="openAffModal()">Register Now →</button>
+  </div>
+</div>
+
 <div class="istrip">
   <div class="is-item"><div class="is-num">FREE</div><div class="is-lbl">Campus Delivery</div></div>
   <div class="is-item"><div class="is-num">6<em> Days</em></div><div class="is-lbl">Delivery Time</div></div>
   <div class="is-item"><div class="is-num"><em>৳</em>70</div><div class="is-lbl">Inside Dhaka</div></div>
   <div class="is-item"><div class="is-num">01782<em>761981</em></div><div class="is-lbl">bKash Number</div></div>
 </div>
+
 <footer>
   <div class="ft-grid">
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
+
+<!-- ── Affiliate Registration Modal ──────────────────────── -->
+<div class="aff-modal-bg" id="affModalBg" onclick="if(event.target===this)closeAffModal()">
+  <div class="aff-modal" id="affModalInner">
+    <div id="affForm">
+      <div class="aff-modal-hd"><div class="aff-modal-title">Affiliate Registration</div><button class="cdx" onclick="closeAffModal()">&#10005;</button></div>
+      <div class="aff-modal-body">
+
+        <div class="aff-modal-sec" style="margin-top:0">Your Details</div>
+        <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="affName" placeholder="Rahim Uddin" type="text"/></div>
+        <div class="fg"><label class="fl">WhatsApp Number *</label><input class="fi" id="affWa" placeholder="01XXXXXXXXX" type="tel"/></div>
+        <div class="fg"><label class="fl">Student ID *</label><input class="fi" id="affId" placeholder="2005001" type="text"/></div>
+        <div class="fg"><label class="fl">Hall *</label>
+          <select class="fi" id="affHall">
+            <option value="">Select your hall</option>
+            <option>Ahsanullah Hall</option>
+            <option>Suhrawardy Hall</option>
+            <option>Titumir Hall</option>
+            <option>Shahid Smriti Hall</option>
+            <option>Kavi Nazrul Islam Hall</option>
+            <option>Sonargaon Hall</option>
+            <option>Sher-e-Bangla Hall</option>
+            <option>Dr. M A Rashid Hall</option>
+            <option>Bangabandhu Sheikh Mujibur Rahman Hall</option>
+            <option>Rokeya Hall</option>
+            <option>Not in hall / Off-campus</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Email *</label><input class="fi" id="affEmail" placeholder="you@example.com" type="email"/></div>
+
+        <div class="aff-modal-sec">Affiliate Type</div>
+        <div class="aff-note">With Storage: customers collect from you. Without Storage: you only promote online — we handle delivery.</div>
+        <div class="aff-type-grid">
+          <div class="aff-type-card on" id="affTypeStorage" onclick="pickAffType('storage')">
+            <div class="aff-type-label">📦 With Storage</div>
+            <div class="aff-type-desc">You receive &amp; store products. Customers collect from you.<br><strong>৳20–35 / sale</strong></div>
+          </div>
+          <div class="aff-type-card" id="affTypeNoStorage" onclick="pickAffType('nostorage')">
+            <div class="aff-type-label">📲 No Storage</div>
+            <div class="aff-type-desc">Promote only. We handle all delivery.<br><strong>৳30–50 / sale</strong></div>
+          </div>
+        </div>
+
+        <div class="aff-modal-sec">How You Plan to Promote</div>
+        <div class="aff-promo-grid" id="affPromoGrid">
+          <button class="aff-promo-btn" onclick="togglePromo(this)">Friends</button>
+          <button class="aff-promo-btn" onclick="togglePromo(this)">Campus</button>
+          <button class="aff-promo-btn" onclick="togglePromo(this)">Groups</button>
+          <button class="aff-promo-btn" onclick="togglePromo(this)">Ads</button>
+          <button class="aff-promo-btn" onclick="togglePromo(this)">Other</button>
+        </div>
+
+        <div class="aff-modal-sec">Payment Method</div>
+        <div class="aff-pay-grid" id="affPayGrid">
+          <button class="aff-promo-btn" onclick="pickPay(this)">bKash</button>
+          <button class="aff-promo-btn" onclick="pickPay(this)">Bank</button>
+          <button class="aff-promo-btn" onclick="pickPay(this)">Other</button>
+        </div>
+        <div class="fg"><label class="fl">Payment Details *</label><input class="fi" id="affPayDetails" placeholder="e.g. 01XXXXXXXXX or account number" type="text"/></div>
+
+        <div class="aff-modal-sec">Income Goal</div>
+        <div class="aff-pay-grid" id="affGoalGrid">
+          <button class="aff-promo-btn" onclick="pickGoal(this)">৳1000–2500</button>
+          <button class="aff-promo-btn" onclick="pickGoal(this)">৳2500–5000</button>
+          <button class="aff-promo-btn" onclick="pickGoal(this)">৳5000–10000</button>
+          <button class="aff-promo-btn" onclick="pickGoal(this)">৳10000–25000</button>
+          <button class="aff-promo-btn" onclick="pickGoal(this)">৳25000+</button>
+        </div>
+
+        <button class="pbtn" id="affSubmitBtn" onclick="submitAffReg()" style="margin-top:24px;">Register as Affiliate</button>
+      </div>
+    </div>
+
+    <div id="affSuccess" style="display:none">
+      <div class="sucwrap">
+        <div class="sucicon">&#10003;</div>
+        <div class="suctitle">Welcome!</div>
+        <p class="sucsub">You're now part of the BUET Tees Affiliate Program.<br>Your affiliate code has been sent to your email.</p>
+        <div class="sucbox"><div class="suclbl">Your Affiliate Code</div><div class="sucval" id="affCodeDisplay">---</div></div>
+        <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
+          <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
+        </div>
+        <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Both Sides Custom Modal -->
 <div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
@@ -355,14 +555,18 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
       <div class="cm-sec">Size & Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-        <div style="flex:1;min-width:120px;">
-          <div class="fl" style="margin-bottom:6px;">Size</div>
-          <select class="fi" id="cmSize"></select>
+        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
+        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
+      </div>
+
+      <!-- Affiliate Code -->
+      <div class="cm-sec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
+      <div class="aff-code-row">
+        <div class="aff-code-inner">
+          <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" style="text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()"/>
+          <button class="aff-check-btn" onclick="checkAffCode('cm')">Apply</button>
         </div>
-        <div style="flex:1;min-width:120px;">
-          <div class="fl" style="margin-bottom:6px;">Color</div>
-          <select class="fi" id="cmColor"></select>
-        </div>
+        <div class="aff-code-status" id="cmAffStatus"></div>
       </div>
 
       <div class="cm-sec">Your Details</div>
@@ -375,7 +579,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
       <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
       <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
-
     </div>
   </div>
 </div>
@@ -428,9 +631,20 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <div id="coitems"></div>
         <div class="strows">
           <div class="strow"><span>Subtotal</span><span id="stsub"></span></div>
+          <div class="strow" id="discRow" style="display:none;color:#2e7d32;font-weight:600;"><span id="discLabel">Affiliate Discount</span><span id="stdisc"></span></div>
           <div class="strow"><span>Delivery</span><span id="stdel"></span></div>
           <div class="stfin"><span class="stfin-l">Total</span><span class="stfin-v" id="sttotal"></span></div>
         </div>
+
+        <div class="cosec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
+        <div class="aff-code-row">
+          <div class="aff-code-inner">
+            <input class="fi" id="coAffCode" placeholder="e.g. RAHIM123" type="text" oninput="this.value=this.value.toUpperCase()"/>
+            <button class="aff-check-btn" onclick="checkAffCode('co')">Apply</button>
+          </div>
+          <div class="aff-code-status" id="coAffStatus"></div>
+        </div>
+
         <div class="cosec">Delivery Zone</div>
         <div class="zgrid">
           <div class="zo on" id="z-campus" onclick="sz2('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
@@ -466,11 +680,13 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 const U="https://script.google.com/macros/s/AKfycbyXI8yXHQsmrqDK7OY5PGle94r2MhJN51MfOZdUVzNi8D0eict8z6q8Qto5lLqG4zLm/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
+let affDiscountPct=0, affCodeApplied="", coAffValid=false, cmAffValid=false, cmAffCode="", cmAffPct=0;
 
 async function loadProducts(){
   try{
     const r=await fetch(U);const d=await r.json();
     prods=d.products||[];
+    if(d.affiliateDiscount) affDiscountPct=parseFloat(d.affiliateDiscount)||0;
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
@@ -574,14 +790,52 @@ function closeCart(){document.getElementById("cdrawer").classList.remove("on");d
 function sz2(z){zone=z;["campus","dhaka","outside"].forEach(x=>document.getElementById("z-"+x).classList.toggle("on",x===z));updSum();}
 
 function updSum(){
-  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);const fee=DF[zone];
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const fee=DF[zone];
+  const discPct=coAffValid?affDiscountPct:0;
+  const discAmt=discPct>0?Math.round(sub*discPct/100):0;
+  const total=sub-discAmt+fee;
   document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
-  document.getElementById("sttotal").textContent=`${C} ${(sub+fee).toLocaleString()}`;
+  document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
+  const discRow=document.getElementById("discRow");
+  if(discAmt>0){
+    discRow.style.display="";
+    document.getElementById("discLabel").textContent=`Affiliate Discount (${discPct}%)`;
+    document.getElementById("stdisc").textContent=`-${C} ${discAmt}`;
+  } else { discRow.style.display="none"; }
+}
+
+// ── Affiliate Code Validation ────────────────────────────────
+async function checkAffCode(ctx){
+  const inputId = ctx==='co'?'coAffCode':'cmAffCode';
+  const statusId = ctx==='co'?'coAffStatus':'cmAffStatus';
+  const code = document.getElementById(inputId).value.trim().toUpperCase();
+  const statusEl = document.getElementById(statusId);
+  if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
+  statusEl.textContent="Checking...";statusEl.className="aff-code-status";
+  try{
+    const r=await fetch(`${U}?action=checkAff&code=${encodeURIComponent(code)}`);
+    const d=await r.json();
+    if(d.valid){
+      statusEl.textContent=`✓ Code applied! ${d.discount}% discount on your order.`;
+      statusEl.className="aff-code-status ok";
+      if(ctx==='co'){coAffValid=true;affDiscountPct=d.discount;affCodeApplied=code;updSum();}
+      else{cmAffValid=true;cmAffPct=d.discount;cmAffCode=code;updateCMPrice();}
+    } else {
+      statusEl.textContent="✗ Invalid affiliate code.";
+      statusEl.className="aff-code-status err";
+      if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
+      else{cmAffValid=false;cmAffPct=0;cmAffCode="";updateCMPrice();}
+    }
+  }catch(e){statusEl.textContent="Could not verify. Try again.";statusEl.className="aff-code-status err";}
 }
 
 function openCO(){
   closeCart();
+  coAffValid=false;affDiscountPct=0;affCodeApplied="";
+  document.getElementById("coAffCode").value="";
+  document.getElementById("coAffStatus").textContent="";
   document.getElementById("coitems").innerHTML=cart.map(i=>`
     <div class="sitem">
       <div><div class="sname">${i.name} — ${i.category}</div><div class="svar">${[i.size,i.color].filter(Boolean).join(" · ")} &#215; ${i.qty}</div></div>
@@ -602,13 +856,20 @@ async function place(){
   const trx=document.getElementById("ft").value.trim();
   if(!name||!phone||!email||!addr){toast("Please fill all required fields");return;}
   if(!trx){toast("Please enter your bKash TrxID");return;}
-  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);const fee=DF[zone],total=sub+fee;
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const discPct=coAffValid?affDiscountPct:0;
+  const discAmt=discPct>0?Math.round(sub*discPct/100):0;
+  const fee=DF[zone],total=sub-discAmt+fee;
   const items=cart.map(i=>`${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`).join(" | ");
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
     let realId="ORDER-?";
     try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
-    await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items,subtotal:sub,deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"})});
+    await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      orderId:realId,name,phone,email,address:addr,items,
+      subtotal:sub,discountPct:discPct,discountAmt:discAmt,affiliateCode:affCodeApplied||"",
+      deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"
+    })});
     document.getElementById("sucid").textContent=realId;
     document.getElementById("coform").style.display="none";document.getElementById("sucscr").style.display="";
     cart=[];upd();
@@ -621,82 +882,49 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 let cmSelFront=null, cmSelBack=null, cmZone='campus', cmShirtType='Regular';
 
 function openCustomModal(type){
-  cmSelFront=null; cmSelBack=null; cmZone='campus'; cmShirtType='Regular';
+  cmSelFront=null;cmSelBack=null;cmZone='campus';cmShirtType='Regular';
+  cmAffValid=false;cmAffPct=0;cmAffCode="";
+  document.getElementById('cmAffCode').value="";
+  document.getElementById('cmAffStatus').textContent="";
 
-  // Collect all unique categories across all products
-  const allTypes = [];
-  prods.forEach(p=>{
-    (p.categories||[]).forEach(c=>{
-      if(!allTypes.includes(c.category)) allTypes.push(c.category);
-    });
-  });
-  const typeList = allTypes.length ? allTypes : ['Regular','Drop','Hoodie'];
+  const allTypes=[];
+  prods.forEach(p=>{(p.categories||[]).forEach(c=>{if(!allTypes.includes(c.category))allTypes.push(c.category);});});
+  const typeList=allTypes.length?allTypes:['Regular','Drop','Hoodie'];
+  document.getElementById('cmTypePicker').innerHTML=typeList.map((t,i)=>`<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`).join('');
+  cmShirtType=typeList[0];
 
-  // Shirt type picker
-  document.getElementById('cmTypePicker').innerHTML = typeList.map((t,i)=>
-    `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
-  ).join('');
-  cmShirtType = typeList[0];
-
-  // Design buttons
-  const names = prods.length ? prods.map(p=>p.name) : ['BT1','BT2','BT3'];
-  document.getElementById('cmDesignFront').innerHTML = names.map((n,i)=>
-    `<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`
-  ).join('');
-  document.getElementById('cmDesignBack').innerHTML = names.map((n,i)=>
-    `<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`
-  ).join('');
+  const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
+  document.getElementById('cmDesignFront').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`).join('');
+  document.getElementById('cmDesignBack').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`).join('');
 
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
-
-  // ← Populate size & color based on first shirt type
-  updateCMSizeColor();
-  updateCMPrice();
-
-  document.getElementById('cmBtn').disabled=false;
-  document.getElementById('cmBtn').textContent='Place Order';
-  document.querySelector('#cmBg .cm').scrollTop = 0;
-  document.getElementById('cmBg').classList.add('on');
-  document.body.style.overflow='hidden';
+  updateCMSizeColor();updateCMPrice();
+  document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
+  document.querySelector('#cmBg .cm').scrollTop=0;
+  document.getElementById('cmBg').classList.add('on');document.body.style.overflow='hidden';
 }
 
-// ── NEW: dynamically update Size & Color dropdowns ──────────
 function updateCMSizeColor(){
-  // Use front design if selected, otherwise fall back to first product
-  const refName = cmSelFront || (prods.length ? prods[0].name : null);
-  const refProd = prods.find(p=>p.name===refName) || prods[0];
-  const cat = refProd
-    ? (refProd.categories.find(c=>c.category===cmShirtType) || refProd.categories[0])
-    : null;
-
-  const sizes  = (cat && cat.sizes  && cat.sizes.length)  ? cat.sizes  : ['S','M','L','XL','XXL'];
-  const colors = (cat && cat.colors && cat.colors.length) ? cat.colors : ['Black','White'];
-
-  document.getElementById('cmSize').innerHTML  = sizes.map(s=>`<option>${s}</option>`).join('');
-  document.getElementById('cmColor').innerHTML = colors.map(c=>`<option>${c}</option>`).join('');
+  const refName=cmSelFront||(prods.length?prods[0].name:null);
+  const refProd=prods.find(p=>p.name===refName)||prods[0];
+  const cat=refProd?(refProd.categories.find(c=>c.category===cmShirtType)||refProd.categories[0]):null;
+  const sizes=(cat&&cat.sizes&&cat.sizes.length)?cat.sizes:['S','M','L','XL','XXL'];
+  const colors=(cat&&cat.colors&&cat.colors.length)?cat.colors:['Black','White'];
+  document.getElementById('cmSize').innerHTML=sizes.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('cmColor').innerHTML=colors.map(c=>`<option>${c}</option>`).join('');
 }
 
-function cmPickType(type, el){
+function cmPickType(type,el){
   document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  cmShirtType = type;
-  updateCMSizeColor(); // ← refresh sizes & colors for new type
-  updateCMPrice();
+  el.classList.add('on');cmShirtType=type;updateCMSizeColor();updateCMPrice();
 }
 
-function cmPickDesign(side, idx, el){
-  const container = side==='front'
-    ? document.getElementById('cmDesignFront')
-    : document.getElementById('cmDesignBack');
+function cmPickDesign(side,idx,el){
+  const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
   container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
-  const name = prods[idx] ? prods[idx].name : el.textContent;
-  if(side==='front'){
-    cmSelFront=name;
-    updateCMSizeColor(); // ← refresh when front design changes
-  } else {
-    cmSelBack=name;
-  }
+  const name=prods[idx]?prods[idx].name:el.textContent;
+  if(side==='front'){cmSelFront=name;updateCMSizeColor();}else{cmSelBack=name;}
   updateCMPrice();
 }
 
@@ -707,20 +935,20 @@ function setCZ(z){
 }
 
 function updateCMPrice(){
-  let base = 500;
-  if(cmSelFront && prods.length){
-    const fp = prods.find(p=>p.name===cmSelFront);
-    if(fp){
-      const cat = fp.categories.find(c=>c.category===cmShirtType) || fp.categories[0];
-      if(cat) base = cat.discountedPrice||cat.price||500;
-    }
+  let base=500;
+  if(cmSelFront&&prods.length){
+    const fp=prods.find(p=>p.name===cmSelFront);
+    if(fp){const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];if(cat)base=cat.discountedPrice||cat.price||500;}
   }
-  const delivery = DF[cmZone], total = base+100+delivery;
-  const delStr = delivery===0?'Free':'৳'+delivery;
-  document.getElementById('cmPriceNote').innerHTML =
+  const discPct=cmAffValid?cmAffPct:0;
+  const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
+  const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
+  const delStr=delivery===0?'Free':'৳'+delivery;
+  const discStr=discAmt>0?`<br><span style="color:#2e7d32;font-weight:700;">Affiliate Discount (${discPct}%): -৳${discAmt}</span>`:'';
+  document.getElementById('cmPriceNote').innerHTML=
     `<strong>Both sides</strong> — ${cmShirtType} · catalog price + ৳100.<br>`+
     `Front: <strong>${cmSelFront||'not selected'}</strong> &nbsp;·&nbsp; Back: <strong>${cmSelBack||'not selected'}</strong><br>`+
-    `Delivery: ${delStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
+    `Delivery: ${delStr}${discStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
 }
 
 function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
@@ -733,44 +961,94 @@ async function placeCustomOrder(){
   const trx=document.getElementById('cmTrx').value.trim();
   const size=document.getElementById('cmSize').value;
   const color=document.getElementById('cmColor').value;
-
   if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
   if(!name||!phone||!email||!addr){toast('Please fill all required fields');return;}
   if(!trx){toast('Please enter your bKash TrxID');return;}
-
   let base=500;
   if(prods.length){
     const fp=prods.find(p=>p.name===cmSelFront);
-    if(fp){
-      const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];
-      if(cat) base=cat.discountedPrice||cat.price||500;
-    }
+    if(fp){const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];if(cat)base=cat.discountedPrice||cat.price||500;}
   }
-  const delivery=DF[cmZone], total=base+100+delivery;
-
+  const discPct=cmAffValid?cmAffPct:0;
+  const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
+  const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
   let realId="ORDER-?";
   try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
-
-  const btn=document.getElementById('cmBtn');
-  btn.disabled=true; btn.textContent='Placing order...';
-
+  const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
   const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
-
   try{
     await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:itemsStr,
-        subtotal:base+100,deliveryZone:DL[cmZone],deliveryFee:delivery,
-        total,payment:'bKash',trxId:trx,status:'Pending'})
+        subtotal:base+100,discountPct:discPct,discountAmt:discAmt,affiliateCode:cmAffCode||"",
+        deliveryZone:DL[cmZone],deliveryFee:delivery,total,payment:'bKash',trxId:trx,status:'Pending'})
     });
-    closeCM();
-    toast('Order placed! ID: '+realId);
+    closeCM();toast('Order placed! ID: '+realId);
   }catch{
     toast('Something went wrong. Try again.');
-    btn.disabled=false; btn.textContent='Place Order';
+    btn.disabled=false;btn.textContent='Place Order';
   }
 }
 
-loadProducts(); upd();
+// ── Affiliate Registration ───────────────────────────────────
+let affSelectedType='storage', affSelectedPromos=[], affSelectedPay='', affSelectedGoal='';
+
+function openAffModal(){
+  document.getElementById('affForm').style.display='';
+  document.getElementById('affSuccess').style.display='none';
+  document.getElementById('affModalBg').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeAffModal(){document.getElementById('affModalBg').classList.remove('on');document.body.style.overflow='';}
+
+function pickAffType(type){
+  affSelectedType=type;
+  document.getElementById('affTypeStorage').classList.toggle('on',type==='storage');
+  document.getElementById('affTypeNoStorage').classList.toggle('on',type==='nostorage');
+}
+function togglePromo(el){el.classList.toggle('on');affSelectedPromos=Array.from(document.querySelectorAll('#affPromoGrid .on')).map(b=>b.textContent);}
+function pickPay(el){document.querySelectorAll('#affPayGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');affSelectedPay=el.textContent;}
+function pickGoal(el){document.querySelectorAll('#affGoalGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');affSelectedGoal=el.textContent;}
+
+async function submitAffReg(){
+  const name=document.getElementById('affName').value.trim();
+  const wa=document.getElementById('affWa').value.trim();
+  const sid=document.getElementById('affId').value.trim();
+  const hall=document.getElementById('affHall').value;
+  const email=document.getElementById('affEmail').value.trim();
+  const payDetails=document.getElementById('affPayDetails').value.trim();
+  if(!name||!wa||!sid||!hall||!email){toast('Please fill all required fields');return;}
+  if(!affSelectedPay){toast('Please select a payment method');return;}
+  if(!affSelectedGoal){toast('Please select your income goal');return;}
+  if(!payDetails){toast('Please enter your payment details');return;}
+
+  // Generate affiliate code: first name uppercase + last 3 digits of student ID
+  const firstName=name.split(' ')[0].toUpperCase().replace(/[^A-Z]/g,'');
+  const last3=sid.replace(/\D/g,'').slice(-3);
+  const affCode=firstName+last3;
+
+  const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
+  try{
+    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'affiliateRegister',
+        name,whatsapp:wa,studentId:sid,hall,email,
+        type:affSelectedType,
+        promoMethods:affSelectedPromos.join(', ')||'Not specified',
+        paymentMethod:affSelectedPay,paymentDetails:payDetails,
+        incomeGoal:affSelectedGoal,
+        affiliateCode:affCode
+      })
+    });
+    document.getElementById('affCodeDisplay').textContent=affCode;
+    document.getElementById('affForm').style.display='none';
+    document.getElementById('affSuccess').style.display='';
+  }catch(e){
+    toast('Something went wrong. Try again.');
+    btn.disabled=false;btn.textContent='Register as Affiliate';
+  }
+}
+
+loadProducts();upd();
 </script>
 </body>
 </html>

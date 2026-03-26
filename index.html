@@ -1012,10 +1012,9 @@ async function submitAffReg(){
   }catch(e){
     document.getElementById('affCodeDisplay').textContent=affCode;
   }
-
+  btn.disabled=false;btn.textContent='Register as Affiliate';
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
-  btn.disabled=false;btn.textContent='Register as Affiliate';
   document.getElementById('affName').value='';
   document.getElementById('affWa').value='';
   document.getElementById('affId').value='';

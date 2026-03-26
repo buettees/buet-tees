@@ -1015,6 +1015,19 @@ async function submitAffReg(){
 
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
+  btn.disabled=false;btn.textContent='Register as Affiliate';
+  document.getElementById('affName').value='';
+  document.getElementById('affWa').value='';
+  document.getElementById('affId').value='';
+  document.getElementById('affHall').value='';
+  document.getElementById('affEmail').value='';
+  document.getElementById('affPayDetails').value='';
+  document.querySelectorAll('#affPromoGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#affPayGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#affGoalGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+  affSelectedPromos=[];affSelectedPay='';affSelectedGoal='';affSelectedType='storage';
+  document.getElementById('affTypeStorage').classList.add('on');
+  document.getElementById('affTypeNoStorage').classList.remove('on');
 }
 
 loadProducts();upd();

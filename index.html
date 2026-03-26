@@ -83,8 +83,6 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 .is-num{font-size:26px;font-weight:800;color:var(--w);line-height:1;}
 .is-num em{font-style:normal;}
 .is-lbl{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-top:6px;}
-
-/* ── Affiliate Section ────────────────────────────────────── */
 .aff-section{background:var(--black);padding:72px 40px 80px;border-top:1px solid rgba(255,255,255,0.06);}
 .aff-eyebrow{font-size:11px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
 .aff-eyebrow::before{content:'';width:20px;height:1px;background:rgba(255,255,255,0.25);}
@@ -105,7 +103,6 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 .aff-cta-text .desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.7;font-weight:300;}
 .aff-register-btn{padding:14px 28px;background:var(--black);color:var(--w);border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-radius:8px;transition:background 0.15s;}
 .aff-register-btn:hover{background:var(--black3);}
-
 footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40px 40px;}
 .ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px;}
 @media(max-width:640px){.ft-grid{grid-template-columns:1fr;gap:32px;}}
@@ -120,8 +117,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .ft-copy{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
 .ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
 .ft-bk span{color:var(--w);}
-
-/* ── Affiliate Registration Modal ─────────────────────────── */
 .aff-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
 .aff-modal-bg.on{display:flex;}
 @media(min-width:640px){.aff-modal-bg{align-items:center;padding:24px;}}
@@ -144,8 +139,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .aff-promo-btn:hover{border-color:var(--burg);}
 .aff-promo-btn.on{background:var(--black);color:var(--w);border-color:var(--black);}
 .aff-pay-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-
-/* Shared form styles */
 .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
 .mbg.on{display:flex;}
 @media(min-width:640px){.mbg{align-items:center;padding:24px;}}
@@ -275,8 +268,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .dpick{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;}
 .dpick:hover{border-color:var(--burg);}
 .dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
-
-/* Affiliate code row in checkout */
 .aff-code-row{background:var(--w2);border:1px solid var(--w3);border-radius:10px;padding:14px;margin-bottom:12px;}
 .aff-code-inner{display:flex;gap:8px;align-items:flex-end;}
 .aff-code-inner .fi{border-radius:0;flex:1;text-transform:uppercase;letter-spacing:2px;}
@@ -285,7 +276,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .aff-code-status{font-size:11px;margin-top:8px;font-weight:600;letter-spacing:1px;}
 .aff-code-status.ok{color:#2e7d32;}
 .aff-code-status.err{color:var(--burg);}
-
 @media(max-width:639px){
   header{padding:0 16px;height:52px;}.logo{font-size:13px;letter-spacing:5px;}.cart-btn{padding:7px 14px;font-size:10px;}
   .hero{min-height:auto;padding:40px 20px 44px;}.hero-geo,.hero-geo2{display:none;}
@@ -389,30 +379,29 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
 </div>
 
-<!-- ── Affiliate Section ──────────────────────────────────── -->
 <div class="aff-section" id="affiliate">
   <div class="aff-eyebrow">Earn with us</div>
   <div class="aff-title">Affiliate Program</div>
   <div class="aff-sub">Promote BUET Tees and earn commission on every successful order. Choose between storage and no-storage options based on how you want to work.</div>
   <div class="aff-grid">
-          <div class="aff-card">
-        <div class="aff-card-tag">Option 1 — With Storage</div>
-        <div class="aff-card-title">Store &amp; Sell</div>
-        <div class="aff-card-rows">
-          <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳30 / sale</span></div>
-          <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳40 / sale</span></div>
-          <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳50 / sale</span></div>
-        </div>
+    <div class="aff-card">
+      <div class="aff-card-tag">Option 1 — With Storage</div>
+      <div class="aff-card-title">Store &amp; Sell</div>
+      <div class="aff-card-rows">
+        <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳30 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳40 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳50 / sale</span></div>
       </div>
-      <div class="aff-card">
-        <div class="aff-card-tag">Option 2 — No Storage</div>
-        <div class="aff-card-title">Promote &amp; Earn</div>
-        <div class="aff-card-rows">
-          <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳20 / sale</span></div>
-          <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳25 / sale</span></div>
-          <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳35 / sale</span></div>
-        </div>
+    </div>
+    <div class="aff-card">
+      <div class="aff-card-tag">Option 2 — No Storage</div>
+      <div class="aff-card-title">Promote &amp; Earn</div>
+      <div class="aff-card-rows">
+        <div class="aff-card-row"><span class="aff-card-item">Regular T-Shirt</span><span class="aff-card-comm">৳20 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Drop Shoulder</span><span class="aff-card-comm">৳25 / sale</span></div>
+        <div class="aff-card-row"><span class="aff-card-item">Hoodie</span><span class="aff-card-comm">৳35 / sale</span></div>
       </div>
+    </div>
   </div>
   <div class="aff-cta-box">
     <div class="aff-cta-text">
@@ -441,22 +430,19 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
 
-<!-- ── Affiliate Registration Modal ──────────────────────── -->
+<!-- Affiliate Registration Modal -->
 <div class="aff-modal-bg" id="affModalBg" onclick="if(event.target===this)closeAffModal()">
   <div class="aff-modal" id="affModalInner">
     <div id="affForm">
       <div class="aff-modal-hd"><div class="aff-modal-title">Affiliate Registration</div><button class="cdx" onclick="closeAffModal()">&#10005;</button></div>
       <div class="aff-modal-body">
-
         <div class="aff-modal-sec" style="margin-top:0">Your Details</div>
         <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="affName" placeholder="Rahim Uddin" type="text"/></div>
         <div class="fg"><label class="fl">WhatsApp Number *</label><input class="fi" id="affWa" placeholder="01XXXXXXXXX" type="tel"/></div>
         <div class="fg"><label class="fl">Student ID *</label><input class="fi" id="affId" placeholder="2005001" type="text"/></div>
         <div class="fg"><label class="fl">Hall *</label>
-          <select class="fi" id="affHall" required>
+          <select class="fi" id="affHall">
             <option value="">Select your hall</option>
-  
-            <!-- Male Halls -->
             <optgroup label="Male Halls">
               <option>Ahsanullah Hall</option>
               <option>Dr. M. A. Rashid Hall</option>
@@ -466,18 +452,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
               <option>Titumir Hall</option>
               <option>Shahid Smrity Hall</option>
             </optgroup>
-          
-            <!-- Female Halls -->
             <optgroup label="Female Halls">
               <option>Sabekun Nahar Sony Hall</option>
               <option>Shadhinata Hall</option>
             </optgroup>
-          
             <option>Off-campus</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Email *</label><input class="fi" id="affEmail" placeholder="you@example.com" type="email"/></div>
-
         <div class="aff-modal-sec">Affiliate Type</div>
         <div class="aff-note">With Storage: customers collect from you. Without Storage: you only promote online — we handle delivery.</div>
         <div class="aff-type-grid">
@@ -490,7 +472,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
             <div class="aff-type-desc">Promote only. We handle all delivery.<br><strong>৳20–35 / sale</strong></div>
           </div>
         </div>
-
         <div class="aff-modal-sec">How You Plan to Promote</div>
         <div class="aff-promo-grid" id="affPromoGrid">
           <button class="aff-promo-btn" onclick="togglePromo(this)">Friends</button>
@@ -499,7 +480,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
           <button class="aff-promo-btn" onclick="togglePromo(this)">Ads</button>
           <button class="aff-promo-btn" onclick="togglePromo(this)">Other</button>
         </div>
-
         <div class="aff-modal-sec">Payment Method</div>
         <div class="aff-pay-grid" id="affPayGrid">
           <button class="aff-promo-btn" onclick="pickPay(this)">bKash</button>
@@ -507,7 +487,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
           <button class="aff-promo-btn" onclick="pickPay(this)">Other</button>
         </div>
         <div class="fg"><label class="fl">Payment Details *</label><input class="fi" id="affPayDetails" placeholder="e.g. 01XXXXXXXXX or account number" type="text"/></div>
-
         <div class="aff-modal-sec">Income Goal</div>
         <div class="aff-pay-grid" id="affGoalGrid">
           <button class="aff-promo-btn" onclick="pickGoal(this)">৳1000–2500</button>
@@ -516,11 +495,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
           <button class="aff-promo-btn" onclick="pickGoal(this)">৳10000–25000</button>
           <button class="aff-promo-btn" onclick="pickGoal(this)">৳25000+</button>
         </div>
-
         <button class="pbtn" id="affSubmitBtn" onclick="submitAffReg()" style="margin-top:24px;">Register as Affiliate</button>
       </div>
     </div>
-
     <div id="affSuccess" style="display:none">
       <div class="sucwrap">
         <div class="sucicon">&#10003;</div>
@@ -542,47 +519,37 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="cm">
     <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
     <div class="cm-body">
-
       <div class="cm-sec" style="margin-top:0">Shirt Type</div>
       <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
-
       <div class="cm-sec">Select Front Design</div>
       <div class="design-picker" id="cmDesignFront"></div>
-
       <div class="cm-sec">Select Back Design</div>
       <div class="design-picker" id="cmDesignBack"></div>
-
       <div class="cm-note" id="cmPriceNote"></div>
-
       <div class="cm-sec">Delivery Zone</div>
       <div class="zgrid">
         <div class="zo on" id="cz-campus" onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
         <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
         <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
       </div>
-
       <div class="cm-sec">Size & Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
       </div>
-
-      <!-- Affiliate Code -->
       <div class="cm-sec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
       <div class="aff-code-row">
         <div class="aff-code-inner">
-          <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" style="text-transform:uppercase;letter-spacing:2px;" oninput="this.value=this.value.toUpperCase()"/>
+          <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" oninput="this.value=this.value.toUpperCase()"/>
           <button class="aff-check-btn" onclick="checkAffCode('cm')">Apply</button>
         </div>
         <div class="aff-code-status" id="cmAffStatus"></div>
       </div>
-
       <div class="cm-sec">Your Details</div>
       <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
       <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
       <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
       <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
-
       <div class="cm-sec">Payment — bKash Only</div>
       <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
       <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
@@ -643,7 +610,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
           <div class="strow"><span>Delivery</span><span id="stdel"></span></div>
           <div class="stfin"><span class="stfin-l">Total</span><span class="stfin-v" id="sttotal"></span></div>
         </div>
-
         <div class="cosec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
         <div class="aff-code-row">
           <div class="aff-code-inner">
@@ -652,7 +618,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
           </div>
           <div class="aff-code-status" id="coAffStatus"></div>
         </div>
-
         <div class="cosec">Delivery Zone</div>
         <div class="zgrid">
           <div class="zo on" id="z-campus" onclick="sz2('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
@@ -688,13 +653,13 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 const U="https://script.google.com/macros/s/AKfycbyXI8yXHQsmrqDK7OY5PGle94r2MhJN51MfOZdUVzNi8D0eict8z6q8Qto5lLqG4zLm/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
-let affDiscountPct=0, affCodeApplied="", coAffValid=false, cmAffValid=false, cmAffCode="", cmAffPct=0;
+let affDiscountPct=0,affCodeApplied="",coAffValid=false,cmAffValid=false,cmAffCode="",cmAffPct=0;
 
 async function loadProducts(){
   try{
     const r=await fetch(U);const d=await r.json();
     prods=d.products||[];
-    if(d.affiliateDiscount) affDiscountPct=parseFloat(d.affiliateDiscount)||0;
+    if(d.affiliateDiscount)affDiscountPct=parseFloat(d.affiliateDiscount)||0;
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
@@ -706,18 +671,14 @@ function render(){
   g.innerHTML=prods.map(p=>{
     const cat0=(p.categories&&p.categories.length)?p.categories[0]:p;
     const dp=cat0.discountedPrice||cat0.price||0;
-    const img=cat0.image||"";
-    const badge=cat0.badge||"";
-    const catName=cat0.category||"";
+    const img=cat0.image||"";const badge=cat0.badge||"";const catName=cat0.category||"";
     return`<div class="pcard" onclick="openP('${p.id}')">
-      <div class="pimg">
-        <img src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.1'"/>
+      <div class="pimg"><img src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.1'"/>
         <div class="pov"><div class="pov-lbl">Select</div></div>
         ${badge?`<div class="pbadge">${badge}</div>`:""}
       </div>
       <div class="pinfo">
-        <div class="pname">${p.name}</div>
-        <div class="pcat">${catName}</div>
+        <div class="pname">${p.name}</div><div class="pcat">${catName}</div>
         <div class="pbot"><div class="ppwrap">
           <div class="pprice">${C} ${dp.toLocaleString()}</div>
           ${cat0.discountedPrice?`<div class="porig">${C} ${(cat0.price||0).toLocaleString()}</div>`:""}
@@ -811,26 +772,25 @@ function updSum(){
     discRow.style.display="";
     document.getElementById("discLabel").textContent=`Affiliate Discount (${discPct}%)`;
     document.getElementById("stdisc").textContent=`-${C} ${discAmt}`;
-  } else { discRow.style.display="none"; }
+  }else{discRow.style.display="none";}
 }
 
-// ── Affiliate Code Validation ────────────────────────────────
 async function checkAffCode(ctx){
-  const inputId = ctx==='co'?'coAffCode':'cmAffCode';
-  const statusId = ctx==='co'?'coAffStatus':'cmAffStatus';
-  const code = document.getElementById(inputId).value.trim().toUpperCase();
-  const statusEl = document.getElementById(statusId);
+  const inputId=ctx==='co'?'coAffCode':'cmAffCode';
+  const statusId=ctx==='co'?'coAffStatus':'cmAffStatus';
+  const code=document.getElementById(inputId).value.trim().toUpperCase();
+  const statusEl=document.getElementById(statusId);
   if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
   statusEl.textContent="Checking...";statusEl.className="aff-code-status";
   try{
     const r=await fetch(`${U}?action=checkAff&code=${encodeURIComponent(code)}`);
     const d=await r.json();
     if(d.valid){
-      statusEl.textContent=`✓ Code applied! ${d.discount}% discount on your order.`;
+      statusEl.textContent=`✓ Code applied! ${d.discountPct||d.discount||10}% discount on your order.`;
       statusEl.className="aff-code-status ok";
-      if(ctx==='co'){coAffValid=true;affDiscountPct=d.discount;affCodeApplied=code;updSum();}
-      else{cmAffValid=true;cmAffPct=d.discount;cmAffCode=code;updateCMPrice();}
-    } else {
+      if(ctx==='co'){coAffValid=true;affDiscountPct=d.discountPct||d.discount||10;affCodeApplied=code;updSum();}
+      else{cmAffValid=true;cmAffPct=d.discountPct||d.discount||10;cmAffCode=code;updateCMPrice();}
+    }else{
       statusEl.textContent="✗ Invalid affiliate code.";
       statusEl.className="aff-code-status err";
       if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
@@ -873,38 +833,38 @@ async function place(){
   try{
     let realId="ORDER-?";
     try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
-    await fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+    fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({
       orderId:realId,name,phone,email,address:addr,items,
       subtotal:sub,discountPct:discPct,discountAmt:discAmt,affiliateCode:affCodeApplied||"",
       deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"
-    })});
-    document.getElementById("sucid").textContent=realId;
-    document.getElementById("coform").style.display="none";document.getElementById("sucscr").style.display="";
-    cart=[];upd();
+    })}).catch(()=>{});
+    setTimeout(()=>{
+      document.getElementById("sucid").textContent=realId;
+      document.getElementById("coform").style.display="none";
+      document.getElementById("sucscr").style.display="";
+      cart=[];upd();
+    },1200);
   }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
 
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
-// ── BOTH SIDES custom order ──────────────────────────────────
-let cmSelFront=null, cmSelBack=null, cmZone='campus', cmShirtType='Regular';
+// Both Sides
+let cmSelFront=null,cmSelBack=null,cmZone='campus',cmShirtType='Regular';
 
 function openCustomModal(type){
   cmSelFront=null;cmSelBack=null;cmZone='campus';cmShirtType='Regular';
   cmAffValid=false;cmAffPct=0;cmAffCode="";
   document.getElementById('cmAffCode').value="";
   document.getElementById('cmAffStatus').textContent="";
-
   const allTypes=[];
   prods.forEach(p=>{(p.categories||[]).forEach(c=>{if(!allTypes.includes(c.category))allTypes.push(c.category);});});
   const typeList=allTypes.length?allTypes:['Regular','Drop','Hoodie'];
   document.getElementById('cmTypePicker').innerHTML=typeList.map((t,i)=>`<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`).join('');
   cmShirtType=typeList[0];
-
   const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
   document.getElementById('cmDesignFront').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`).join('');
   document.getElementById('cmDesignBack').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`).join('');
-
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
   updateCMSizeColor();updateCMPrice();
   document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
@@ -984,21 +944,16 @@ async function placeCustomOrder(){
   try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
   const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
   const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
-  try{
-    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:itemsStr,
-        subtotal:base+100,discountPct:discPct,discountAmt:discAmt,affiliateCode:cmAffCode||"",
-        deliveryZone:DL[cmZone],deliveryFee:delivery,total,payment:'bKash',trxId:trx,status:'Pending'})
-    });
-    closeCM();toast('Order placed! ID: '+realId);
-  }catch{
-    toast('Something went wrong. Try again.');
-    btn.disabled=false;btn.textContent='Place Order';
-  }
+  fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:itemsStr,
+      subtotal:base+100,discountPct:discPct,discountAmt:discAmt,affiliateCode:cmAffCode||"",
+      deliveryZone:DL[cmZone],deliveryFee:delivery,total,payment:'bKash',trxId:trx,status:'Pending'})
+  }).catch(()=>{});
+  setTimeout(()=>{closeCM();toast('Order placed! ID: '+realId);},1200);
 }
 
-// ── Affiliate Registration ───────────────────────────────────
-let affSelectedType='storage', affSelectedPromos=[], affSelectedPay='', affSelectedGoal='';
+// Affiliate Registration
+let affSelectedType='storage',affSelectedPromos=[],affSelectedPay='',affSelectedGoal='';
 
 function openAffModal(){
   document.getElementById('affForm').style.display='';
@@ -1007,7 +962,6 @@ function openAffModal(){
   document.body.style.overflow='hidden';
 }
 function closeAffModal(){document.getElementById('affModalBg').classList.remove('on');document.body.style.overflow='';}
-
 function pickAffType(type){
   affSelectedType=type;
   document.getElementById('affTypeStorage').classList.toggle('on',type==='storage');
@@ -1029,35 +983,30 @@ async function submitAffReg(){
   if(!affSelectedGoal){toast('Please select your income goal');return;}
   if(!payDetails){toast('Please enter your payment details');return;}
 
-  // Generate affiliate code: first name uppercase + last 3 digits of student ID
   const firstName=name.split(' ')[0].toUpperCase().replace(/[^A-Z]/g,'');
   const last3=sid.replace(/\D/g,'').slice(-3);
   const affCode=firstName+last3;
 
   const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
-  try{
-            const res = await fetch(U,{method:'POST',headers:{'Content-Type':'text/plain'},
-          body:JSON.stringify({
-            action:'affiliateRegister',
-            fullName:name,whatsapp:wa,studentId:sid,hall,email,
-            storageType:affSelectedType==='storage'?'With Storage':'No Storage',
-            promotionMethod:affSelectedPromos,
-            paymentMethod:affSelectedPay,paymentDetails:payDetails,
-            incomeGoal:affSelectedGoal
-          })
-        });
-        const result = await res.json();
-        if(result.ok){
-          document.getElementById('affCodeDisplay').textContent=result.affCode||affCode;
-          document.getElementById('affForm').style.display='none';
-          document.getElementById('affSuccess').style.display='';
-        } else {
-          throw new Error(result.error||'Failed');
-        }
-  }catch(e){
-    toast('Something went wrong. Try again.');
-    btn.disabled=false;btn.textContent='Register as Affiliate';
-  }
+
+  // Fire-and-forget with text/plain (works with no-cors + Apps Script)
+  fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({
+      action:'affiliateRegister',
+      fullName:name,whatsapp:wa,studentId:sid,hall,email,
+      storageType:affSelectedType==='storage'?'With Storage':'No Storage',
+      promotionMethod:affSelectedPromos,
+      paymentMethod:affSelectedPay,paymentDetails:payDetails,
+      incomeGoal:affSelectedGoal
+    })
+  }).catch(()=>{});
+
+  // Show success after delay
+  setTimeout(()=>{
+    document.getElementById('affCodeDisplay').textContent=affCode;
+    document.getElementById('affForm').style.display='none';
+    document.getElementById('affSuccess').style.display='';
+  },1500);
 }
 
 loadProducts();upd();

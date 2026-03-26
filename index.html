@@ -498,19 +498,26 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <button class="pbtn" id="affSubmitBtn" onclick="submitAffReg()" style="margin-top:24px;">Register as Affiliate</button>
       </div>
     </div>
-    <div id="affSuccess" style="display:none">
-      <div class="sucwrap">
-        <div class="sucicon">&#10003;</div>
-        <div class="suctitle">Welcome!</div>
-        <p class="sucsub">You're now part of the BUET Tees Affiliate Program.<br>Your affiliate code has been sent to your email.</p>
-        <div class="sucbox"><div class="suclbl">Your Affiliate Code</div><div class="sucval" id="affCodeDisplay">---</div></div>
-        <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
-          <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
+          <div id="affSuccess" style="display:none">
+        <div class="sucwrap">
+          <div class="sucicon">&#10003;</div>
+          <div class="suctitle">Applied!</div>
+          <p class="sucsub">Your application has been received.<br>We'll review it and send your affiliate code to your email within 24 hours.</p>
+          <div style="background:var(--w2);border-radius:10px;padding:20px;margin-bottom:24px;text-align:left;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:12px;">What happens next?</div>
+            <div style="font-size:12px;color:var(--g2);line-height:2;">
+              1. We review your application<br>
+              2. You receive your unique code by email<br>
+              3. Share it — earn on every order
+            </div>
+          </div>
+          <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
+            <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
+          </div>
+          <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
         </div>
-        <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
       </div>
-    </div>
   </div>
 </div>
 

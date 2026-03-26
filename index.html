@@ -1005,16 +1005,12 @@ async function submitAffReg(){
     incomeGoal:affSelectedGoal
   });
 
-  try{
-    const res=await fetch(`${U}?${params.toString()}`);
-    const d=await res.json();
-    document.getElementById('affCodeDisplay').textContent=d.affCode||affCode;
-  }catch(e){
-    document.getElementById('affCodeDisplay').textContent=affCode;
-  }
+  // Show success immediately, fire request in background
   btn.disabled=false;btn.textContent='Register as Affiliate';
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
+
+  fetch(`${U}?${params.toString()}`).catch(()=>{});
   document.getElementById('affName').value='';
   document.getElementById('affWa').value='';
   document.getElementById('affId').value='';

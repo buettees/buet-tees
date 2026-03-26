@@ -1036,20 +1036,24 @@ async function submitAffReg(){
 
   const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
   try{
-    await fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        action:'affiliateRegister',
-        name,whatsapp:wa,studentId:sid,hall,email,
-        type:affSelectedType,
-        promoMethods:affSelectedPromos.join(', ')||'Not specified',
-        paymentMethod:affSelectedPay,paymentDetails:payDetails,
-        incomeGoal:affSelectedGoal,
-        affiliateCode:affCode
-      })
-    });
-    document.getElementById('affCodeDisplay').textContent=affCode;
-    document.getElementById('affForm').style.display='none';
-    document.getElementById('affSuccess').style.display='';
+            const res = await fetch(U,{method:'POST',headers:{'Content-Type':'text/plain'},
+          body:JSON.stringify({
+            action:'affiliateRegister',
+            fullName:name,whatsapp:wa,studentId:sid,hall,email,
+            storageType:affSelectedType==='storage'?'With Storage':'No Storage',
+            promotionMethod:affSelectedPromos,
+            paymentMethod:affSelectedPay,paymentDetails:payDetails,
+            incomeGoal:affSelectedGoal
+          })
+        });
+        const result = await res.json();
+        if(result.ok){
+          document.getElementById('affCodeDisplay').textContent=result.affCode||affCode;
+          document.getElementById('affForm').style.display='none';
+          document.getElementById('affSuccess').style.display='';
+        } else {
+          throw new Error(result.error||'Failed');
+        }
   }catch(e){
     toast('Something went wrong. Try again.');
     btn.disabled=false;btn.textContent='Register as Affiliate';

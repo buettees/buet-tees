@@ -838,8 +838,7 @@ async function place(){
   const items=cart.map(i=>`${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`).join(" | ");
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    let realId="ORDER-?";
-    try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
+    const realId="BT-"+Date.now().toString().slice(-6);
     fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({
       orderId:realId,name,phone,email,address:addr,items,
       subtotal:sub,discountPct:discPct,discountAmt:discAmt,affiliateCode:affCodeApplied||"",
@@ -947,8 +946,7 @@ async function placeCustomOrder(){
   const discPct=cmAffValid?cmAffPct:0;
   const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
   const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
-  let realId="ORDER-?";
-  try{const ir=await fetch(U+"?action=nextId");const ij=await ir.json();if(ij.orderId)realId=ij.orderId;}catch(e){}
+  const realId="BT-"+Date.now().toString().slice(-6);
   const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
   const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
   fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},

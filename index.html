@@ -989,24 +989,25 @@ async function submitAffReg(){
 
   const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
 
-  // Fire-and-forget with text/plain (works with no-cors + Apps Script)
-  fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({
-      action:'affiliateRegister',
-      fullName:name,whatsapp:wa,studentId:sid,hall,email,
-      storageType:affSelectedType==='storage'?'With Storage':'No Storage',
-      promotionMethod:affSelectedPromos,
-      paymentMethod:affSelectedPay,paymentDetails:payDetails,
-      incomeGoal:affSelectedGoal
-    })
-  }).catch(()=>{});
+  const params=new URLSearchParams({
+    action:'affiliateRegister',
+    fullName:name,whatsapp:wa,studentId:sid,hall,email,
+    storageType:affSelectedType==='storage'?'With Storage':'No Storage',
+    promotionMethod:affSelectedPromos.join(', ')||'Not specified',
+    paymentMethod:affSelectedPay,paymentDetails:payDetails,
+    incomeGoal:affSelectedGoal
+  });
 
-  // Show success after delay
-  setTimeout(()=>{
+  try{
+    const res=await fetch(`${U}?${params.toString()}`);
+    const d=await res.json();
+    document.getElementById('affCodeDisplay').textContent=d.affCode||affCode;
+  }catch(e){
     document.getElementById('affCodeDisplay').textContent=affCode;
-    document.getElementById('affForm').style.display='none';
-    document.getElementById('affSuccess').style.display='';
-  },1500);
+  }
+
+  document.getElementById('affForm').style.display='none';
+  document.getElementById('affSuccess').style.display='';
 }
 
 loadProducts();upd();

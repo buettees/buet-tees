@@ -453,19 +453,27 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <div class="fg"><label class="fl">WhatsApp Number *</label><input class="fi" id="affWa" placeholder="01XXXXXXXXX" type="tel"/></div>
         <div class="fg"><label class="fl">Student ID *</label><input class="fi" id="affId" placeholder="2005001" type="text"/></div>
         <div class="fg"><label class="fl">Hall *</label>
-          <select class="fi" id="affHall">
+          <select class="fi" id="affHall" required>
             <option value="">Select your hall</option>
-            <option>Ahsanullah Hall</option>
-            <option>Suhrawardy Hall</option>
-            <option>Titumir Hall</option>
-            <option>Shahid Smriti Hall</option>
-            <option>Kavi Nazrul Islam Hall</option>
-            <option>Sonargaon Hall</option>
-            <option>Sher-e-Bangla Hall</option>
-            <option>Dr. M A Rashid Hall</option>
-            <option>Bangabandhu Sheikh Mujibur Rahman Hall</option>
-            <option>Rokeya Hall</option>
-            <option>Not in hall / Off-campus</option>
+  
+            <!-- Male Halls -->
+            <optgroup label="Male Halls">
+              <option>Ahsanullah Hall</option>
+              <option>Dr. M. A. Rashid Hall</option>
+              <option>Kazi Nazrul Islam Hall</option>
+              <option>Sher-e-Bangla Hall</option>
+              <option>Suhrawardy Hall</option>
+              <option>Titumir Hall</option>
+              <option>Shahid Smrity Hall</option>
+            </optgroup>
+          
+            <!-- Female Halls -->
+            <optgroup label="Female Halls">
+              <option>Sabekun Nahar Sony Hall</option>
+              <option>Shadhinata Hall</option>
+            </optgroup>
+          
+            <option>Off-campus</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Email *</label><input class="fi" id="affEmail" placeholder="you@example.com" type="email"/></div>

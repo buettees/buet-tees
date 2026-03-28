@@ -524,43 +524,55 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 <!-- Both Sides Custom Modal -->
 <div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
   <div class="cm">
-    <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
-    <div class="cm-body">
-      <div class="cm-sec" style="margin-top:0">Shirt Type</div>
-      <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
-      <div class="cm-sec">Select Front Design</div>
-      <div class="design-picker" id="cmDesignFront"></div>
-      <div class="cm-sec">Select Back Design</div>
-      <div class="design-picker" id="cmDesignBack"></div>
-      <div class="cm-note" id="cmPriceNote"></div>
-      <div class="cm-sec">Delivery Zone</div>
-      <div class="zgrid">
-        <div class="zo on" id="cz-campus" onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
-        <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
-        <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
-      </div>
-      <div class="cm-sec">Size &amp; Color</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
-        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
-      </div>
-      <div class="cm-sec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
-      <div class="aff-code-row">
-        <div class="aff-code-inner">
-          <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" oninput="this.value=this.value.toUpperCase()"/>
-          <button class="aff-check-btn" onclick="checkAffCode('cm')">Apply</button>
+    <div id="cmForm">
+      <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
+      <div class="cm-body">
+        <div class="cm-sec" style="margin-top:0">Shirt Type</div>
+        <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+        <div class="cm-sec">Select Front Design</div>
+        <div class="design-picker" id="cmDesignFront"></div>
+        <div class="cm-sec">Select Back Design</div>
+        <div class="design-picker" id="cmDesignBack"></div>
+        <div class="cm-note" id="cmPriceNote"></div>
+        <div class="cm-sec">Delivery Zone</div>
+        <div class="zgrid">
+          <div class="zo on" id="cz-campus" onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
+          <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
+          <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
         </div>
-        <div class="aff-code-status" id="cmAffStatus"></div>
+        <div class="cm-sec">Size &amp; Color</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+          <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
+          <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
+        </div>
+        <div class="cm-sec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
+        <div class="aff-code-row">
+          <div class="aff-code-inner">
+            <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" oninput="this.value=this.value.toUpperCase()"/>
+            <button class="aff-check-btn" onclick="checkAffCode('cm')">Apply</button>
+          </div>
+          <div class="aff-code-status" id="cmAffStatus"></div>
+        </div>
+        <div class="cm-sec">Your Details</div>
+        <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
+        <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
+        <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
+        <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
+        <div class="cm-sec">Payment — bKash Only</div>
+        <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
+        <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
+        <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
       </div>
-      <div class="cm-sec">Your Details</div>
-      <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
-      <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
-      <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
-      <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
-      <div class="cm-sec">Payment — bKash Only</div>
-      <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
-      <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
-      <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
+    </div>
+    <div id="cmSuccess" style="display:none">
+      <div class="cm-hd"><div class="cm-title">Order Placed</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
+      <div class="sucwrap">
+        <div class="sucicon">&#10003;</div>
+        <div class="suctitle">Order Placed</div>
+        <p class="sucsub">Thank you. We'll confirm your order and<br>deliver within 6 days. Campus delivery is free.</p>
+        <div class="sucbox"><div class="suclbl">Order ID</div><div class="sucval" id="cmSucId"></div></div>
+        <button class="pbtn" onclick="closeCM()" style="margin-top:0">Continue Shopping</button>
+      </div>
     </div>
   </div>
 </div>
@@ -873,6 +885,7 @@ function openCustomModal(type){
   ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
   updateCMSizeColor();updateCMPrice();
   document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
+  document.getElementById('cmForm').style.display='';document.getElementById('cmSuccess').style.display='none';
   document.querySelector('#cmBg .cm').scrollTop=0;
   document.getElementById('cmBg').classList.add('on');document.body.style.overflow='hidden';
 }
@@ -955,7 +968,9 @@ async function placeCustomOrder(){
     const r=await fetch(`${U}?${p.toString()}`);
     const d=await r.json();
     const realId=d.orderId||"BT-???";
-    closeCM();toast('Order placed! ID: '+realId);
+    document.getElementById('cmForm').style.display='none';
+    document.getElementById('cmSuccess').style.display='';
+    document.getElementById('cmSucId').textContent=realId;
   }catch(err){toast('Something went wrong. Try again.');btn.disabled=false;btn.textContent='Place Order';}
 }
 

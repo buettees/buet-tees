@@ -498,26 +498,26 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <button class="pbtn" id="affSubmitBtn" onclick="submitAffReg()" style="margin-top:24px;">Register as Affiliate</button>
       </div>
     </div>
-          <div id="affSuccess" style="display:none">
-        <div class="sucwrap">
-          <div class="sucicon">&#10003;</div>
-          <div class="suctitle">Applied!</div>
-          <p class="sucsub">Your application has been received.<br>We'll review it and send your affiliate code to your email within 24 hours.</p>
-          <div style="background:var(--w2);border-radius:10px;padding:20px;margin-bottom:24px;text-align:left;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:12px;">What happens next?</div>
-            <div style="font-size:12px;color:var(--g2);line-height:2;">
-              1. We review your application<br>
-              2. You receive your unique code by email<br>
-              3. Share it — earn on every order
-            </div>
+    <div id="affSuccess" style="display:none">
+      <div class="sucwrap">
+        <div class="sucicon">&#10003;</div>
+        <div class="suctitle">Applied!</div>
+        <p class="sucsub">Your application has been received.<br>We'll review it and send your affiliate code to your email within 24 hours.</p>
+        <div style="background:var(--w2);border-radius:10px;padding:20px;margin-bottom:24px;text-align:left;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:12px;">What happens next?</div>
+          <div style="font-size:12px;color:var(--g2);line-height:2;">
+            1. We review your application<br>
+            2. You receive your unique code by email<br>
+            3. Share it — earn on every order
           </div>
-          <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
-            <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
-          </div>
-          <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
         </div>
+        <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
+          <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
+        </div>
+        <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
       </div>
+    </div>
   </div>
 </div>
 
@@ -539,7 +539,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
         <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
       </div>
-      <div class="cm-sec">Size & Color</div>
+      <div class="cm-sec">Size &amp; Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
@@ -825,6 +825,7 @@ function openCO(){
 
 function closeCO(){document.getElementById("cobg").classList.remove("on");document.body.style.overflow="";}
 
+// ── FIXED: place() now uses GET URLSearchParams so server returns real sequential BT-XXXX ID ──
 async function place(){
   const name=document.getElementById("fn").value.trim(),phone=document.getElementById("fp").value.trim();
   const email=document.getElementById("fe").value.trim(),addr=document.getElementById("fa").value.trim();
@@ -838,24 +839,22 @@ async function place(){
   const items=cart.map(i=>`${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`).join(" | ");
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    const realId="BT-"+Date.now().toString().slice(-6);
-    fetch(U,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({
-      orderId:realId,name,phone,email,address:addr,items,
-      subtotal:sub,discountPct:discPct,discountAmt:discAmt,affiliateCode:affCodeApplied||"",
-      deliveryZone:DL[zone],deliveryFee:fee,total,payment:"bKash",trxId:trx,status:"Pending"
-    })}).catch(()=>{});
-    setTimeout(()=>{
-      document.getElementById("sucid").textContent=realId;
-      document.getElementById("coform").style.display="none";
-      document.getElementById("sucscr").style.display="";
-      cart=[];upd();
-    },1200);
+    const p=new URLSearchParams({action:"placeOrder",name,email,phone,address:addr,
+      zone:DL[zone],items,subtotal:sub,deliveryFee:fee,total,
+      payment:"bKash",trxId:trx,affiliateCode:affCodeApplied||"",discountPct:discPct,discountAmt:discAmt});
+    const r=await fetch(`${U}?${p.toString()}`);
+    const d=await r.json();
+    const realId=d.orderId||"BT-???";
+    document.getElementById("sucid").textContent=realId;
+    document.getElementById("coform").style.display="none";
+    document.getElementById("sucscr").style.display="";
+    cart=[];upd();
   }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
 
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
-// Both Sides
+// ── Both Sides ──
 let cmSelFront=null,cmSelBack=null,cmZone='campus',cmShirtType='Regular';
 
 function openCustomModal(type){
@@ -927,6 +926,7 @@ function updateCMPrice(){
 
 function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
 
+// ── FIXED: placeCustomOrder() now uses GET URLSearchParams so server returns real sequential BT-XXXX ID ──
 async function placeCustomOrder(){
   const name=document.getElementById('cmName').value.trim();
   const phone=document.getElementById('cmPhone').value.trim();
@@ -946,18 +946,20 @@ async function placeCustomOrder(){
   const discPct=cmAffValid?cmAffPct:0;
   const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
   const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
-  const realId="BT-"+Date.now().toString().slice(-6);
-  const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
   const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
-  fetch(U,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({orderId:realId,name,phone,email,address:addr,items:itemsStr,
-      subtotal:base+100,discountPct:discPct,discountAmt:discAmt,affiliateCode:cmAffCode||"",
-      deliveryZone:DL[cmZone],deliveryFee:delivery,total,payment:'bKash',trxId:trx,status:'Pending'})
-  }).catch(()=>{});
-  setTimeout(()=>{closeCM();toast('Order placed! ID: '+realId);},1200);
+  const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
+  try{
+    const p=new URLSearchParams({action:"placeOrder",name,email,phone,address:addr,
+      zone:DL[cmZone],items:itemsStr,subtotal:base+100,deliveryFee:delivery,total,
+      payment:"bKash",trxId:trx,affiliateCode:cmAffCode||"",discountPct:discPct,discountAmt:discAmt});
+    const r=await fetch(`${U}?${p.toString()}`);
+    const d=await r.json();
+    const realId=d.orderId||"BT-???";
+    closeCM();toast('Order placed! ID: '+realId);
+  }catch(err){toast('Something went wrong. Try again.');btn.disabled=false;btn.textContent='Place Order';}
 }
 
-// Affiliate Registration
+// ── Affiliate Registration ──
 let affSelectedType='storage',affSelectedPromos=[],affSelectedPay='',affSelectedGoal='';
 
 function openAffModal(){
@@ -988,10 +990,6 @@ async function submitAffReg(){
   if(!affSelectedGoal){toast('Please select your income goal');return;}
   if(!payDetails){toast('Please enter your payment details');return;}
 
-  const firstName=name.split(' ')[0].toUpperCase().replace(/[^A-Z]/g,'');
-  const last3=sid.replace(/\D/g,'').slice(-3);
-  const affCode=firstName+last3;
-
   const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
 
   const params=new URLSearchParams({
@@ -1003,12 +1001,14 @@ async function submitAffReg(){
     incomeGoal:affSelectedGoal
   });
 
-  // Show success immediately, fire request in background
+  // Show success immediately, fire request in background (GET avoids no-cors issues)
   btn.disabled=false;btn.textContent='Register as Affiliate';
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
 
   fetch(`${U}?${params.toString()}`).catch(()=>{});
+
+  // Reset form
   document.getElementById('affName').value='';
   document.getElementById('affWa').value='';
   document.getElementById('affId').value='';

@@ -145,7 +145,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 @keyframes su{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
 .pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow-y:auto;animation:su 0.22s ease;border-top:3px solid var(--burg);}
 @media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);}}
-.pm-img{aspect-ratio:1;overflow:hidden;background:var(--w2);position:relative;}
+.pm-img{aspect-ratio:1;overflow:hidden;background:var(--w2);position:relative;border-radius:16px 16px 0 0;}
 .pm-img img{width:100%;height:100%;object-fit:cover;}
 .pm-x{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);color:var(--w);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .pm-x:hover{background:var(--burg);}
@@ -176,6 +176,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .cdempty{text-align:center;padding:60px 0;color:var(--g2);font-size:13px;letter-spacing:2px;text-transform:uppercase;}
 .cditem{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--w3);}
 .cdimg{width:60px;height:60px;object-fit:cover;background:var(--w2);flex-shrink:0;}
+/* both-sides cart item image pair */
+.cdimg-pair{width:60px;height:60px;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;gap:2px;}
+.cdimg-pair img{width:100%;height:100%;object-fit:cover;background:var(--w2);}
 .cdinfo{flex:1;}
 .cdname{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--black);margin-bottom:3px;}
 .cdvar{font-size:12px;color:var(--g2);margin-bottom:7px;}
@@ -257,6 +260,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .cfb-btn{padding:12px 22px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;border-radius:8px;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:none;}
 .cfb-btn-primary{background:var(--black);color:var(--w);}
 .cfb-btn-secondary{background:rgba(255,255,255,0.15);color:var(--w);border:1px solid rgba(255,255,255,0.3);}
+
+/* ── Both Sides Modal (now add-to-cart only, no checkout form) ── */
 .cm{background:var(--w);width:100%;max-width:560px;max-height:94vh;overflow-y:auto;animation:su 0.22s ease;border-top:3px solid var(--burg);}
 @media(min-width:640px){.cm{border-top:none;border-left:3px solid var(--burg);}}
 .cm-hd{background:var(--black);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--burg);position:sticky;top:0;z-index:2;}
@@ -268,6 +273,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .dpick{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;}
 .dpick:hover{border-color:var(--burg);}
 .dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
+/* summary box inside both-sides modal */
+.cm-summary{background:var(--w2);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;color:var(--black);line-height:1.9;}
+.cm-summary strong{font-weight:700;}
+.cm-price-tag{font-size:22px;font-weight:800;color:var(--burg);margin-top:4px;}
+/* add-to-cart button for both-sides */
+.cm-atc{width:100%;padding:16px;background:var(--burg);border:none;color:var(--w);cursor:pointer;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;margin-top:8px;}
+.cm-atc:hover{background:var(--burg2);}
+
 .aff-code-row{background:var(--w2);border:1px solid var(--w3);border-radius:10px;padding:14px;margin-bottom:12px;}
 .aff-code-inner{display:flex;gap:8px;align-items:flex-end;}
 .aff-code-inner .fi{border-radius:0;flex:1;text-transform:uppercase;letter-spacing:2px;}
@@ -362,7 +375,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       <div class="ccard-badge">+৳100</div>
       <div class="ccard-icon">&#9672;</div>
       <div class="ccard-title">Both sides design</div>
-      <div class="ccard-desc">Pick one design for the front and another for the back. Mix and match from our full catalog.</div>
+      <div class="ccard-desc">Pick one design for the front and another for the back. Mix and match from our full catalog. Adds to cart — combine with other items!</div>
       <div class="ccard-price">Catalog price <em>+ ৳100</em></div>
     </div>
   </div>
@@ -521,58 +534,43 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
 </div>
 
-<!-- Both Sides Custom Modal -->
+<!-- Both Sides Custom Modal — ADD TO CART only, no checkout form -->
 <div class="mbg" id="cmBg" onclick="if(event.target===this)closeCM()">
   <div class="cm">
-    <div id="cmForm">
-      <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
-      <div class="cm-body">
-        <div class="cm-sec" style="margin-top:0">Shirt Type</div>
-        <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
-        <div class="cm-sec">Select Front Design</div>
-        <div class="design-picker" id="cmDesignFront"></div>
-        <div class="cm-sec">Select Back Design</div>
-        <div class="design-picker" id="cmDesignBack"></div>
-        <div class="cm-note" id="cmPriceNote"></div>
-        <div class="cm-sec">Delivery Zone</div>
-        <div class="zgrid">
-          <div class="zo on" id="cz-campus" onclick="setCZ('campus')"><div class="zn">Campus</div><div class="zf">Free</div></div>
-          <div class="zo" id="cz-dhaka" onclick="setCZ('dhaka')"><div class="zn">Dhaka</div><div class="zf">৳ 70</div></div>
-          <div class="zo" id="cz-outside" onclick="setCZ('outside')"><div class="zn">Outside</div><div class="zf">৳ 120</div></div>
-        </div>
-        <div class="cm-sec">Size &amp; Color</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-          <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
-          <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
-        </div>
-        <div class="cm-sec">Affiliate Code <span style="font-weight:400;color:var(--g2);font-size:10px;letter-spacing:1px;">(optional)</span></div>
-        <div class="aff-code-row">
-          <div class="aff-code-inner">
-            <input class="fi" id="cmAffCode" placeholder="e.g. RAHIM123" type="text" oninput="this.value=this.value.toUpperCase()"/>
-            <button class="aff-check-btn" onclick="checkAffCode('cm')">Apply</button>
-          </div>
-          <div class="aff-code-status" id="cmAffStatus"></div>
-        </div>
-        <div class="cm-sec">Your Details</div>
-        <div class="fg"><label class="fl">Full name *</label><input class="fi" id="cmName" placeholder="Rahim Uddin" type="text"/></div>
-        <div class="fg"><label class="fl">Phone *</label><input class="fi" id="cmPhone" placeholder="01XXXXXXXXX" type="tel"/></div>
-        <div class="fg"><label class="fl">Email *</label><input class="fi" id="cmEmail" placeholder="you@example.com" type="email"/></div>
-        <div class="fg"><label class="fl">Delivery address *</label><input class="fi" id="cmAddr" placeholder="Hall / Dept / Room No." type="text"/></div>
-        <div class="cm-sec">Payment — bKash Only</div>
-        <div class="bkcard"><div class="bkinstr">Send the exact total to our bKash number, then enter your Transaction ID below.</div><div class="bklbl">bKash number</div><div class="bknum">01782761981</div></div>
-        <div class="fg"><label class="fl">Transaction ID *</label><input class="fi" id="cmTrx" placeholder="e.g. 8N2A4K7B" type="text"/></div>
-        <button class="pbtn" id="cmBtn" onclick="placeCustomOrder()">Place Order</button>
+    <div class="cm-hd"><div class="cm-title">Both Sides Order</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
+    <div class="cm-body">
+      <div class="cm-sec" style="margin-top:0">Shirt Type</div>
+      <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+
+      <div class="cm-sec">Front Design</div>
+      <div class="design-picker" id="cmDesignFront"></div>
+
+      <div class="cm-sec">Back Design</div>
+      <div class="design-picker" id="cmDesignBack"></div>
+
+      <div class="cm-sec">Size &amp; Color</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
+        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
       </div>
-    </div>
-    <div id="cmSuccess" style="display:none">
-      <div class="cm-hd"><div class="cm-title">Order Placed</div><button class="cdx" onclick="closeCM()">&#10005;</button></div>
-      <div class="sucwrap">
-        <div class="sucicon">&#10003;</div>
-        <div class="suctitle">Order Placed</div>
-        <p class="sucsub">Thank you. We'll confirm your order and<br>deliver within 6 days. Campus delivery is free.</p>
-        <div class="sucbox"><div class="suclbl">Order ID</div><div class="sucval" id="cmSucId"></div></div>
-        <button class="pbtn" onclick="closeCM()" style="margin-top:0">Continue Shopping</button>
+
+      <!-- Live summary -->
+      <div class="cm-summary" id="cmSummary">
+        Select front and back designs to see price summary.
       </div>
+
+      <div class="cm-sec">Quantity</div>
+      <div class="qrow" style="margin-bottom:0;">
+        <div class="vlbl" style="margin:0;">How many of this combo?</div>
+        <div class="qctrl">
+          <button class="qbtn" onclick="cmChQ(-1)">&#8722;</button>
+          <div class="qval" id="cmQval">1</div>
+          <button class="qbtn" onclick="cmChQ(1)">+</button>
+        </div>
+      </div>
+
+      <button class="cm-atc" onclick="addBothSidesToCart()">Add to Cart</button>
+      <p style="text-align:center;font-size:11px;color:var(--g2);margin-top:12px;letter-spacing:1px;">You can combine this with other items in your cart before checkout.</p>
     </div>
   </div>
 </div>
@@ -672,7 +670,11 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 const U="https://script.google.com/macros/s/AKfycbxJC9JLDSoR1wZf9BGYhG68EQVOBtK-zxVSLZMzkne9r4o5uaVflzvKU3E247X3aE-F/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
-let affDiscountPct=0,affCodeApplied="",coAffValid=false,cmAffValid=false,cmAffCode="",cmAffPct=0;
+let affDiscountPct=0,affCodeApplied="",coAffValid=false;
+
+// ── Both-sides modal state ──
+let cmSelFront=null,cmSelBack=null,cmShirtType='Regular',cmQty=1;
+function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').textContent=cmQty;updateCMSummary();}
 
 async function loadProducts(){
   try{
@@ -749,7 +751,7 @@ function atc(){
   const key=`${cur.id}-${catName}-${selSz}-${selCl}-${selSide}`;
   const ex=cart.find(i=>i.key===key);
   const price=cat.discountedPrice||cat.price||0;
-  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,qty});}
+  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,qty,type:'single'});}
   upd();closePM();toast(`Added — ${catName} · ${[selSz,selCl].filter(Boolean).join("/")} · ${selSide} print`);
 }
 
@@ -762,15 +764,34 @@ function upd(){
   document.getElementById("cobtn").disabled=!cart.length;
   const el=document.getElementById("cditems");
   if(!cart.length){el.innerHTML='<div class="cdempty">Your cart is empty</div>';return;}
-  el.innerHTML=cart.map((item,i)=>`
-    <div class="cditem">
+  el.innerHTML=cart.map((item,i)=>{
+    if(item.type==='bothsides'){
+      // Both-sides cart item: show split image if both images available
+      const imgHtml=item.imageFront||item.imageBack
+        ?`<div class="cdimg-pair">
+            <img src="${item.imageFront||''}" alt="Front" onerror="this.style.opacity='0.1'"/>
+            <img src="${item.imageBack||''}" alt="Back" onerror="this.style.opacity='0.1'"/>
+          </div>`
+        :`<div class="cdimg" style="background:var(--w3);display:flex;align-items:center;justify-content:center;font-size:18px;">&#9672;</div>`;
+      return`<div class="cditem">
+        ${imgHtml}
+        <div class="cdinfo">
+          <div class="cdname">Both Sides — ${item.shirtType}</div>
+          <div class="cdvar">Front: ${item.frontName} · Back: ${item.backName}</div>
+          <div class="cdvar">${[item.size,item.color].filter(Boolean).join(" · ")} · +৳100 · Qty ${item.qty}</div>
+          <div class="cdrow"><div class="cdprice">${C} ${(item.price*item.qty).toLocaleString()}</div><button class="cdrm" onclick="rmItem(${i})">&#215;</button></div>
+        </div>
+      </div>`;
+    }
+    return`<div class="cditem">
       <img class="cdimg" src="${item.image}" alt="${item.name}" onerror="this.style.opacity='0.1'"/>
       <div class="cdinfo">
         <div class="cdname">${item.name} — ${item.category}</div>
         <div class="cdvar">${[item.size,item.color].filter(Boolean).join(" · ")} · ${item.side} · Qty ${item.qty}</div>
         <div class="cdrow"><div class="cdprice">${C} ${(item.price*item.qty).toLocaleString()}</div><button class="cdrm" onclick="rmItem(${i})">&#215;</button></div>
       </div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function openCart(){document.getElementById("cdrawer").classList.add("on");document.getElementById("dbg").classList.add("on");document.body.style.overflow="hidden";}
@@ -808,12 +829,10 @@ async function checkAffCode(ctx){
       statusEl.textContent=`✓ Code applied! ${d.discountPct||d.discount||10}% discount on your order.`;
       statusEl.className="aff-code-status ok";
       if(ctx==='co'){coAffValid=true;affDiscountPct=d.discountPct||d.discount||10;affCodeApplied=code;updSum();}
-      else{cmAffValid=true;cmAffPct=d.discountPct||d.discount||10;cmAffCode=code;updateCMPrice();}
     }else{
       statusEl.textContent="✗ Invalid affiliate code.";
       statusEl.className="aff-code-status err";
       if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
-      else{cmAffValid=false;cmAffPct=0;cmAffCode="";updateCMPrice();}
     }
   }catch(e){statusEl.textContent="Could not verify. Try again.";statusEl.className="aff-code-status err";}
 }
@@ -823,11 +842,23 @@ function openCO(){
   coAffValid=false;affDiscountPct=0;affCodeApplied="";
   document.getElementById("coAffCode").value="";
   document.getElementById("coAffStatus").textContent="";
-  document.getElementById("coitems").innerHTML=cart.map(i=>`
-    <div class="sitem">
+  // Build order summary — handle both item types
+  document.getElementById("coitems").innerHTML=cart.map(i=>{
+    if(i.type==='bothsides'){
+      return`<div class="sitem">
+        <div>
+          <div class="sname">Both Sides — ${i.shirtType}</div>
+          <div class="svar">Front: ${i.frontName} · Back: ${i.backName}</div>
+          <div class="svar">${[i.size,i.color].filter(Boolean).join(" · ")} · +৳100 × ${i.qty}</div>
+        </div>
+        <div class="sprice">${C} ${(i.price*i.qty).toLocaleString()}</div>
+      </div>`;
+    }
+    return`<div class="sitem">
       <div><div class="sname">${i.name} — ${i.category}</div><div class="svar">${[i.size,i.color].filter(Boolean).join(" · ")} &#215; ${i.qty}</div></div>
       <div class="sprice">${C} ${(i.price*i.qty).toLocaleString()}</div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
   zone="campus";["campus","dhaka","outside"].forEach(x=>document.getElementById("z-"+x).classList.toggle("on",x==="campus"));
   updSum();
   document.getElementById("coform").style.display="";document.getElementById("sucscr").style.display="none";
@@ -837,7 +868,18 @@ function openCO(){
 
 function closeCO(){document.getElementById("cobg").classList.remove("on");document.body.style.overflow="";}
 
-// ── FIXED: place() now uses GET URLSearchParams so server returns real sequential BT-XXXX ID ──
+// ── Build items string for Apps Script (handles mixed cart) ──
+function buildItemsString(){
+  return cart.map(i=>{
+    if(i.type==='bothsides'){
+      const entry=`Both sides: Front=${i.frontName} [${i.shirtType}], Back=${i.backName} [${i.shirtType}] (${[i.size,i.color].filter(Boolean).join("/")})+৳100`;
+      // repeat entry for each qty so Apps Script sees each unit
+      return Array(i.qty).fill(entry).join(' | ');
+    }
+    return `${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`;
+  }).join(" | ");
+}
+
 async function place(){
   const name=document.getElementById("fn").value.trim(),phone=document.getElementById("fp").value.trim();
   const email=document.getElementById("fe").value.trim(),addr=document.getElementById("fa").value.trim();
@@ -848,7 +890,7 @@ async function place(){
   const discPct=coAffValid?affDiscountPct:0;
   const discAmt=discPct>0?Math.round(sub*discPct/100):0;
   const fee=DF[zone],total=sub-discAmt+fee;
-  const items=cart.map(i=>`${i.name} [${i.category}] (${[i.size,i.color].filter(Boolean).join("/")} ${i.side} print x${i.qty})`).join(" | ");
+  const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
     const p=new URLSearchParams({action:"placeOrder",name,email,phone,address:addr,
@@ -866,28 +908,56 @@ async function place(){
 
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
-// ── Both Sides ──
-let cmSelFront=null,cmSelBack=null,cmZone='campus',cmShirtType='Regular';
+// ══════════════════════════════════════════════════════════
+// BOTH SIDES MODAL — Add to Cart flow
+// ══════════════════════════════════════════════════════════
 
-function openCustomModal(type){
-  cmSelFront=null;cmSelBack=null;cmZone='campus';cmShirtType='Regular';
-  cmAffValid=false;cmAffPct=0;cmAffCode="";
-  document.getElementById('cmAffCode').value="";
-  document.getElementById('cmAffStatus').textContent="";
+function openCustomModal(){
+  cmSelFront=null;cmSelBack=null;cmShirtType='Regular';cmQty=1;
+  document.getElementById('cmQval').textContent='1';
+
+  // Build shirt type picker from product categories
   const allTypes=[];
   prods.forEach(p=>{(p.categories||[]).forEach(c=>{if(!allTypes.includes(c.category))allTypes.push(c.category);});});
-  const typeList=allTypes.length?allTypes:['Regular','Drop','Hoodie'];
-  document.getElementById('cmTypePicker').innerHTML=typeList.map((t,i)=>`<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`).join('');
+  const typeList=allTypes.length?allTypes:['Regular','Drop Shoulder','Hoodie'];
   cmShirtType=typeList[0];
-  const names=prods.length?prods.map(p=>p.name):['BT1','BT2','BT3'];
-  document.getElementById('cmDesignFront').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`).join('');
-  document.getElementById('cmDesignBack').innerHTML=names.map((n,i)=>`<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`).join('');
-  ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x==='campus'));
-  updateCMSizeColor();updateCMPrice();
-  document.getElementById('cmBtn').disabled=false;document.getElementById('cmBtn').textContent='Place Order';
-  document.getElementById('cmForm').style.display='';document.getElementById('cmSuccess').style.display='none';
+  document.getElementById('cmTypePicker').innerHTML=typeList.map((t,i)=>
+    `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
+  ).join('');
+
+  // Build design pickers
+  const names=prods.map(p=>p.name);
+  document.getElementById('cmDesignFront').innerHTML=names.map((n,i)=>
+    `<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`
+  ).join('');
+  document.getElementById('cmDesignBack').innerHTML=names.map((n,i)=>
+    `<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`
+  ).join('');
+
+  updateCMSizeColor();
+  updateCMSummary();
+
   document.querySelector('#cmBg .cm').scrollTop=0;
-  document.getElementById('cmBg').classList.add('on');document.body.style.overflow='hidden';
+  document.getElementById('cmBg').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
+function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
+
+function cmPickType(type,el){
+  document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');cmShirtType=type;
+  updateCMSizeColor();updateCMSummary();
+}
+
+function cmPickDesign(side,idx,el){
+  const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
+  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const name=prods[idx]?prods[idx].name:el.textContent;
+  if(side==='front'){cmSelFront=name;updateCMSizeColor();}
+  else{cmSelBack=name;}
+  updateCMSummary();
 }
 
 function updateCMSizeColor(){
@@ -900,78 +970,88 @@ function updateCMSizeColor(){
   document.getElementById('cmColor').innerHTML=colors.map(c=>`<option>${c}</option>`).join('');
 }
 
-function cmPickType(type,el){
-  document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');cmShirtType=type;updateCMSizeColor();updateCMPrice();
+function getCMBasePrice(){
+  if(!cmSelFront||!prods.length)return 0;
+  const fp=prods.find(p=>p.name===cmSelFront);
+  if(!fp)return 0;
+  const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];
+  return cat?(cat.discountedPrice||cat.price||0):0;
 }
 
-function cmPickDesign(side,idx,el){
-  const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  const name=prods[idx]?prods[idx].name:el.textContent;
-  if(side==='front'){cmSelFront=name;updateCMSizeColor();}else{cmSelBack=name;}
-  updateCMPrice();
-}
-
-function setCZ(z){
-  cmZone=z;
-  ['campus','dhaka','outside'].forEach(x=>document.getElementById('cz-'+x).classList.toggle('on',x===z));
-  updateCMPrice();
-}
-
-function updateCMPrice(){
-  let base=500;
-  if(cmSelFront&&prods.length){
-    const fp=prods.find(p=>p.name===cmSelFront);
-    if(fp){const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];if(cat)base=cat.discountedPrice||cat.price||500;}
+function updateCMSummary(){
+  const el=document.getElementById('cmSummary');
+  if(!cmSelFront&&!cmSelBack){
+    el.innerHTML='Select front and back designs to see price summary.';
+    return;
   }
-  const discPct=cmAffValid?cmAffPct:0;
-  const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
-  const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
-  const delStr=delivery===0?'Free':'৳'+delivery;
-  const discStr=discAmt>0?`<br><span style="color:#2e7d32;font-weight:700;">Affiliate Discount (${discPct}%): -৳${discAmt}</span>`:'';
-  document.getElementById('cmPriceNote').innerHTML=
-    `<strong>Both sides</strong> — ${cmShirtType} · catalog price + ৳100.<br>`+
-    `Front: <strong>${cmSelFront||'not selected'}</strong> &nbsp;·&nbsp; Back: <strong>${cmSelBack||'not selected'}</strong><br>`+
-    `Delivery: ${delStr}${discStr} · <strong>Total: ৳${total.toLocaleString()}</strong>`;
+  const base=getCMBasePrice();
+  const itemTotal=base+100;
+  const grandTotal=itemTotal*cmQty;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>Front</span><strong>${cmSelFront||'—'}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>Back</span><strong>${cmSelBack||'—'}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>Type</span><strong>${cmShirtType}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>Base price</span><strong>${C} ${base.toLocaleString()}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+      <span>Both sides surcharge</span><strong>+ ${C} 100</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+      <span>Qty</span><strong>× ${cmQty}</strong>
+    </div>
+    <div style="border-top:1px solid var(--w3);padding-top:8px;display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:11px;">Item Total</span>
+      <span class="cm-price-tag">${C} ${grandTotal.toLocaleString()}</span>
+    </div>`;
 }
 
-function closeCM(){document.getElementById('cmBg').classList.remove('on');document.body.style.overflow='';}
-
-// ── FIXED: placeCustomOrder() now uses GET URLSearchParams so server returns real sequential BT-XXXX ID ──
-async function placeCustomOrder(){
-  const name=document.getElementById('cmName').value.trim();
-  const phone=document.getElementById('cmPhone').value.trim();
-  const email=document.getElementById('cmEmail').value.trim();
-  const addr=document.getElementById('cmAddr').value.trim();
-  const trx=document.getElementById('cmTrx').value.trim();
+function addBothSidesToCart(){
+  if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
   const size=document.getElementById('cmSize').value;
   const color=document.getElementById('cmColor').value;
-  if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
-  if(!name||!phone||!email||!addr){toast('Please fill all required fields');return;}
-  if(!trx){toast('Please enter your bKash TrxID');return;}
-  let base=500;
-  if(prods.length){
-    const fp=prods.find(p=>p.name===cmSelFront);
-    if(fp){const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];if(cat)base=cat.discountedPrice||cat.price||500;}
+  const base=getCMBasePrice();
+  const unitPrice=base+100;
+
+  // Get images for both designs
+  const frontProd=prods.find(p=>p.name===cmSelFront);
+  const backProd=prods.find(p=>p.name===cmSelBack);
+  const frontCat=frontProd?(frontProd.categories.find(c=>c.category===cmShirtType)||frontProd.categories[0]):null;
+  const backCat=backProd?(backProd.categories.find(c=>c.category===cmShirtType)||backProd.categories[0]):null;
+  const imageFront=frontCat?frontCat.image:'';
+  const imageBack=backCat?backCat.image:'';
+
+  // Stable key — same combo+size+color stacks qty
+  const key=`bs-${cmSelFront}-${cmSelBack}-${cmShirtType}-${size}-${color}`;
+  const existing=cart.find(i=>i.key===key);
+  if(existing){
+    existing.qty+=cmQty;
+  } else {
+    cart.push({
+      key,
+      type:'bothsides',
+      shirtType:cmShirtType,
+      frontName:cmSelFront,
+      backName:cmSelBack,
+      imageFront,
+      imageBack,
+      size,
+      color,
+      price:unitPrice,
+      qty:cmQty
+    });
   }
-  const discPct=cmAffValid?cmAffPct:0;
-  const discAmt=discPct>0?Math.round((base+100)*discPct/100):0;
-  const delivery=DF[cmZone],total=(base+100)-discAmt+delivery;
-  const itemsStr=`Both sides: Front=${cmSelFront} [${cmShirtType}], Back=${cmSelBack} [${cmShirtType}] (${size}/${color}) +৳100`;
-  const btn=document.getElementById('cmBtn');btn.disabled=true;btn.textContent='Placing order...';
-  try{
-    const p=new URLSearchParams({action:"placeOrder",name,email,phone,address:addr,
-      zone:DL[cmZone],items:itemsStr,subtotal:base+100,deliveryFee:delivery,total,
-      payment:"bKash",trxId:trx,affiliateCode:cmAffCode||"",discountPct:discPct,discountAmt:discAmt});
-    const r=await fetch(`${U}?${p.toString()}`);
-    const d=await r.json();
-    const realId=d.orderId||"BT-???";
-    document.getElementById('cmForm').style.display='none';
-    document.getElementById('cmSuccess').style.display='';
-    document.getElementById('cmSucId').textContent=realId;
-  }catch(err){toast('Something went wrong. Try again.');btn.disabled=false;btn.textContent='Place Order';}
+
+  upd();
+  closeCM();
+  toast(`${cmQty}× both sides added — ${cmSelFront} / ${cmSelBack} · ${cmShirtType}`);
+  openCart();
 }
 
 // ── Affiliate Registration ──
@@ -1016,14 +1096,12 @@ async function submitAffReg(){
     incomeGoal:affSelectedGoal
   });
 
-  // Show success immediately, fire request in background (GET avoids no-cors issues)
   btn.disabled=false;btn.textContent='Register as Affiliate';
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
 
   fetch(`${U}?${params.toString()}`).catch(()=>{});
 
-  // Reset form
   document.getElementById('affName').value='';
   document.getElementById('affWa').value='';
   document.getElementById('affId').value='';

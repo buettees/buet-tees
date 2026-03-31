@@ -666,12 +666,31 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 <div class="toast" id="toast"></div>
 
+
+  
 <script>
 const U="https://script.google.com/macros/s/AKfycbysPX59PnJEe6e-ol2tkXt-ddtDcSnbVrmddurVVSsT38mtzsDo7g1vIt9xnNXgkYAU/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
 let affDiscountPct=0,affCodeApplied="",coAffValid=false;
 
+function getSizeLabel(sizeChart, size) {
+  if (!sizeChart || !size) return size;
+  const entries = sizeChart.split(",").map(e => e.trim());
+  for (const entry of entries) {
+    const parts = entry.split(":");
+    if (parts.length < 2) continue;
+    if (parts[0].trim().toUpperCase() === size.toString().trim().toUpperCase()) {
+      const m = parts[1].trim().split("/");
+      const chest  = m[0] ? m[0].trim() : null;
+      const length = m[1] ? m[1].trim() : null;
+      if (chest && length) return `${size} — chest ${chest}", length ${length}"`;
+      if (chest)           return `${size} — chest ${chest}"`;
+    }
+  }
+  return size;
+}  
+  
 // ── Both-sides modal state ──
 let cmSelFront=null,cmSelBack=null,cmShirtType='Regular',cmQty=1;
 function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').textContent=cmQty;updateCMSummary();}
@@ -960,14 +979,20 @@ function cmPickDesign(side,idx,el){
   updateCMSummary();
 }
 
-function updateCMSizeColor(){
-  const refName=cmSelFront||(prods.length?prods[0].name:null);
-  const refProd=prods.find(p=>p.name===refName)||prods[0];
-  const cat=refProd?(refProd.categories.find(c=>c.category===cmShirtType)||refProd.categories[0]):null;
-  const sizes=(cat&&cat.sizes&&cat.sizes.length)?cat.sizes:['S','M','L','XL','XXL'];
-  const colors=(cat&&cat.colors&&cat.colors.length)?cat.colors:['Black','White'];
-  document.getElementById('cmSize').innerHTML=sizes.map(s=>`<option>${s}</option>`).join('');
-  document.getElementById('cmColor').innerHTML=colors.map(c=>`<option>${c}</option>`).join('');
+function updateCMSizeColor() {
+  const refName = cmSelFront || (prods.length ? prods[0].name : null);
+  const refProd = prods.find(p => p.name === refName) || prods[0];
+  const cat = refProd ? (refProd.categories.find(c => c.category === cmShirtType) || refProd.categories[0]) : null;
+  const sizes  = (cat && cat.sizes  && cat.sizes.length)  ? cat.sizes  : ['S', 'M', 'L', 'XL', 'XXL'];
+  const colors = (cat && cat.colors && cat.colors.length) ? cat.colors : ['Black', 'White'];
+  const chart  = (cat && cat.sizeChart) ? cat.sizeChart : "";
+
+  document.getElementById('cmSize').innerHTML  = sizes.map(s =>
+    `<option value="${s}">${getSizeLabel(chart, s)}</option>`
+  ).join('');
+  document.getElementById('cmColor').innerHTML = colors.map(c =>
+    `<option>${c}</option>`
+  ).join('');
 }
 
 function getCMBasePrice(){

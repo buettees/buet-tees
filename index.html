@@ -738,7 +738,8 @@ function loadCatData(p,idx){
   document.getElementById("qval").textContent="1";qty=1;
   const oe=document.getElementById("pmorig");
   if(cat.discountedPrice){oe.style.display="";oe.textContent=`${C} ${(cat.price||0).toLocaleString()}`;}else{oe.style.display="none";}
-  document.getElementById("szop").innerHTML=(cat.sizes||[]).map(s=>`<button class="vb ${s===selSz?"on":""}" onclick="pickSz('${s}')">${s}</button>`).join("");
+  document.getElementById("szop").innerHTML=(cat.sizes||[]).map(s=>
+  `<button class="vb ${s===selSz?"on":""}" data-size="${s}" onclick="pickSz('${s.replace(/'/g,"\\'")}')">${getSizeLabel(cat.sizeChart||'', s)}</button>`).join("");
   document.getElementById("clop").innerHTML=(cat.colors||[]).map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
 }
 
@@ -758,7 +759,7 @@ function openP(id){
 }
 
 function closePM(){document.getElementById("pmbg").classList.remove("on");document.body.style.overflow="";}
-function pickSz(s){selSz=s;document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.textContent===s));}
+function pickSz(s){selSz=s;document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.dataset.size===s));}
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}
 function pickSide(s){selSide=s;document.getElementById("side-front").classList.toggle("on",s==="front");document.getElementById("side-back").classList.toggle("on",s==="back");}
 function chQ(d){qty=Math.max(1,qty+d);document.getElementById("qval").textContent=qty;}

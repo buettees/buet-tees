@@ -165,8 +165,12 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .qbtn{background:var(--w2);border:none;color:var(--black);width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.12s;}
 .qbtn:hover{background:var(--w3);}
 .qval{width:44px;height:38px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--black);border-left:1px solid var(--w3);border-right:1px solid var(--w3);}
-.atcbtn{width:100%;padding:16px;background:var(--burg);border:none;color:var(--w);cursor:pointer;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;}
-.atcbtn:hover{background:var(--burg2);}
+.atcbtn-row{display:flex;gap:10px;margin-top:0;}
+.atcbtn{flex:1;padding:16px;background:var(--black);border:1.5px solid var(--black);color:var(--w);cursor:pointer;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:background 0.15s;}
+.atcbtn:hover{background:var(--black3);}
+.ordernowbtn{flex:1;padding:16px;background:var(--burg);border:1.5px solid var(--burg);color:var(--w);cursor:pointer;border-radius:12px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:background 0.15s;}
+.ordernowbtn:hover{background:var(--burg2);}
+@media(max-width:400px){.atcbtn-row{flex-direction:column;}}
 .cdrawer{position:fixed;top:0;right:-100%;width:100%;max-width:400px;height:100vh;background:var(--w);z-index:300;display:flex;flex-direction:column;transition:right 0.28s cubic-bezier(0.25,0.46,0.45,0.94);border-left:2px solid var(--burg);}
 .cdrawer.on{right:0;}
 .cdhd{background:var(--black);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--burg);}
@@ -570,6 +574,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       </div>
 
       <button class="cm-atc" onclick="addBothSidesToCart()">Add to Cart</button>
+      <div class="atcbtn-row">
+        <button class="atcbtn" style="border-color:var(--w3);color:var(--black);background:var(--w);" onclick="addBothSidesToCart()">Add to Cart</button>
+        <button class="ordernowbtn" onclick="addBothSidesToCartAndOrder()">Order Now →</button>
+      </div>
       <p style="text-align:center;font-size:11px;color:var(--g2);margin-top:12px;letter-spacing:1px;">You can combine this with other items in your cart before checkout.</p>
     </div>
   </div>
@@ -597,7 +605,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
         <div class="vlbl" style="margin:0">Qty</div>
         <div class="qctrl"><button class="qbtn" onclick="chQ(-1)">&#8722;</button><div class="qval" id="qval">1</div><button class="qbtn" onclick="chQ(1)">+</button></div>
       </div>
-      <button class="atcbtn" onclick="atc()">Add to Cart</button>
+      <div class="atcbtn-row">
+        <button class="atcbtn" onclick="atc()">Add to Cart</button>
+        <button class="ordernowbtn" onclick="orderNow()">Order Now →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -925,7 +936,19 @@ async function place(){
     cart=[];upd();
   }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
+function orderNow(){
+  atc();
+  closePM();
+  openCO();
+}
 
+function addBothSidesToCartAndOrder(){
+  if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
+  addBothSidesToCart();
+  openCO();
+}
+  
+  
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2800);}
 
 // ══════════════════════════════════════════════════════════

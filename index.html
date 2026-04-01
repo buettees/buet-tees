@@ -117,6 +117,100 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .ft-copy{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
 .ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
 .ft-bk span{color:var(--w);}
+.admin-trigger{cursor:pointer;opacity:0;width:10px;height:10px;border-radius:50%;background:var(--burg);display:inline-block;transition:opacity 0.3s;vertical-align:middle;margin-left:8px;}
+.admin-trigger:hover{opacity:0.5;}
+.admin-lock{display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;align-items:center;justify-content:center;flex-direction:column;}
+.admin-lock.on{display:flex;}
+.admin-lock-box{width:100%;max-width:340px;padding:0 24px;}
+.admin-lock-logo{font-size:10px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.15);margin-bottom:28px;text-align:center;}
+.admin-lock-title{font-size:20px;font-weight:900;letter-spacing:-0.5px;color:#fff;margin-bottom:6px;text-align:center;}
+.admin-lock-sub{font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:24px;text-align:center;letter-spacing:1px;}
+.admin-pass-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:13px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;letter-spacing:3px;outline:none;transition:border-color 0.15s;border-radius:8px;margin-bottom:10px;}
+.admin-pass-input:focus{border-color:var(--burg);}
+.admin-pass-input::placeholder{color:rgba(255,255,255,0.15);letter-spacing:2px;}
+.admin-pass-btn{width:100%;padding:13px;background:var(--burg);border:none;color:#fff;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;border-radius:8px;}
+.admin-pass-btn:hover{background:var(--burg2);}
+.admin-pass-err{font-size:11px;color:#e74c3c;text-align:center;margin-top:8px;letter-spacing:1px;min-height:16px;}
+.admin-panel{display:none;position:fixed;inset:0;background:#0d0d0d;z-index:8000;flex-direction:column;overflow:hidden;}
+.admin-panel.on{display:flex;}
+.adm-hdr{background:#111;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.adm-hdr-left{display:flex;align-items:center;gap:12px;}
+.adm-hdr-logo{font-size:9px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
+.adm-hdr-sep{width:1px;height:14px;background:rgba(255,255,255,0.1);}
+.adm-hdr-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;}
+.adm-hdr-right{display:flex;align-items:center;gap:10px;}
+.adm-reload{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:5px 12px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.adm-reload:hover{border-color:var(--burg);color:#fff;}
+.adm-close{background:var(--burg);border:none;color:#fff;width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.adm-updated{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:1px;}
+.adm-nav{background:#111;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 24px;display:flex;overflow-x:auto;flex-shrink:0;}
+.adm-tab{padding:11px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.adm-tab:hover{color:rgba(255,255,255,0.5);}
+.adm-tab.on{color:#fff;border-bottom-color:var(--burg);}
+.adm-body{flex:1;overflow-y:auto;padding:20px 24px;}
+.adm-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.adm-stat{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px 18px;}
+.adm-stat.accent{border-top:2px solid var(--burg);}
+.adm-stat-lbl{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:7px;}
+.adm-stat-val{font-size:18px;font-weight:800;color:#fff;}
+.adm-stat-val.green{color:#2ecc71;}
+.adm-stat-val.red{color:#e74c3c;}
+.adm-stat-val.gold{color:#C9A84C;}
+.adm-stat-sub{font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;}
+.adm-sec{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.adm-tbl-wrap{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.adm-tbl-scroll{overflow-x:auto;}
+.adm-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.adm-tbl thead tr{background:#1a1a1a;}
+.adm-tbl th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);border-bottom:1px solid rgba(255,255,255,0.07);white-space:nowrap;}
+.adm-tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.45);vertical-align:middle;}
+.adm-tbl tbody tr:last-child td{border-bottom:none;}
+.adm-tbl tbody tr:hover td{background:rgba(255,255,255,0.02);}
+.adm-id{color:var(--burg);font-weight:700;font-size:10px;}
+.adm-green{color:#2ecc71;font-weight:700;}
+.adm-red{color:#e74c3c;}
+.adm-gold{color:#C9A84C;font-weight:700;}
+.adm-white{color:#fff;font-weight:600;}
+.adm-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.adm-badge-green{background:rgba(46,204,113,0.15);color:#2ecc71;}
+.adm-badge-red{background:rgba(231,76,60,0.15);color:#e74c3c;}
+.adm-badge-gray{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);}
+.adm-badge-gold{background:rgba(201,168,76,0.15);color:#C9A84C;}
+.adm-owner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;}
+.adm-owner-card{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:20px;}
+.adm-owner-name{font-size:16px;font-weight:800;color:#fff;margin-bottom:3px;}
+.adm-owner-pct{font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:14px;}
+.adm-owner-amt{font-size:26px;font-weight:800;color:#C9A84C;margin-bottom:10px;}
+.adm-owner-bar-bg{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;}
+.adm-owner-bar{height:3px;background:var(--burg);border-radius:2px;transition:width 0.8s ease;}
+.adm-chart{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:18px;margin-bottom:16px;}
+.adm-chart-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:14px;}
+.adm-bars{display:flex;align-items:flex-end;gap:5px;height:110px;}
+.adm-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;}
+.adm-bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-end;width:100%;}
+.adm-bar{border-radius:3px 3px 0 0;min-height:2px;}
+.adm-bar-lbl{font-size:8px;color:rgba(255,255,255,0.15);text-align:center;white-space:nowrap;overflow:hidden;}
+.adm-bar-val{font-size:8px;color:rgba(255,255,255,0.25);}
+.adm-tx-form{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:18px;margin-bottom:16px;}
+.adm-tx-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;}
+.adm-tx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px;}
+.adm-tx-field label{display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px;}
+.adm-fi{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:7px 9px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:11px;outline:none;}
+.adm-fi:focus{border-color:var(--burg);}
+.adm-tx-btn{background:var(--burg);border:none;color:#fff;padding:8px 18px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;}
+.adm-tx-btn:hover{background:var(--burg2);}
+.adm-cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
+.adm-cost-card{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px;}
+.adm-cost-card-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.adm-cost-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.adm-cost-row:last-child{border:none;}
+.adm-cost-key{font-size:11px;color:rgba(255,255,255,0.35);}
+.adm-cost-val{font-size:11px;font-weight:700;color:#C9A84C;}
+.adm-loading{text-align:center;padding:48px;color:rgba(255,255,255,0.15);font-size:10px;letter-spacing:3px;text-transform:uppercase;}
+.adm-empty{text-align:center;padding:32px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+.adm-content{display:none;}
+.adm-content.on{display:block;}
+@media(max-width:639px){.adm-body{padding:14px 16px;}.adm-hdr,.adm-nav{padding:0 16px;}.adm-stat-grid{grid-template-columns:1fr 1fr;}.adm-stat-val{font-size:15px;}}
 .aff-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
 .aff-modal-bg.on{display:flex;}
 @media(min-width:640px){.aff-modal-bg{align-items:center;padding:24px;}}
@@ -444,7 +538,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
     <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
-  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
 
 <!-- Affiliate Registration Modal -->
@@ -674,6 +768,52 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Admin Lock Screen -->
+<div class="admin-lock" id="adminLock">
+  <div class="admin-lock-box">
+    <div class="admin-lock-logo">BUET TEES</div>
+    <div class="admin-lock-title">Admin Access</div>
+    <div class="admin-lock-sub">Enter password to continue</div>
+    <input class="admin-pass-input" id="adminPassInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <button class="admin-pass-btn" onclick="adminLogin()">Unlock →</button>
+    <div class="admin-pass-err" id="adminPassErr"></div>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div class="admin-panel" id="adminPanel">
+  <div class="adm-hdr">
+    <div class="adm-hdr-left">
+      <div class="adm-hdr-logo">BUET TEES</div>
+      <div class="adm-hdr-sep"></div>
+      <div class="adm-hdr-title">Admin Dashboard</div>
+    </div>
+    <div class="adm-hdr-right">
+      <div class="adm-updated" id="admUpdated"></div>
+      <button class="adm-reload" onclick="admLoadData()">↻ Refresh</button>
+      <button class="adm-close" onclick="closeAdmin()">✕</button>
+    </div>
+  </div>
+  <div class="adm-nav">
+    <div class="adm-tab on" onclick="admTab('overview')">Overview</div>
+    <div class="adm-tab" onclick="admTab('orders')">Orders P&L</div>
+    <div class="adm-tab" onclick="admTab('affiliates')">Affiliates</div>
+    <div class="adm-tab" onclick="admTab('owners')">Owner Shares</div>
+    <div class="adm-tab" onclick="admTab('monthly')">Monthly</div>
+    <div class="adm-tab" onclick="admTab('transactions')">Transactions</div>
+    <div class="adm-tab" onclick="admTab('costs')">Cost Settings</div>
+  </div>
+  <div class="adm-body">
+    <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
+    <div class="adm-content" id="adm-orders"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-affiliates"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-owners"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-monthly"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-transactions"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-costs"><div class="adm-loading">Loading...</div></div>
+  </div>
+</div>
 
 
   
@@ -1164,6 +1304,192 @@ async function submitAffReg(){
 }
 
 loadProducts();upd();
+
+// ══════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════════════════════════════════
+// Password is SHA-256 hashed. Default = "buettees2025"
+// To change: go to https://emn178.github.io/online-tools/sha256.html
+// Hash your new password and replace the string below
+const ADMIN_PASS_HASH = "f724f3424248af828baf2b46d8a2795878f2d7b91d7c8eb42c6108937eba8072"; // = "buettees2025" — change at https://emn178.github.io/online-tools/sha256.html
+
+async function sha256(str){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");}
+
+function openAdminLock(){
+  document.getElementById("adminPassInput").value="";
+  document.getElementById("adminPassErr").textContent="";
+  document.getElementById("adminLock").classList.add("on");
+  document.body.style.overflow="hidden";
+  setTimeout(()=>document.getElementById("adminPassInput").focus(),100);
+}
+
+async function adminLogin(){
+  const val=document.getElementById("adminPassInput").value;
+  const hash=await sha256(val);
+  if(hash===ADMIN_PASS_HASH){
+    document.getElementById("adminLock").classList.remove("on");
+    document.getElementById("adminPanel").classList.add("on");
+    admLoadData();
+  }else{
+    document.getElementById("adminPassErr").textContent="Incorrect password";
+    document.getElementById("adminPassInput").value="";
+    document.getElementById("adminPassInput").focus();
+  }
+}
+
+function closeAdmin(){
+  document.getElementById("adminPanel").classList.remove("on");
+  document.getElementById("adminLock").classList.remove("on");
+  document.body.style.overflow="";
+}
+
+function admTab(name){
+  document.querySelectorAll(".adm-tab").forEach((t,i)=>{
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs"];
+    t.classList.toggle("on",tabs[i]===name);
+  });
+  document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
+  document.getElementById("adm-"+name).classList.add("on");
+}
+
+let ADM_DATA=null;
+async function admLoadData(){
+  document.getElementById("admUpdated").textContent="Loading...";
+  try{
+    const res=await fetch(U+"?action=getAccounting");
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error||"Unknown error");
+    ADM_DATA=data;
+    document.getElementById("admUpdated").textContent="Updated "+new Date().toLocaleTimeString();
+    admRenderAll();
+  }catch(e){
+    document.getElementById("admUpdated").textContent="Error";
+    document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#e74c3c;">Failed to load: ${e.message}<br><br>Make sure you deployed the new Apps Script version.</div>`;
+  }
+}
+
+function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
+
+function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();}
+
+function admRenderOverview(){
+  const s=ADM_DATA.summary;
+  const mc=s.totalNetProfit>=0?"green":"red";
+  document.getElementById("adm-overview").innerHTML=`
+    <div class="adm-stat-grid">
+      <div class="adm-stat"><div class="adm-stat-lbl">Total Revenue</div><div class="adm-stat-val">${admFmt(s.totalRevenue)}</div><div class="adm-stat-sub">${s.totalOrders} confirmed orders</div></div>
+      <div class="adm-stat"><div class="adm-stat-lbl">Supplier Cost</div><div class="adm-stat-val red">${admFmt(s.totalSupplierCost)}</div><div class="adm-stat-sub">Blank + print + poly</div></div>
+      <div class="adm-stat"><div class="adm-stat-lbl">Gross Profit</div><div class="adm-stat-val ${s.totalGrossProfit>=0?"green":"red"}">${admFmt(s.totalGrossProfit)}</div><div class="adm-stat-sub">Revenue − supplier cost</div></div>
+      <div class="adm-stat"><div class="adm-stat-lbl">Aff. Commissions</div><div class="adm-stat-val red">${admFmt(s.totalAffComm)}</div><div class="adm-stat-sub">Owed to affiliates</div></div>
+      <div class="adm-stat"><div class="adm-stat-lbl">Extra Expenses</div><div class="adm-stat-val red">${admFmt(s.totalExtraExpenses)}</div><div class="adm-stat-sub">Ads, equipment etc.</div></div>
+      <div class="adm-stat accent"><div class="adm-stat-lbl">Net Profit</div><div class="adm-stat-val ${mc}">${admFmt(s.totalNetProfit)}</div><div class="adm-stat-sub">After all deductions</div></div>
+      <div class="adm-stat"><div class="adm-stat-lbl">Net Margin</div><div class="adm-stat-val gold">${s.margin.toFixed(1)}%</div><div class="adm-stat-sub">Net / Revenue</div></div>
+    </div>
+    <div class="adm-sec">Monthly Net Profit</div>
+    <div class="adm-chart"><div class="adm-chart-title">Net Profit by Month</div><div class="adm-bars" id="admBarChart"></div></div>`;
+  const monthly=ADM_DATA.monthly;
+  if(monthly.length){
+    const maxV=Math.max(...monthly.map(m=>Math.abs(m.netProfit)),1);
+    document.getElementById("admBarChart").innerHTML=monthly.map(m=>{
+      const h=Math.round(Math.abs(m.netProfit)/maxV*100);
+      const color=m.netProfit>=0?"#2ecc71":"#e74c3c";
+      return`<div class="adm-bar-col"><div class="adm-bar-val">${Math.round(m.netProfit/1000)}k</div><div class="adm-bar-wrap"><div class="adm-bar" style="height:${h}px;background:${color};width:100%"></div></div><div class="adm-bar-lbl">${m.month.substring(0,7)}</div></div>`;
+    }).join("");
+  }
+}
+
+function admRenderOrders(){
+  const rows=ADM_DATA.orders;
+  if(!rows.length){document.getElementById("adm-orders").innerHTML='<div class="adm-empty">No confirmed orders yet</div>';return;}
+  document.getElementById("adm-orders").innerHTML=`<div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+    <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Supplier Cost</th><th>Gross Profit</th><th>Aff. Comm</th><th>Net Profit</th><th>Margin</th></tr></thead>
+    <tbody>${rows.map(o=>{
+      const margin=o.total>0?(o.netProfit/o.total*100).toFixed(1):0;
+      const mc=margin>=0?"adm-badge-green":"adm-badge-red";
+      const short=o.items.length>35?o.items.substring(0,35)+"…":o.items;
+      return`<tr><td class="adm-id">${o.orderId}</td><td style="font-size:10px;color:rgba(255,255,255,0.2)">${o.timestamp.substring(0,12)}</td><td style="font-size:10px;max-width:130px" title="${o.items}">${short}</td><td><span class="adm-badge adm-badge-gray">${o.supplier}</span></td><td class="adm-white">${admFmt(o.total)}</td><td class="adm-red">${admFmt(o.supplierCost)}</td><td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td><td class="adm-red">${o.affCommission>0?admFmt(o.affCommission):"—"}</td><td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td><td><span class="adm-badge ${mc}">${margin}%</span></td></tr>`;
+    }).join("")}</tbody></table></div></div>`;
+}
+
+function admRenderAffiliates(){
+  const rows=ADM_DATA.affiliates;
+  if(!rows.length){document.getElementById("adm-affiliates").innerHTML='<div class="adm-empty">No affiliates yet</div>';return;}
+  document.getElementById("adm-affiliates").innerHTML=`<div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+    <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Orders</th><th>Discount Given</th><th>Commission Owed</th></tr></thead>
+    <tbody>${rows.map(a=>`<tr><td class="adm-id">${a.code}</td><td class="adm-white">${a.name||"—"}</td><td style="font-size:10px">${a.type}</td><td><span class="adm-badge ${a.status.toLowerCase()==="active"?"adm-badge-green":"adm-badge-gray"}">${a.status}</span></td><td>${a.orderCount}</td><td class="adm-red">${admFmt(a.totalDiscount)}</td><td class="adm-gold">${admFmt(a.totalCommission)}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
+}
+
+function admRenderOwners(){
+  const owners=ADM_DATA.ownerShares||[];
+  document.getElementById("adm-owners").innerHTML=`
+    <div class="adm-owner-grid">${owners.map(o=>`<div class="adm-owner-card"><div class="adm-owner-name">${o.name}</div><div class="adm-owner-pct">${o.share.toFixed(1)}% share</div><div class="adm-owner-amt">${admFmt(o.amount)}</div><div class="adm-owner-bar-bg"><div class="adm-owner-bar" style="width:${o.share}%"></div></div></div>`).join("")}</div>
+    <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+      <thead><tr><th>Owner</th><th>Share %</th><th>Net Profit Share</th></tr></thead>
+      <tbody>${owners.map(o=>`<tr><td class="adm-white">${o.name}</td><td>${o.share.toFixed(1)}%</td><td class="adm-gold">${admFmt(o.amount)}</td></tr>`).join("")}</tbody>
+    </table></div></div>`;
+}
+
+function admRenderMonthly(){
+  const rows=ADM_DATA.monthly;
+  if(!rows.length){document.getElementById("adm-monthly").innerHTML='<div class="adm-empty">No monthly data yet</div>';return;}
+  document.getElementById("adm-monthly").innerHTML=`<div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+    <thead><tr><th>Month</th><th>Orders</th><th>Revenue</th><th>Supplier Cost</th><th>Gross Profit</th><th>Aff. Comm</th><th>Net Profit</th><th>Margin</th></tr></thead>
+    <tbody>${rows.map(m=>{
+      const margin=m.revenue>0?(m.netProfit/m.revenue*100).toFixed(1):0;
+      return`<tr><td class="adm-white">${m.month}</td><td>${m.orders}</td><td class="adm-white">${admFmt(m.revenue)}</td><td class="adm-red">${admFmt(m.supplierCost)}</td><td class="${m.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(m.grossProfit)}</td><td class="adm-red">${admFmt(m.affComm)}</td><td class="${m.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(m.netProfit)}</td><td><span class="adm-badge ${margin>=0?"adm-badge-green":"adm-badge-red"}">${margin}%</span></td></tr>`;
+    }).join("")}</tbody></table></div></div>`;
+}
+
+function admRenderTransactions(){
+  const rows=ADM_DATA.transactions;
+  document.getElementById("adm-transactions").innerHTML=`
+    <div class="adm-tx-form">
+      <div class="adm-tx-title">Add Transaction</div>
+      <div class="adm-tx-grid">
+        <div class="adm-tx-field"><label>Date</label><input class="adm-fi" id="txDate" type="date"/></div>
+        <div class="adm-tx-field"><label>Type</label><select class="adm-fi" id="txType"><option>Expense</option><option>Income</option><option>Capital In</option><option>Capital Out</option></select></div>
+        <div class="adm-tx-field"><label>Owner</label><input class="adm-fi" id="txOwner" placeholder="e.g. Ashik" type="text"/></div>
+        <div class="adm-tx-field"><label>Amount (BDT)</label><input class="adm-fi" id="txAmount" placeholder="500" type="number"/></div>
+        <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
+        <div class="adm-tx-field"><label>Category</label><input class="adm-fi" id="txCat" placeholder="e.g. Marketing"/></div>
+      </div>
+      <button class="adm-tx-btn" onclick="admAddTx()">Add Transaction</button>
+    </div>
+    <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+      <thead><tr><th>Date</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th>Category</th></tr></thead>
+      <tbody>${!rows.length?'<tr><td colspan="6"><div class="adm-empty">No transactions yet</div></td></tr>':
+        rows.map(t=>`<tr><td style="font-size:10px">${t.date}</td><td><span class="adm-badge ${t.type.includes("Expense")||t.type.includes("Out")?"adm-badge-red":"adm-badge-green"}">${t.type}</span></td><td>${t.owner||"—"}</td><td class="${t.type.includes("Expense")||t.type.includes("Out")?"adm-red":"adm-green"}">${admFmt(t.amount)}</td><td>${t.description}</td><td style="font-size:10px;color:rgba(255,255,255,0.2)">${t.category}</td></tr>`).join("")}
+      </tbody></table></div></div>`;
+  document.getElementById("txDate").value=new Date().toISOString().split("T")[0];
+}
+
+async function admAddTx(){
+  const date=document.getElementById("txDate").value;
+  const type=document.getElementById("txType").value;
+  const owner=document.getElementById("txOwner").value.trim();
+  const amount=document.getElementById("txAmount").value;
+  const desc=document.getElementById("txDesc").value.trim();
+  const cat=document.getElementById("txCat").value.trim();
+  if(!date||!amount||!desc){alert("Please fill Date, Amount and Description");return;}
+  try{
+    const p=new URLSearchParams({action:"addTransaction",date,type,owner,amount,description:desc,category:cat});
+    const res=await fetch(`${U}?${p.toString()}`);
+    const d=await res.json();
+    if(d.ok){alert("Transaction added!");document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";admLoadData();}
+    else alert("Error: "+(d.error||"Unknown"));
+  }catch(e){alert("Failed: "+e.message);}
+}
+
+function admRenderCosts(){
+  const suppliers=ADM_DATA.suppliers||["T-Shirt Hub"];
+  const owners=ADM_DATA.owners||[];
+  document.getElementById("adm-costs").innerHTML=`
+    <div class="adm-sec">Supplier Cost Structure</div>
+    <div class="adm-cost-grid">${suppliers.map(sup=>`<div class="adm-cost-card"><div class="adm-cost-card-title">${sup}</div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Regular</span><span class="adm-cost-val">৳150</span></div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Drop Shoulder</span><span class="adm-cost-val">৳170</span></div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Hoodie</span><span class="adm-cost-val">৳400</span></div><div class="adm-cost-row"><span class="adm-cost-key">Print / sq inch</span><span class="adm-cost-val">৳0.5</span></div><div class="adm-cost-row"><span class="adm-cost-key">Heat Press / side</span><span class="adm-cost-val">৳5</span></div><div class="adm-cost-row"><span class="adm-cost-key">Poly</span><span class="adm-cost-val">৳3.5</span></div></div>`).join("")}</div>
+    <div class="adm-sec">Owner Configuration</div>
+    <div class="adm-cost-grid"><div class="adm-cost-card"><div class="adm-cost-card-title">Owners & Shares</div>${owners.map(o=>`<div class="adm-cost-row"><span class="adm-cost-key">${o.name}</span><span class="adm-cost-val">${o.share.toFixed(1)}%</span></div>`).join("")}<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.15);line-height:1.8">Edit in Settings tab of Google Sheet</div></div></div>`;
+}
 </script>
 </body>
 </html>

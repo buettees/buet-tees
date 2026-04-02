@@ -534,7 +534,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
     <div class="cfb-actions">
       <a class="cfb-btn cfb-btn-primary" href="https://facebook.com/buettees" target="_blank">Message on Facebook</a>
-      <a class="cfb-btn cfb-btn-secondary" href="mailto:buettees@gmail.com">Send Email</a>
+      <a class="cfb-btn cfb-btn-secondary" href="/cdn-cgi/l/email-protection#690b1c0c1d1d0c0c1a290e04080005470a0604">Send Email</a>
     </div>
   </div>
 </div>
@@ -825,6 +825,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="admin-lock-title">Admin Access</div>
     <div class="admin-lock-sub">Enter password to continue</div>
     <input class="admin-pass-input" id="adminPassInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <div style="margin-bottom:10px;"><input class="admin-pass-input" id="adminUrlInput" type="text" placeholder="Apps Script URL (optional override)" style="font-size:10px;letter-spacing:0;font-weight:400;" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
     <button class="admin-pass-btn" onclick="adminLogin()">Unlock →</button>
     <div class="admin-pass-err" id="adminPassErr"></div>
   </div>
@@ -866,8 +867,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 
   
-<script>
-const U="https://script.google.com/macros/s/AKfycbysPX59PnJEe6e-ol2tkXt-ddtDcSnbVrmddurVVSsT38mtzsDo7g1vIt9xnNXgkYAU/exec";
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const U_DEFAULT="https://script.google.com/macros/s/AKfycbysPX59PnJEe6e-ol2tkXt-ddtDcSnbVrmddurVVSsT38mtzsDo7g1vIt9xnNXgkYAU/exec";
+let U=U_DEFAULT;
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
 let affDiscountPct=0,affCodeApplied="",coAffValid=false;
@@ -1373,8 +1375,10 @@ function openAdminLock(){
 
 async function adminLogin(){
   const val=document.getElementById("adminPassInput").value;
+  const urlOverride=document.getElementById("adminUrlInput").value.trim();
   const hash=await sha256(val);
   if(hash===ADMIN_PASS_HASH){
+    if(urlOverride&&urlOverride.startsWith("http"))U=urlOverride;
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
@@ -1526,8 +1530,15 @@ function admRenderOrders(){
       const margin=o.total>0?(o.netProfit/o.total*100).toFixed(1):0;
       const mc=parseFloat(margin)>=0?"adm-badge-green":"adm-badge-red";
       const ts=o.timestamp||"";
-      // Parse "Sat, 29 Mar 2025, 14:30:00" or fallback
-      const datePart=ts.split(",").slice(0,2).join(",").trim()||ts.substring(0,12);
+      // Parse timestamp into readable short date
+      let datePart="—";
+      if(ts){
+        try{
+          const d=new Date(ts);
+          if(!isNaN(d)){datePart=d.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"2-digit"});}
+          else{datePart=ts.replace(/,\s*\d{2}:\d{2}:\d{2}$/,"").trim().substring(0,14);}
+        }catch(_){datePart=ts.substring(0,14);}
+      }
       const short=o.items.length>32?o.items.substring(0,32)+"…":o.items;
       return`<tr>
         <td class="adm-id">${o.orderId}</td>
@@ -1656,14 +1667,14 @@ async function admAddTx(){
   const amount=document.getElementById("txAmount").value;
   const desc=document.getElementById("txDesc").value.trim();
   const cat=document.getElementById("txCat").value.trim();
-  if(!date||!amount||!desc){alert("Please fill Date, Amount and Description");return;}
+  if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
     const p=new URLSearchParams({action:"addTransaction",date,type,owner,amount,description:desc,category:cat});
     const res=await fetch(`${U}?${p.toString()}`);
     const d=await res.json();
-    if(d.ok){document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";admLoadData();}
-    else alert("Error: "+(d.error||"Unknown"));
-  }catch(e){alert("Failed: "+e.message);}
+    if(d.ok){document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";toast("Transaction added ✓");admLoadData();}
+    else toast("Error: "+(d.error||"Unknown"));
+  }catch(e){toast("Failed: "+e.message);}
 }
 
 function admRenderCosts(){
@@ -1696,10 +1707,4 @@ function admRenderCosts(){
         <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (With Storage)</span><span class="adm-cost-val">৳50</span></div>
         <div class="adm-cost-row"><span class="adm-cost-key">Regular (No Storage)</span><span class="adm-cost-val">৳20</span></div>
         <div class="adm-cost-row"><span class="adm-cost-key">Drop Shoulder (No Storage)</span><span class="adm-cost-val">৳25</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (No Storage)</span><span class="adm-cost-val">৳35</span></div>
-      </div>
-    </div>`;
-}
-</script>
-</body>
-</html>
+        <div class="adm-cost-row"><span cla

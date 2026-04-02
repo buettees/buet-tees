@@ -117,100 +117,149 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .ft-copy{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
 .ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
 .ft-bk span{color:var(--w);}
+/* ══════════════════════════════════════════
+   ADMIN PANEL — Redesigned
+══════════════════════════════════════════ */
 .admin-trigger{cursor:pointer;opacity:0;width:10px;height:10px;border-radius:50%;background:var(--burg);display:inline-block;transition:opacity 0.3s;vertical-align:middle;margin-left:8px;}
 .admin-trigger:hover{opacity:0.5;}
-.admin-lock{display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;align-items:center;justify-content:center;flex-direction:column;}
+
+/* Lock screen */
+.admin-lock{display:none;position:fixed;inset:0;background:#080808;z-index:9000;align-items:center;justify-content:center;flex-direction:column;}
 .admin-lock.on{display:flex;}
-.admin-lock-box{width:100%;max-width:340px;padding:0 24px;}
-.admin-lock-logo{font-size:10px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.15);margin-bottom:28px;text-align:center;}
-.admin-lock-title{font-size:20px;font-weight:900;letter-spacing:-0.5px;color:#fff;margin-bottom:6px;text-align:center;}
-.admin-lock-sub{font-size:11px;color:rgba(255,255,255,0.25);margin-bottom:24px;text-align:center;letter-spacing:1px;}
-.admin-pass-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:13px 16px;font-family:'Montserrat',sans-serif;font-size:14px;font-weight:600;letter-spacing:3px;outline:none;transition:border-color 0.15s;border-radius:8px;margin-bottom:10px;}
-.admin-pass-input:focus{border-color:var(--burg);}
-.admin-pass-input::placeholder{color:rgba(255,255,255,0.15);letter-spacing:2px;}
-.admin-pass-btn{width:100%;padding:13px;background:var(--burg);border:none;color:#fff;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;border-radius:8px;}
+.admin-lock-box{width:100%;max-width:320px;padding:0 24px;}
+.admin-lock-logo{font-size:9px;font-weight:700;letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,0.1);margin-bottom:40px;text-align:center;}
+.admin-lock-title{font-size:28px;font-weight:900;letter-spacing:-1px;color:#fff;margin-bottom:4px;text-align:center;}
+.admin-lock-sub{font-size:11px;color:rgba(255,255,255,0.2);margin-bottom:28px;text-align:center;letter-spacing:2px;text-transform:uppercase;}
+.admin-pass-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:14px 18px;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:600;letter-spacing:4px;outline:none;transition:border-color 0.2s;border-radius:10px;margin-bottom:10px;}
+.admin-pass-input:focus{border-color:var(--burg);background:rgba(255,255,255,0.06);}
+.admin-pass-input::placeholder{color:rgba(255,255,255,0.1);letter-spacing:2px;font-size:13px;}
+.admin-pass-btn{width:100%;padding:14px;background:var(--burg);border:none;color:#fff;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;transition:background 0.15s;border-radius:10px;}
 .admin-pass-btn:hover{background:var(--burg2);}
-.admin-pass-err{font-size:11px;color:#e74c3c;text-align:center;margin-top:8px;letter-spacing:1px;min-height:16px;}
-.admin-panel{display:none;position:fixed;inset:0;background:#0d0d0d;z-index:8000;flex-direction:column;overflow:hidden;}
+.admin-pass-err{font-size:11px;color:#e74c3c;text-align:center;margin-top:10px;letter-spacing:1px;min-height:16px;}
+
+/* Panel shell */
+.admin-panel{display:none;position:fixed;inset:0;background:#0a0a0a;z-index:8000;flex-direction:column;overflow:hidden;}
 .admin-panel.on{display:flex;}
-.adm-hdr{background:#111;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 24px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.adm-hdr-left{display:flex;align-items:center;gap:12px;}
-.adm-hdr-logo{font-size:9px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
-.adm-hdr-sep{width:1px;height:14px;background:rgba(255,255,255,0.1);}
-.adm-hdr-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff;}
+
+/* Header */
+.adm-hdr{background:#0f0f0f;border-bottom:1px solid rgba(255,255,255,0.06);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.adm-hdr-left{display:flex;align-items:center;gap:14px;}
+.adm-hdr-logo{font-size:8px;font-weight:800;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,0.15);}
+.adm-hdr-sep{width:1px;height:16px;background:rgba(255,255,255,0.08);}
+.adm-hdr-title{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.6);}
 .adm-hdr-right{display:flex;align-items:center;gap:10px;}
-.adm-reload{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:5px 12px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
-.adm-reload:hover{border-color:var(--burg);color:#fff;}
-.adm-close{background:var(--burg);border:none;color:#fff;width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
-.adm-updated{font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:1px;}
-.adm-nav{background:#111;border-bottom:1px solid rgba(255,255,255,0.07);padding:0 24px;display:flex;overflow-x:auto;flex-shrink:0;}
-.adm-tab{padding:11px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.adm-reload{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);padding:6px 14px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.adm-reload:hover{border-color:rgba(255,255,255,0.3);color:#fff;}
+.adm-close{background:var(--burg);border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.adm-close:hover{background:var(--burg2);}
+.adm-updated{font-size:9px;color:rgba(255,255,255,0.12);letter-spacing:1px;}
+
+/* Nav tabs */
+.adm-nav{background:#0f0f0f;border-bottom:1px solid rgba(255,255,255,0.06);padding:0 28px;display:flex;overflow-x:auto;flex-shrink:0;gap:2px;}
+.adm-nav::-webkit-scrollbar{display:none;}
+.adm-tab{padding:13px 18px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.18);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
 .adm-tab:hover{color:rgba(255,255,255,0.5);}
 .adm-tab.on{color:#fff;border-bottom-color:var(--burg);}
-.adm-body{flex:1;overflow-y:auto;padding:20px 24px;}
-.adm-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
-.adm-stat{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px 18px;}
-.adm-stat.accent{border-top:2px solid var(--burg);}
-.adm-stat-lbl{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:7px;}
-.adm-stat-val{font-size:18px;font-weight:800;color:#fff;}
-.adm-stat-val.green{color:#2ecc71;}
-.adm-stat-val.red{color:#e74c3c;}
-.adm-stat-val.gold{color:#C9A84C;}
-.adm-stat-sub{font-size:9px;color:rgba(255,255,255,0.15);margin-top:3px;}
-.adm-sec{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.adm-tbl-wrap{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+
+/* Body */
+.adm-body{flex:1;overflow-y:auto;padding:24px 28px;}
+.adm-body::-webkit-scrollbar{width:4px;}
+.adm-body::-webkit-scrollbar-track{background:transparent;}
+.adm-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+
+/* KPI cards */
+.adm-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
+.adm-kpi-row.row2{grid-template-columns:repeat(3,1fr);}
+.adm-kpi{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;}
+.adm-kpi.highlight{border-color:rgba(109,0,26,0.5);background:linear-gradient(135deg,#1a0508 0%,#141414 100%);}
+.adm-kpi-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px;}
+.adm-kpi-val{font-size:22px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px;}
+.adm-kpi-val.c-green{color:#27ae60;}
+.adm-kpi-val.c-red{color:#c0392b;}
+.adm-kpi-val.c-gold{color:#C9A84C;}
+.adm-kpi-val.c-white{color:#fff;}
+.adm-kpi-sub{font-size:10px;color:rgba(255,255,255,0.18);margin-top:2px;}
+.adm-kpi-accent{position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--burg);opacity:0;transition:opacity 0.2s;}
+.adm-kpi.highlight .adm-kpi-accent{opacity:1;}
+
+/* Section label */
+.adm-sec{font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.15);margin:24px 0 12px;display:flex;align-items:center;gap:12px;}
+.adm-sec::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05);}
+
+/* Chart */
+.adm-chart-wrap{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px;margin-bottom:20px;}
+.adm-chart-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.adm-chart-title{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;}
+.adm-chart-legend{display:flex;gap:16px;}
+.adm-legend-item{display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase;}
+.adm-legend-dot{width:6px;height:6px;border-radius:50%;}
+.adm-bars-area{display:flex;align-items:flex-end;gap:8px;height:140px;padding-bottom:24px;position:relative;border-bottom:1px solid rgba(255,255,255,0.05);}
+.adm-bar-grp{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;position:relative;}
+.adm-bar-inner{width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;flex:1;}
+.adm-bar-seg{border-radius:3px 3px 0 0;min-height:2px;width:45%;}
+.adm-bar-month{position:absolute;bottom:-20px;font-size:8px;color:rgba(255,255,255,0.18);text-align:center;white-space:nowrap;letter-spacing:1px;text-transform:uppercase;}
+.adm-bar-tip{position:absolute;top:-18px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);white-space:nowrap;}
+
+/* Tables */
+.adm-tbl-wrap{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:16px;}
 .adm-tbl-scroll{overflow-x:auto;}
-.adm-tbl{width:100%;border-collapse:collapse;font-size:11px;}
-.adm-tbl thead tr{background:#1a1a1a;}
-.adm-tbl th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);border-bottom:1px solid rgba(255,255,255,0.07);white-space:nowrap;}
-.adm-tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.45);vertical-align:middle;}
+.adm-tbl-scroll::-webkit-scrollbar{height:4px;}
+.adm-tbl-scroll::-webkit-scrollbar-track{background:transparent;}
+.adm-tbl-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+.adm-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.adm-tbl thead tr{background:#181818;}
+.adm-tbl th{padding:11px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;}
+.adm-tbl td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);vertical-align:middle;}
 .adm-tbl tbody tr:last-child td{border-bottom:none;}
-.adm-tbl tbody tr:hover td{background:rgba(255,255,255,0.02);}
-.adm-id{color:var(--burg);font-weight:700;font-size:10px;}
-.adm-green{color:#2ecc71;font-weight:700;}
-.adm-red{color:#e74c3c;}
+.adm-tbl tbody tr:hover td{background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.6);}
+.adm-id{color:#a0253d;font-weight:800;font-size:11px;letter-spacing:1px;}
+.adm-green{color:#27ae60;font-weight:700;}
+.adm-red{color:#c0392b;font-weight:600;}
 .adm-gold{color:#C9A84C;font-weight:700;}
-.adm-white{color:#fff;font-weight:600;}
-.adm-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
-.adm-badge-green{background:rgba(46,204,113,0.15);color:#2ecc71;}
-.adm-badge-red{background:rgba(231,76,60,0.15);color:#e74c3c;}
-.adm-badge-gray{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.25);}
-.adm-badge-gold{background:rgba(201,168,76,0.15);color:#C9A84C;}
-.adm-owner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px;}
-.adm-owner-card{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:20px;}
-.adm-owner-name{font-size:16px;font-weight:800;color:#fff;margin-bottom:3px;}
-.adm-owner-pct{font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:14px;}
-.adm-owner-amt{font-size:26px;font-weight:800;color:#C9A84C;margin-bottom:10px;}
-.adm-owner-bar-bg{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;}
-.adm-owner-bar{height:3px;background:var(--burg);border-radius:2px;transition:width 0.8s ease;}
-.adm-chart{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:18px;margin-bottom:16px;}
-.adm-chart-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:14px;}
-.adm-bars{display:flex;align-items:flex-end;gap:5px;height:110px;}
-.adm-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;}
-.adm-bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-end;width:100%;}
-.adm-bar{border-radius:3px 3px 0 0;min-height:2px;}
-.adm-bar-lbl{font-size:8px;color:rgba(255,255,255,0.15);text-align:center;white-space:nowrap;overflow:hidden;}
-.adm-bar-val{font-size:8px;color:rgba(255,255,255,0.25);}
-.adm-tx-form{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:18px;margin-bottom:16px;}
-.adm-tx-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;}
-.adm-tx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px;}
-.adm-tx-field label{display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px;}
-.adm-fi{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:7px 9px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:11px;outline:none;}
+.adm-white{color:rgba(255,255,255,0.85);font-weight:600;}
+.adm-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.adm-badge-green{background:rgba(39,174,96,0.12);color:#27ae60;border:1px solid rgba(39,174,96,0.2);}
+.adm-badge-red{background:rgba(192,57,43,0.12);color:#e74c3c;border:1px solid rgba(192,57,43,0.2);}
+.adm-badge-gray{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.06);}
+.adm-badge-gold{background:rgba(201,168,76,0.12);color:#C9A84C;border:1px solid rgba(201,168,76,0.2);}
+
+/* Owner cards */
+.adm-owner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:20px;}
+.adm-owner-card{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px;}
+.adm-owner-name{font-size:20px;font-weight:900;color:#fff;margin-bottom:2px;letter-spacing:-0.5px;}
+.adm-owner-pct{font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:18px;letter-spacing:2px;text-transform:uppercase;}
+.adm-owner-amt{font-size:32px;font-weight:800;color:#C9A84C;margin-bottom:14px;letter-spacing:-1px;}
+.adm-owner-bar-bg{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;}
+.adm-owner-bar{height:4px;background:var(--burg);border-radius:2px;transition:width 1s cubic-bezier(0.25,0.46,0.45,0.94);}
+
+/* Transaction form */
+.adm-tx-form{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.adm-tx-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;}
+.adm-tx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px;}
+.adm-tx-field label{display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px;}
+.adm-fi{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#fff;padding:8px 11px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:12px;outline:none;transition:border-color 0.15s;}
 .adm-fi:focus{border-color:var(--burg);}
-.adm-tx-btn{background:var(--burg);border:none;color:#fff;padding:8px 18px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;}
+.adm-fi option{background:#1a1a1a;}
+.adm-tx-btn{background:var(--burg);border:none;color:#fff;padding:9px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;}
 .adm-tx-btn:hover{background:var(--burg2);}
-.adm-cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
-.adm-cost-card{background:#161616;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:16px;}
-.adm-cost-card-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.adm-cost-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+
+/* Cost cards */
+.adm-cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.adm-cost-card{background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;}
+.adm-cost-card-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.adm-cost-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);}
 .adm-cost-row:last-child{border:none;}
-.adm-cost-key{font-size:11px;color:rgba(255,255,255,0.35);}
-.adm-cost-val{font-size:11px;font-weight:700;color:#C9A84C;}
-.adm-loading{text-align:center;padding:48px;color:rgba(255,255,255,0.15);font-size:10px;letter-spacing:3px;text-transform:uppercase;}
-.adm-empty{text-align:center;padding:32px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+.adm-cost-key{font-size:11px;color:rgba(255,255,255,0.3);}
+.adm-cost-val{font-size:12px;font-weight:700;color:#C9A84C;}
+
+/* States */
+.adm-loading{text-align:center;padding:60px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:4px;text-transform:uppercase;}
+.adm-empty{text-align:center;padding:40px;color:rgba(255,255,255,0.08);font-size:10px;letter-spacing:3px;text-transform:uppercase;}
 .adm-content{display:none;}
 .adm-content.on{display:block;}
-@media(max-width:639px){.adm-body{padding:14px 16px;}.adm-hdr,.adm-nav{padding:0 16px;}.adm-stat-grid{grid-template-columns:1fr 1fr;}.adm-stat-val{font-size:15px;}}
+
+@media(max-width:900px){.adm-kpi-row{grid-template-columns:repeat(2,1fr);}.adm-kpi-row.row2{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:639px){.adm-body{padding:16px 16px;}.adm-hdr,.adm-nav{padding:0 16px;}.adm-kpi-row,.adm-kpi-row.row2{grid-template-columns:1fr 1fr;}.adm-kpi-val{font-size:18px;}.adm-kpi{padding:14px 16px;}}
 .aff-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px);}
 .aff-modal-bg.on{display:flex;}
 @media(min-width:640px){.aff-modal-bg{align-items:center;padding:24px;}}
@@ -818,7 +867,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
   
 <script>
-const U="https://script.google.com/macros/s/AKfycbxM7DyrYTR8SUR5TJBr3ix8kiOQmrZWk8TXiSCxUniKZvXr82UikRD917pFOVu2nFVw/exec";
+const U="https://script.google.com/macros/s/AKfycbysPX59PnJEe6e-ol2tkXt-ddtDcSnbVrmddurVVSsT38mtzsDo7g1vIt9xnNXgkYAU/exec";
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
 let affDiscountPct=0,affCodeApplied="",coAffValid=false;
@@ -1310,8 +1359,7 @@ loadProducts();upd();
 // ══════════════════════════════════════════════════════════
 // Password is SHA-256 hashed. Default = "buettees2025"
 // To change: go to https://emn178.github.io/online-tools/sha256.html
-// Hash your new password and replace the string below
-const ADMIN_PASS_HASH = "f724f3424248af828baf2b46d8a2795878f2d7b91d7c8eb42c6108937eba8072"; // = "buettees2025" — change at https://emn178.github.io/online-tools/sha256.html
+const ADMIN_PASS_HASH = "f724f3424248af828baf2b46d8a2795878f2d7b91d7c8eb42c6108937eba8072";
 
 async function sha256(str){const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");}
 
@@ -1364,70 +1412,188 @@ async function admLoadData(){
     admRenderAll();
   }catch(e){
     document.getElementById("admUpdated").textContent="Error";
-    document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#e74c3c;">Failed to load: ${e.message}<br><br>Make sure you deployed the new Apps Script version.</div>`;
+    document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#c0392b;">Failed to load: ${e.message}<br><br>Make sure the Apps Script is deployed and URL is correct.</div>`;
   }
 }
 
 function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
+function admFmtShort(n){if(Math.abs(n)>=1000)return"৳"+(n/1000).toFixed(1)+"k";return"৳"+Math.round(n);}
 
 function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();}
 
 function admRenderOverview(){
   const s=ADM_DATA.summary;
-  const mc=s.totalNetProfit>=0?"green":"red";
-  document.getElementById("adm-overview").innerHTML=`
-    <div class="adm-stat-grid">
-      <div class="adm-stat"><div class="adm-stat-lbl">Total Revenue</div><div class="adm-stat-val">${admFmt(s.totalRevenue)}</div><div class="adm-stat-sub">${s.totalOrders} confirmed orders</div></div>
-      <div class="adm-stat"><div class="adm-stat-lbl">Supplier Cost</div><div class="adm-stat-val red">${admFmt(s.totalSupplierCost)}</div><div class="adm-stat-sub">Blank + print + poly</div></div>
-      <div class="adm-stat"><div class="adm-stat-lbl">Gross Profit</div><div class="adm-stat-val ${s.totalGrossProfit>=0?"green":"red"}">${admFmt(s.totalGrossProfit)}</div><div class="adm-stat-sub">Revenue − supplier cost</div></div>
-      <div class="adm-stat"><div class="adm-stat-lbl">Aff. Commissions</div><div class="adm-stat-val red">${admFmt(s.totalAffComm)}</div><div class="adm-stat-sub">Owed to affiliates</div></div>
-      <div class="adm-stat"><div class="adm-stat-lbl">Extra Expenses</div><div class="adm-stat-val red">${admFmt(s.totalExtraExpenses)}</div><div class="adm-stat-sub">Ads, equipment etc.</div></div>
-      <div class="adm-stat accent"><div class="adm-stat-lbl">Net Profit</div><div class="adm-stat-val ${mc}">${admFmt(s.totalNetProfit)}</div><div class="adm-stat-sub">After all deductions</div></div>
-      <div class="adm-stat"><div class="adm-stat-lbl">Net Margin</div><div class="adm-stat-val gold">${s.margin.toFixed(1)}%</div><div class="adm-stat-sub">Net / Revenue</div></div>
-    </div>
-    <div class="adm-sec">Monthly Net Profit</div>
-    <div class="adm-chart"><div class="adm-chart-title">Net Profit by Month</div><div class="adm-bars" id="admBarChart"></div></div>`;
-  const monthly=ADM_DATA.monthly;
+  const monthly=ADM_DATA.monthly||[];
+  const np=s.totalNetProfit;
+  const gpColor=s.totalGrossProfit>=0?"c-green":"c-red";
+  const npColor=np>=0?"c-green":"c-red";
+
+  // Build chart
+  let chartHtml='<div class="adm-empty">No monthly data yet</div>';
   if(monthly.length){
-    const maxV=Math.max(...monthly.map(m=>Math.abs(m.netProfit)),1);
-    document.getElementById("admBarChart").innerHTML=monthly.map(m=>{
-      const h=Math.round(Math.abs(m.netProfit)/maxV*100);
-      const color=m.netProfit>=0?"#2ecc71":"#e74c3c";
-      return`<div class="adm-bar-col"><div class="adm-bar-val">${Math.round(m.netProfit/1000)}k</div><div class="adm-bar-wrap"><div class="adm-bar" style="height:${h}px;background:${color};width:100%"></div></div><div class="adm-bar-lbl">${m.month.substring(0,7)}</div></div>`;
+    const maxR=Math.max(...monthly.map(m=>m.revenue),1);
+    const maxN=Math.max(...monthly.map(m=>Math.abs(m.netProfit)),1);
+    const H=110;
+    chartHtml=monthly.map(m=>{
+      const rh=Math.round(m.revenue/maxR*H);
+      const nh=Math.round(Math.abs(m.netProfit)/maxN*H);
+      const nc=m.netProfit>=0?"#27ae60":"#c0392b";
+      const mo=m.month?m.month.substring(5,7)+"/"+m.month.substring(2,4):m.month;
+      return`<div class="adm-bar-grp">
+        <div class="adm-bar-tip">${admFmtShort(m.netProfit)}</div>
+        <div class="adm-bar-inner">
+          <div class="adm-bar-seg" style="height:${rh}px;background:rgba(255,255,255,0.07);"></div>
+          <div class="adm-bar-seg" style="height:${nh}px;background:${nc};"></div>
+        </div>
+        <div class="adm-bar-month">${mo}</div>
+      </div>`;
     }).join("");
   }
+
+  document.getElementById("adm-overview").innerHTML=`
+    <div class="adm-kpi-row">
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Total Revenue</div>
+        <div class="adm-kpi-val c-white">${admFmt(s.totalRevenue)}</div>
+        <div class="adm-kpi-sub">${s.totalOrders} confirmed orders</div>
+      </div>
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Supplier Cost</div>
+        <div class="adm-kpi-val c-red">${admFmt(s.totalSupplierCost)}</div>
+        <div class="adm-kpi-sub">Blank + print + poly</div>
+      </div>
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Gross Profit</div>
+        <div class="adm-kpi-val ${gpColor}">${admFmt(s.totalGrossProfit)}</div>
+        <div class="adm-kpi-sub">Revenue − supplier cost</div>
+      </div>
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Aff. Commissions</div>
+        <div class="adm-kpi-val c-red">${admFmt(s.totalAffComm)}</div>
+        <div class="adm-kpi-sub">Owed to affiliates</div>
+      </div>
+    </div>
+    <div class="adm-kpi-row row2">
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Extra Expenses</div>
+        <div class="adm-kpi-val c-red">${admFmt(s.totalExtraExpenses)}</div>
+        <div class="adm-kpi-sub">Ads, equipment etc.</div>
+      </div>
+      <div class="adm-kpi highlight">
+        <div class="adm-kpi-label">Net Profit</div>
+        <div class="adm-kpi-val ${npColor}">${admFmt(np)}</div>
+        <div class="adm-kpi-sub">After all deductions</div>
+        <div class="adm-kpi-accent"></div>
+      </div>
+      <div class="adm-kpi">
+        <div class="adm-kpi-label">Net Margin</div>
+        <div class="adm-kpi-val c-gold">${s.margin.toFixed(1)}%</div>
+        <div class="adm-kpi-sub">Net profit / revenue</div>
+      </div>
+    </div>
+    <div class="adm-sec">Monthly Performance</div>
+    <div class="adm-chart-wrap">
+      <div class="adm-chart-hd">
+        <div class="adm-chart-title">Revenue vs Net Profit</div>
+        <div class="adm-chart-legend">
+          <div class="adm-legend-item"><div class="adm-legend-dot" style="background:rgba(255,255,255,0.15)"></div>Revenue</div>
+          <div class="adm-legend-item"><div class="adm-legend-dot" style="background:#27ae60"></div>Net Profit</div>
+        </div>
+      </div>
+      <div class="adm-bars-area">${chartHtml}</div>
+    </div>`;
 }
 
 function admRenderOrders(){
   const rows=ADM_DATA.orders;
   if(!rows.length){document.getElementById("adm-orders").innerHTML='<div class="adm-empty">No confirmed orders yet</div>';return;}
-  document.getElementById("adm-orders").innerHTML=`<div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Supplier Cost</th><th>Gross Profit</th><th>Aff. Comm</th><th>Net Profit</th><th>Margin</th></tr></thead>
+  // Summary totals row
+  const totRev=rows.reduce((s,o)=>s+o.total,0);
+  const totCost=rows.reduce((s,o)=>s+o.supplierCost,0);
+  const totGP=rows.reduce((s,o)=>s+o.grossProfit,0);
+  const totComm=rows.reduce((s,o)=>s+o.affCommission,0);
+  const totNP=rows.reduce((s,o)=>s+o.netProfit,0);
+  document.getElementById("adm-orders").innerHTML=`
+    <div class="adm-kpi-row" style="margin-bottom:20px;">
+      <div class="adm-kpi"><div class="adm-kpi-label">Orders</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Revenue</div><div class="adm-kpi-val c-white">${admFmt(totRev)}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Gross Profit</div><div class="adm-kpi-val ${totGP>=0?"c-green":"c-red"}">${admFmt(totGP)}</div></div>
+      <div class="adm-kpi highlight"><div class="adm-kpi-label">Net Profit</div><div class="adm-kpi-val ${totNP>=0?"c-green":"c-red"}">${admFmt(totNP)}</div><div class="adm-kpi-accent"></div></div>
+    </div>
+    <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+    <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Supplier Cost</th><th>Gross</th><th>Aff.</th><th>Net Profit</th><th>Margin</th></tr></thead>
     <tbody>${rows.map(o=>{
       const margin=o.total>0?(o.netProfit/o.total*100).toFixed(1):0;
-      const mc=margin>=0?"adm-badge-green":"adm-badge-red";
-      const short=o.items.length>35?o.items.substring(0,35)+"…":o.items;
-      return`<tr><td class="adm-id">${o.orderId}</td><td style="font-size:10px;color:rgba(255,255,255,0.2)">${o.timestamp.substring(0,12)}</td><td style="font-size:10px;max-width:130px" title="${o.items}">${short}</td><td><span class="adm-badge adm-badge-gray">${o.supplier}</span></td><td class="adm-white">${admFmt(o.total)}</td><td class="adm-red">${admFmt(o.supplierCost)}</td><td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td><td class="adm-red">${o.affCommission>0?admFmt(o.affCommission):"—"}</td><td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td><td><span class="adm-badge ${mc}">${margin}%</span></td></tr>`;
+      const mc=parseFloat(margin)>=0?"adm-badge-green":"adm-badge-red";
+      const ts=o.timestamp||"";
+      // Parse "Sat, 29 Mar 2025, 14:30:00" or fallback
+      const datePart=ts.split(",").slice(0,2).join(",").trim()||ts.substring(0,12);
+      const short=o.items.length>32?o.items.substring(0,32)+"…":o.items;
+      return`<tr>
+        <td class="adm-id">${o.orderId}</td>
+        <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
+        <td style="font-size:10px;max-width:140px" title="${o.items.replace(/"/g,"'")}">${short}</td>
+        <td><span class="adm-badge adm-badge-gray">${o.supplier}</span></td>
+        <td class="adm-white">${admFmt(o.total)}</td>
+        <td class="adm-red">${admFmt(o.supplierCost)}</td>
+        <td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td>
+        <td>${o.affCommission>0?`<span class="adm-red">${admFmt(o.affCommission)}</span>`:`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+        <td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td>
+        <td><span class="adm-badge ${mc}">${margin}%</span></td>
+      </tr>`;
     }).join("")}</tbody></table></div></div>`;
 }
 
 function admRenderAffiliates(){
   const rows=ADM_DATA.affiliates;
   if(!rows.length){document.getElementById("adm-affiliates").innerHTML='<div class="adm-empty">No affiliates yet</div>';return;}
-  document.getElementById("adm-affiliates").innerHTML=`<div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+  // Only show real affiliates (skip obvious test data) — filter where name has real chars
+  const active=rows.filter(a=>a.status.toLowerCase()==="active");
+  const totalComm=rows.reduce((s,a)=>s+a.totalCommission,0);
+  const totalDisc=rows.reduce((s,a)=>s+a.totalDiscount,0);
+  document.getElementById("adm-affiliates").innerHTML=`
+    <div class="adm-kpi-row" style="margin-bottom:20px;">
+      <div class="adm-kpi"><div class="adm-kpi-label">Total Affiliates</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Active</div><div class="adm-kpi-val c-green">${active.length}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Total Commission Owed</div><div class="adm-kpi-val c-gold">${admFmt(totalComm)}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Total Discount Given</div><div class="adm-kpi-val c-red">${admFmt(totalDisc)}</div></div>
+    </div>
+    <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
     <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Orders</th><th>Discount Given</th><th>Commission Owed</th></tr></thead>
-    <tbody>${rows.map(a=>`<tr><td class="adm-id">${a.code}</td><td class="adm-white">${a.name||"—"}</td><td style="font-size:10px">${a.type}</td><td><span class="adm-badge ${a.status.toLowerCase()==="active"?"adm-badge-green":"adm-badge-gray"}">${a.status}</span></td><td>${a.orderCount}</td><td class="adm-red">${admFmt(a.totalDiscount)}</td><td class="adm-gold">${admFmt(a.totalCommission)}</td></tr>`).join("")}
-    </tbody></table></div></div>`;
+    <tbody>${rows.map(a=>`<tr>
+      <td class="adm-id">${a.code}</td>
+      <td class="adm-white">${a.name||"—"}</td>
+      <td style="font-size:10px;color:rgba(255,255,255,0.3)">${a.type}</td>
+      <td><span class="adm-badge ${a.status.toLowerCase()==="active"?"adm-badge-green":"adm-badge-gray"}">${a.status}</span></td>
+      <td class="${a.orderCount>0?"adm-white":""}">${a.orderCount}</td>
+      <td class="${a.totalDiscount>0?"adm-red":""}"> ${a.totalDiscount>0?admFmt(a.totalDiscount):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${a.totalCommission>0?"adm-gold":""}">${a.totalCommission>0?admFmt(a.totalCommission):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+    </tr>`).join("")}</tbody></table></div></div>`;
 }
 
 function admRenderOwners(){
   const owners=ADM_DATA.ownerShares||[];
+  const total=owners.reduce((s,o)=>s+o.amount,0);
   document.getElementById("adm-owners").innerHTML=`
-    <div class="adm-owner-grid">${owners.map(o=>`<div class="adm-owner-card"><div class="adm-owner-name">${o.name}</div><div class="adm-owner-pct">${o.share.toFixed(1)}% share</div><div class="adm-owner-amt">${admFmt(o.amount)}</div><div class="adm-owner-bar-bg"><div class="adm-owner-bar" style="width:${o.share}%"></div></div></div>`).join("")}</div>
+    <div class="adm-sec">Profit Distribution</div>
+    <div class="adm-owner-grid">${owners.map(o=>`
+      <div class="adm-owner-card">
+        <div class="adm-owner-name">${o.name}</div>
+        <div class="adm-owner-pct">${o.share.toFixed(1)}% equity</div>
+        <div class="adm-owner-amt">${admFmt(o.amount)}</div>
+        <div class="adm-owner-bar-bg"><div class="adm-owner-bar" style="width:${o.share}%"></div></div>
+      </div>`).join("")}</div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Owner</th><th>Share %</th><th>Net Profit Share</th></tr></thead>
-      <tbody>${owners.map(o=>`<tr><td class="adm-white">${o.name}</td><td>${o.share.toFixed(1)}%</td><td class="adm-gold">${admFmt(o.amount)}</td></tr>`).join("")}</tbody>
+      <thead><tr><th>Owner</th><th>Equity Share</th><th>Net Profit Share</th><th>% of Total</th></tr></thead>
+      <tbody>${owners.map(o=>`<tr>
+        <td class="adm-white">${o.name}</td>
+        <td>${o.share.toFixed(1)}%</td>
+        <td class="adm-gold">${admFmt(o.amount)}</td>
+        <td><span class="adm-badge adm-badge-gold">${total>0?(o.amount/total*100).toFixed(1):0}%</span></td>
+      </tr>`).join("")}</tbody>
     </table></div></div>`;
+  // Animate bars
+  setTimeout(()=>{document.querySelectorAll(".adm-owner-bar").forEach(b=>{const w=b.style.width;b.style.width="0";setTimeout(()=>b.style.width=w,50);});},100);
 }
 
 function admRenderMonthly(){
@@ -1437,7 +1603,16 @@ function admRenderMonthly(){
     <thead><tr><th>Month</th><th>Orders</th><th>Revenue</th><th>Supplier Cost</th><th>Gross Profit</th><th>Aff. Comm</th><th>Net Profit</th><th>Margin</th></tr></thead>
     <tbody>${rows.map(m=>{
       const margin=m.revenue>0?(m.netProfit/m.revenue*100).toFixed(1):0;
-      return`<tr><td class="adm-white">${m.month}</td><td>${m.orders}</td><td class="adm-white">${admFmt(m.revenue)}</td><td class="adm-red">${admFmt(m.supplierCost)}</td><td class="${m.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(m.grossProfit)}</td><td class="adm-red">${admFmt(m.affComm)}</td><td class="${m.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(m.netProfit)}</td><td><span class="adm-badge ${margin>=0?"adm-badge-green":"adm-badge-red"}">${margin}%</span></td></tr>`;
+      return`<tr>
+        <td class="adm-white">${m.month}</td>
+        <td>${m.orders}</td>
+        <td class="adm-white">${admFmt(m.revenue)}</td>
+        <td class="adm-red">${admFmt(m.supplierCost)}</td>
+        <td class="${m.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(m.grossProfit)}</td>
+        <td class="adm-red">${m.affComm>0?admFmt(m.affComm):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+        <td class="${m.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(m.netProfit)}</td>
+        <td><span class="adm-badge ${parseFloat(margin)>=0?"adm-badge-green":"adm-badge-red"}">${margin}%</span></td>
+      </tr>`;
     }).join("")}</tbody></table></div></div>`;
 }
 
@@ -1449,17 +1624,27 @@ function admRenderTransactions(){
       <div class="adm-tx-grid">
         <div class="adm-tx-field"><label>Date</label><input class="adm-fi" id="txDate" type="date"/></div>
         <div class="adm-tx-field"><label>Type</label><select class="adm-fi" id="txType"><option>Expense</option><option>Income</option><option>Capital In</option><option>Capital Out</option></select></div>
-        <div class="adm-tx-field"><label>Owner</label><input class="adm-fi" id="txOwner" placeholder="e.g. Ashik" type="text"/></div>
+        <div class="adm-tx-field"><label>Owner</label><input class="adm-fi" id="txOwner" placeholder="e.g. Ashik"/></div>
         <div class="adm-tx-field"><label>Amount (BDT)</label><input class="adm-fi" id="txAmount" placeholder="500" type="number"/></div>
         <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
         <div class="adm-tx-field"><label>Category</label><input class="adm-fi" id="txCat" placeholder="e.g. Marketing"/></div>
       </div>
-      <button class="adm-tx-btn" onclick="admAddTx()">Add Transaction</button>
+      <button class="adm-tx-btn" onclick="admAddTx()">+ Add Transaction</button>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
       <thead><tr><th>Date</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th>Category</th></tr></thead>
-      <tbody>${!rows.length?'<tr><td colspan="6"><div class="adm-empty">No transactions yet</div></td></tr>':
-        rows.map(t=>`<tr><td style="font-size:10px">${t.date}</td><td><span class="adm-badge ${t.type.includes("Expense")||t.type.includes("Out")?"adm-badge-red":"adm-badge-green"}">${t.type}</span></td><td>${t.owner||"—"}</td><td class="${t.type.includes("Expense")||t.type.includes("Out")?"adm-red":"adm-green"}">${admFmt(t.amount)}</td><td>${t.description}</td><td style="font-size:10px;color:rgba(255,255,255,0.2)">${t.category}</td></tr>`).join("")}
+      <tbody>${!rows.length?`<tr><td colspan="6" style="text-align:center;padding:32px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:2px">No transactions yet</td></tr>`:
+        rows.map(t=>{
+          const isOut=t.type.includes("Expense")||t.type.includes("Out");
+          return`<tr>
+            <td style="font-size:10px;white-space:nowrap">${t.date}</td>
+            <td><span class="adm-badge ${isOut?"adm-badge-red":"adm-badge-green"}">${t.type}</span></td>
+            <td>${t.owner||"—"}</td>
+            <td class="${isOut?"adm-red":"adm-green"}">${admFmt(t.amount)}</td>
+            <td class="adm-white">${t.description}</td>
+            <td style="font-size:10px;color:rgba(255,255,255,0.2)">${t.category}</td>
+          </tr>`;
+        }).join("")}
       </tbody></table></div></div>`;
   document.getElementById("txDate").value=new Date().toISOString().split("T")[0];
 }
@@ -1476,7 +1661,7 @@ async function admAddTx(){
     const p=new URLSearchParams({action:"addTransaction",date,type,owner,amount,description:desc,category:cat});
     const res=await fetch(`${U}?${p.toString()}`);
     const d=await res.json();
-    if(d.ok){alert("Transaction added!");document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";admLoadData();}
+    if(d.ok){document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";admLoadData();}
     else alert("Error: "+(d.error||"Unknown"));
   }catch(e){alert("Failed: "+e.message);}
 }
@@ -1486,9 +1671,34 @@ function admRenderCosts(){
   const owners=ADM_DATA.owners||[];
   document.getElementById("adm-costs").innerHTML=`
     <div class="adm-sec">Supplier Cost Structure</div>
-    <div class="adm-cost-grid">${suppliers.map(sup=>`<div class="adm-cost-card"><div class="adm-cost-card-title">${sup}</div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Regular</span><span class="adm-cost-val">৳150</span></div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Drop Shoulder</span><span class="adm-cost-val">৳170</span></div><div class="adm-cost-row"><span class="adm-cost-key">Blank — Hoodie</span><span class="adm-cost-val">৳400</span></div><div class="adm-cost-row"><span class="adm-cost-key">Print / sq inch</span><span class="adm-cost-val">৳0.5</span></div><div class="adm-cost-row"><span class="adm-cost-key">Heat Press / side</span><span class="adm-cost-val">৳5</span></div><div class="adm-cost-row"><span class="adm-cost-key">Poly</span><span class="adm-cost-val">৳3.5</span></div></div>`).join("")}</div>
+    <div class="adm-cost-grid">${suppliers.map(sup=>`
+      <div class="adm-cost-card">
+        <div class="adm-cost-card-title">${sup}</div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Regular</span><span class="adm-cost-val">৳150</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Drop Shoulder</span><span class="adm-cost-val">৳170</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Hoodie</span><span class="adm-cost-val">৳400</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Print / sq inch</span><span class="adm-cost-val">৳0.50</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Heat Press / side</span><span class="adm-cost-val">৳5</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Poly bag</span><span class="adm-cost-val">৳3.50</span></div>
+      </div>`).join("")}
+    </div>
     <div class="adm-sec">Owner Configuration</div>
-    <div class="adm-cost-grid"><div class="adm-cost-card"><div class="adm-cost-card-title">Owners & Shares</div>${owners.map(o=>`<div class="adm-cost-row"><span class="adm-cost-key">${o.name}</span><span class="adm-cost-val">${o.share.toFixed(1)}%</span></div>`).join("")}<div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.15);line-height:1.8">Edit in Settings tab of Google Sheet</div></div></div>`;
+    <div class="adm-cost-grid">
+      <div class="adm-cost-card">
+        <div class="adm-cost-card-title">Owners & Equity Shares</div>
+        ${owners.map(o=>`<div class="adm-cost-row"><span class="adm-cost-key">${o.name}</span><span class="adm-cost-val">${o.share.toFixed(1)}%</span></div>`).join("")}
+        <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.12);line-height:2;">Edit in Settings tab of Google Sheet</div>
+      </div>
+      <div class="adm-cost-card">
+        <div class="adm-cost-card-title">Affiliate Commissions</div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Regular (With Storage)</span><span class="adm-cost-val">৳30</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Drop Shoulder (With Storage)</span><span class="adm-cost-val">৳40</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (With Storage)</span><span class="adm-cost-val">৳50</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Regular (No Storage)</span><span class="adm-cost-val">৳20</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Drop Shoulder (No Storage)</span><span class="adm-cost-val">৳25</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (No Storage)</span><span class="adm-cost-val">৳35</span></div>
+      </div>
+    </div>`;
 }
 </script>
 </body>

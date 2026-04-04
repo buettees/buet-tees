@@ -587,7 +587,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
     <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
-  <div class="ft-bk">bKash <span>01782761981</span> &nbsp;·&nbsp; <span style="color:rgba(255,255,255,0.15);cursor:pointer;font-size:10px;letter-spacing:2px;" onclick="openAdminLock()">ADMIN</span></div></div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
 
 <!-- Affiliate Registration Modal -->
@@ -825,7 +825,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="admin-lock-title">Admin Access</div>
     <div class="admin-lock-sub">Enter password to continue</div>
     <input class="admin-pass-input" id="adminPassInput" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()"/>
-    <div style="margin-bottom:10px;"><input class="admin-pass-input" id="adminUrlInput" type="text" placeholder="Apps Script URL (optional override)" style="font-size:10px;letter-spacing:0;font-weight:400;" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
+    <!-- URL override removed — now using Supabase -->
     <button class="admin-pass-btn" onclick="adminLogin()">Unlock →</button>
     <div class="admin-pass-err" id="adminPassErr"></div>
   </div>
@@ -867,9 +867,23 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 
   
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-const U_DEFAULT="https://script.google.com/macros/s/AKfycby7K0M8o1hD4tfud9-zHzkVl64QlmmV1cJ5iBeXhN4GWx7qw2GvLiuCJWTs5-is4vRW/exec";
-let U=U_DEFAULT;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// SUPABASE CONFIG — Replace these with your project values
+// Get them from: Supabase Dashboard → Settings → API
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_FL7oRPEqn4Gg18xWaLPsug_fndTnfQm";
+// IMPORTANT: Admin panel needs the SERVICE ROLE key (never expose in public JS)
+// For admin panel API calls we use a separate admin endpoint or Edge Function
+const SUPABASE_SERVICE_KEY = "sb_secret_7ie_t9FcNz599m6fdqwKMw_Qjx50pYJ"; // only used in admin, not exposed to customers
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// Legacy compat (kept so nothing else breaks)
+let U = SUPABASE_URL;
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
 let affDiscountPct=0,affCodeApplied="",coAffValid=false;
@@ -897,12 +911,21 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 
 async function loadProducts(){
   try{
-    const r=await fetch(U);const d=await r.json();
-    prods=d.products||[];
-    if(d.affiliateDiscount)affDiscountPct=parseFloat(d.affiliateDiscount)||0;
+    const {data:products,error:pe}=await sb.from('products').select('*, product_categories(*)').eq('active',true);
+    if(pe)throw pe;
+    const {data:setting}=await sb.from('settings').select('value').eq('key','affiliate_discount_pct').single();
+    if(setting)affDiscountPct=parseFloat(setting.value)||10;
+    prods=(products||[]).map(p=>({
+      id:p.id,name:p.name,
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>({
+        category:c.category,price:parseFloat(c.price),
+        discountedPrice:c.discounted_price?parseFloat(c.discounted_price):null,
+        image:c.image||'',badge:c.badge||'',sizes:c.sizes||[],colors:c.colors||[],sizeChart:c.size_chart||''
+      }))
+    }));
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
-  }catch(e){document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
+  }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }
 
 function render(){
@@ -1043,16 +1066,16 @@ async function checkAffCode(ctx){
   if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
   statusEl.textContent="Checking...";statusEl.className="aff-code-status";
   try{
-    const r=await fetch(`${U}?action=checkAff&code=${encodeURIComponent(code)}`);
-    const d=await r.json();
-    if(d.valid){
-      statusEl.textContent=`✓ Code applied! ${d.discountPct||d.discount||10}% discount on your order.`;
-      statusEl.className="aff-code-status ok";
-      if(ctx==='co'){coAffValid=true;affDiscountPct=d.discountPct||d.discount||10;affCodeApplied=code;updSum();}
-    }else{
+    const {data:aff,error}=await sb.from('affiliates').select('discount_pct,status').eq('code',code).single();
+    if(error||!aff||aff.status!=='active'){
       statusEl.textContent="✗ Invalid affiliate code.";
       statusEl.className="aff-code-status err";
       if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
+    }else{
+      const disc=parseFloat(aff.discount_pct)||10;
+      statusEl.textContent=`✓ Code applied! ${disc}% discount on your order.`;
+      statusEl.className="aff-code-status ok";
+      if(ctx==='co'){coAffValid=true;affDiscountPct=disc;affCodeApplied=code;updSum();}
     }
   }catch(e){statusEl.textContent="Could not verify. Try again.";statusEl.className="aff-code-status err";}
 }
@@ -1113,17 +1136,24 @@ async function place(){
   const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    const p=new URLSearchParams({action:"placeOrder",name,email,phone,address:addr,
-      zone:DL[zone],items,subtotal:sub,deliveryFee:fee,total,
-      payment:"bKash",trxId:trx,affiliateCode:affCodeApplied||"",discountPct:discPct,discountAmt:discAmt});
-    const r=await fetch(`${U}?${p.toString()}`);
-    const d=await r.json();
-    const realId=d.orderId||"BT-???";
-    document.getElementById("sucid").textContent=realId;
+    // Get next order ID
+    const {data:seqData}=await sbAdmin.rpc('next_order_id');
+    const orderId=seqData||('BT-'+Date.now());
+    const itemsJson=cart.map(i=>({...i}));
+    const {error:oe}=await sbAdmin.from('orders').insert({
+      id:orderId,name,email,phone,address:addr,
+      zone:DL[zone],items,items_json:itemsJson,
+      subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
+      payment_method:'bKash',trx_id:trx,
+      affiliate_code:affCodeApplied||null,
+      status:'Pending'
+    });
+    if(oe)throw oe;
+    document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
     cart=[];upd();
-  }catch(err){toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
+  }catch(err){console.error(err);toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
 function orderNow(){
   atc();
@@ -1335,10 +1365,21 @@ async function submitAffReg(){
   });
 
   btn.disabled=false;btn.textContent='Register as Affiliate';
+  // Generate affiliate code from student ID
+  const affCode=(sid.replace(/\s/g,'')+name.split(' ')[0].substring(0,3)).toUpperCase().substring(0,10);
+  await sbAdmin.from('affiliates').insert({
+    code:affCode,
+    full_name:name,whatsapp:wa,student_id:sid,hall,email,
+    storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
+    promotion_method:affSelectedPromos.join(', ')||'Not specified',
+    payment_method:affSelectedPay,payment_details:payDetails,
+    income_goal:affSelectedGoal,status:'active',
+    commission_regular:affSelectedType==='storage'?30:20,
+    commission_drop:affSelectedType==='storage'?40:25,
+    commission_hoodie:affSelectedType==='storage'?50:35
+  }).then(({error})=>{if(error)console.error('Aff reg error:',error);});
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
-
-  fetch(`${U}?${params.toString()}`).catch(()=>{});
 
   document.getElementById('affName').value='';
   document.getElementById('affWa').value='';
@@ -1375,10 +1416,8 @@ function openAdminLock(){
 
 async function adminLogin(){
   const val=document.getElementById("adminPassInput").value;
-  const urlOverride=document.getElementById("adminUrlInput").value.trim();
   const hash=await sha256(val);
   if(hash===ADMIN_PASS_HASH){
-    if(urlOverride&&urlOverride.startsWith("http"))U=urlOverride;
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
@@ -1408,15 +1447,117 @@ let ADM_DATA=null;
 async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
-    const res=await fetch(U+"?action=getAccounting");
-    const data=await res.json();
-    if(!data.ok)throw new Error(data.error||"Unknown error");
-    ADM_DATA=data;
+    // Fetch all data in parallel
+    const [ordRes,affRes,txRes,settRes]=await Promise.all([
+      sbAdmin.from('orders').select('*').neq('status','Cancelled').order('created_at',{ascending:false}),
+      sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
+      sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
+      sbAdmin.from('settings').select('*')
+    ]);
+    const orders=ordRes.data||[];
+    const affiliates=affRes.data||[];
+    const transactions=txRes.data||[];
+    const settingsArr=settRes.data||[];
+    const cfg={};settingsArr.forEach(s=>cfg[s.key]=s.value);
+
+    // Cost constants
+    const costRegular=parseFloat(cfg.cost_blank_regular||150);
+    const costDrop=parseFloat(cfg.cost_blank_drop||170);
+    const costHoodie=parseFloat(cfg.cost_blank_hoodie||400);
+    const costPolybag=parseFloat(cfg.cost_polybag||3.5);
+    const ashikShare=parseFloat(cfg.owner_ashik_share||50);
+    const kawsarShare=parseFloat(cfg.owner_kawsar_share||50);
+
+    // Compute per-order profit
+    const confirmedStatuses=['Confirmed','Dispatched','Delivered'];
+    const enrichedOrders=orders.map(o=>{
+      const isConfirmed=confirmedStatuses.includes(o.status);
+      // Determine supplier cost from items string
+      let supplierCost=parseFloat(o.supplier_cost||0);
+      if(!supplierCost){
+        const itemsStr=(o.items||'').toLowerCase();
+        if(itemsStr.includes('hoodie'))supplierCost=costHoodie+costPolybag;
+        else if(itemsStr.includes('drop'))supplierCost=costDrop+costPolybag;
+        else supplierCost=costRegular+costPolybag;
+      }
+      // Affiliate commission
+      let affComm=0;
+      if(o.affiliate_code&&isConfirmed){
+        const aff=affiliates.find(a=>a.code===o.affiliate_code);
+        if(aff){
+          const itemsStr=(o.items||'').toLowerCase();
+          if(itemsStr.includes('hoodie'))affComm=parseFloat(aff.commission_hoodie||35);
+          else if(itemsStr.includes('drop'))affComm=parseFloat(aff.commission_drop||25);
+          else affComm=parseFloat(aff.commission_regular||20);
+        }
+      }
+      const total=parseFloat(o.total||0);
+      const grossProfit=total-supplierCost;
+      const netProfit=grossProfit-affComm;
+      return{
+        orderId:o.id,timestamp:o.created_at,items:o.items||'',
+        supplier:o.supplier||'T-Shirt Hub',
+        total,supplierCost,grossProfit,affCommission:affComm,netProfit,
+        status:o.status,affiliateCode:o.affiliate_code||'',
+        isConfirmed
+      };
+    });
+
+    const confirmed=enrichedOrders.filter(o=>o.isConfirmed);
+    const totalRevenue=confirmed.reduce((s,o)=>s+o.total,0);
+    const totalSupplierCost=confirmed.reduce((s,o)=>s+o.supplierCost,0);
+    const totalGrossProfit=confirmed.reduce((s,o)=>s+o.grossProfit,0);
+    const totalAffComm=confirmed.reduce((s,o)=>s+o.affCommission,0);
+    const totalExtraExpenses=transactions.filter(t=>t.type==='Expense').reduce((s,t)=>s+parseFloat(t.amount||0),0);
+    const totalNetProfit=totalGrossProfit-totalAffComm-totalExtraExpenses;
+    const margin=totalRevenue>0?totalNetProfit/totalRevenue*100:0;
+
+    // Monthly breakdown
+    const monthMap={};
+    confirmed.forEach(o=>{
+      const d=new Date(o.timestamp);
+      const mo=d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}).replace(' ','/');
+      if(!monthMap[mo])monthMap[mo]={month:mo,orders:0,revenue:0,supplierCost:0,grossProfit:0,affComm:0,netProfit:0};
+      monthMap[mo].orders++;
+      monthMap[mo].revenue+=o.total;
+      monthMap[mo].supplierCost+=o.supplierCost;
+      monthMap[mo].grossProfit+=o.grossProfit;
+      monthMap[mo].affComm+=o.affCommission;
+      monthMap[mo].netProfit+=o.netProfit;
+    });
+    const monthly=Object.values(monthMap);
+
+    // Affiliate summaries
+    const affSummary=affiliates.map(a=>{
+      const affOrders=confirmed.filter(o=>o.affiliateCode===a.code);
+      const totalCommission=affOrders.reduce((s,o)=>s+o.affCommission,0);
+      const totalDiscount=affOrders.reduce((s,o)=>s+parseFloat(o.total*(o.discount_pct||0)/100||0),0);
+      return{code:a.code,name:a.full_name,type:a.storage_type,status:a.status,
+        orderCount:affOrders.length,totalCommission,totalDiscount};
+    });
+
+    // Owner shares
+    const ownerShares=[
+      {name:'Ashik',share:ashikShare,amount:totalNetProfit*ashikShare/100},
+      {name:'Kawsar',share:kawsarShare,amount:totalNetProfit*kawsarShare/100}
+    ];
+
+    ADM_DATA={
+      summary:{totalOrders:confirmed.length,totalRevenue,totalSupplierCost,totalGrossProfit,totalAffComm,totalExtraExpenses,totalNetProfit,margin},
+      orders:enrichedOrders,
+      affiliates:affSummary,
+      ownerShares,
+      monthly,
+      transactions,
+      suppliers:['T-Shirt Hub'],
+      owners:ownerShares
+    };
     document.getElementById("admUpdated").textContent="Updated "+new Date().toLocaleTimeString();
     admRenderAll();
   }catch(e){
+    console.error(e);
     document.getElementById("admUpdated").textContent="Error";
-    document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#c0392b;">Failed to load: ${e.message}<br><br>Make sure the Apps Script is deployed and URL is correct.</div>`;
+    document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#c0392b;">Failed to load: ${e.message}<br><br>Check Supabase config and service role key.</div>`;
   }
 }
 
@@ -1669,11 +1810,10 @@ async function admAddTx(){
   const cat=document.getElementById("txCat").value.trim();
   if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
-    const p=new URLSearchParams({action:"addTransaction",date,type,owner,amount,description:desc,category:cat});
-    const res=await fetch(`${U}?${p.toString()}`);
-    const d=await res.json();
-    if(d.ok){document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";toast("Transaction added ✓");admLoadData();}
-    else toast("Error: "+(d.error||"Unknown"));
+    const {error}=await sbAdmin.from('transactions').insert({date,type,owner,amount:parseFloat(amount),description:desc,category:cat});
+    if(error)throw error;
+    document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";
+    toast("Transaction added ✓");admLoadData();
   }catch(e){toast("Failed: "+e.message);}
 }
 

@@ -875,12 +875,23 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 // ══════════════════════════════════════════════════════════
 const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_FL7oRPEqn4Gg18xWaLPsug_fndTnfQm";
-// IMPORTANT: Admin panel needs the SERVICE ROLE key (never expose in public JS)
-// For admin panel API calls we use a separate admin endpoint or Edge Function
-const SUPABASE_SERVICE_KEY = "sb_secret_7ie_t9FcNz599m6fdqwKMw_Qjx50pYJ"; // only used in admin, not exposed to customers
 
+// Public Supabase client (read products, settings, check affiliate codes)
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// Edge Function proxy — replaces sbAdmin (secret key is server-side only)
+let _adminHash = null; // set after login
+const API = '/api/admin';
+async function edgeFetch(action, payload = {}, requiresToken = false) {
+  const body = { action, payload };
+  if (requiresToken && _adminHash) body.token = _adminHash;
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
 
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;
@@ -1136,18 +1147,21 @@ async function place(){
   const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    // Get next order ID
-    const {data:seqData}=await sbAdmin.rpc('next_order_id');
-    const orderId=seqData||('BT-'+Date.now());
+    // Get next order ID via Edge Function
+    const seqRes=await edgeFetch('nextOrderId');
+    const orderId=seqRes.data||('BT-'+Date.now());
     const itemsJson=cart.map(i=>({...i}));
-    const {error:oe}=await sbAdmin.from('orders').insert({
+    const orderPayload={
       id:orderId,name,email,phone,address:addr,
       zone:DL[zone],items,items_json:itemsJson,
       subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
       payment_method:'bKash',trx_id:trx,
       affiliate_code:affCodeApplied||null,
       status:'Pending'
-    });
+    };
+    const orderRes=await edgeFetch('placeOrder',orderPayload);
+    if(orderRes.status>=400)throw new Error(JSON.stringify(orderRes.data));
+    const oe=null; // no error
     if(oe)throw oe;
     document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
@@ -1367,7 +1381,7 @@ async function submitAffReg(){
   btn.disabled=false;btn.textContent='Register as Affiliate';
   // Generate affiliate code from student ID
   const affCode=(sid.replace(/\s/g,'')+name.split(' ')[0].substring(0,3)).toUpperCase().substring(0,10);
-  await sbAdmin.from('affiliates').insert({
+  const affPayload={
     code:affCode,
     full_name:name,whatsapp:wa,student_id:sid,hall,email,
     storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
@@ -1377,7 +1391,8 @@ async function submitAffReg(){
     commission_regular:affSelectedType==='storage'?30:20,
     commission_drop:affSelectedType==='storage'?40:25,
     commission_hoodie:affSelectedType==='storage'?50:35
-  }).then(({error})=>{if(error)console.error('Aff reg error:',error);});
+  };
+  edgeFetch('registerAffiliate',affPayload).catch(e=>console.error('Aff reg error:',e));
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
 
@@ -1418,6 +1433,7 @@ async function adminLogin(){
   const val=document.getElementById("adminPassInput").value;
   const hash=await sha256(val);
   if(hash===ADMIN_PASS_HASH){
+    _adminHash=hash; // store for Edge Function auth
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
@@ -1447,17 +1463,13 @@ let ADM_DATA=null;
 async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
-    // Fetch all data in parallel
-    const [ordRes,affRes,txRes,settRes]=await Promise.all([
-      sbAdmin.from('orders').select('*').neq('status','Cancelled').order('created_at',{ascending:false}),
-      sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
-      sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
-      sbAdmin.from('settings').select('*')
-    ]);
-    const orders=ordRes.data||[];
-    const affiliates=affRes.data||[];
-    const transactions=txRes.data||[];
-    const settingsArr=settRes.data||[];
+    // Fetch all data via Edge Function (secret key stays server-side)
+    const res=await edgeFetch('adminLoad',{},true);
+    if(res.error)throw new Error(res.error);
+    const orders=res.orders||[];
+    const affiliates=res.affiliates||[];
+    const transactions=res.transactions||[];
+    const settingsArr=res.settings||[];
     const cfg={};settingsArr.forEach(s=>cfg[s.key]=s.value);
 
     // Cost constants
@@ -1810,8 +1822,8 @@ async function admAddTx(){
   const cat=document.getElementById("txCat").value.trim();
   if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
-    const {error}=await sbAdmin.from('transactions').insert({date,type,owner,amount:parseFloat(amount),description:desc,category:cat});
-    if(error)throw error;
+    const txRes=await edgeFetch('addTransaction',{date,type,owner,amount:parseFloat(amount),description:desc,category:cat},true);
+    if(txRes.status>=400)throw new Error(JSON.stringify(txRes.data));
     document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";
     toast("Transaction added ✓");admLoadData();
   }catch(e){toast("Failed: "+e.message);}

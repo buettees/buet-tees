@@ -919,10 +919,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 // Get them from: Supabase Dashboard → Settings → API
 // ══════════════════════════════════════════════════════════
 const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_FL7oRPEqn4Gg18xWaLPsug_fndTnfQm";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzk0NzYsImV4cCI6MjA5MDg1NTQ3Nn0.wyJ_V0n_uMcWoohRKjyCEjgySK5JPh8Sushu7e-rxu4";
 // IMPORTANT: Admin panel needs the SERVICE ROLE key (never expose in public JS)
 // For admin panel API calls we use a separate admin endpoint or Edge Function
-const SUPABASE_SERVICE_KEY = "sb_secret_7ie_t9FcNz599m6fdqwKMw_Qjx50pYJ"; // only used in admin, not exposed to customers
+const SUPABASE_SERVICE_KEY = "const SUPABASE_SERVICE_KEY = "sb_secret_7ie_t9FcNz599m6fdqwKMw_Qjx50pYJ";"; // only used in admin, not exposed to customers
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);

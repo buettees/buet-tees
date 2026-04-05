@@ -898,10 +898,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab on" onclick="admTab('overview')">Overview</div>
     <div class="adm-tab" onclick="admTab('orders')">Orders P&L</div>
     <div class="adm-tab" onclick="admTab('affiliates')">Affiliates</div>
-    <div class="adm-tab" onclick="admTab('owners')">Owner Shares</div>
+    <div class="adm-tab" onclick="admTab('owners')">Owners</div>
     <div class="adm-tab" onclick="admTab('monthly')">Monthly</div>
     <div class="adm-tab" onclick="admTab('transactions')">Transactions</div>
-    <div class="adm-tab" onclick="admTab('costs')">Cost Settings</div>
+    <div class="adm-tab" onclick="admTab('costs')">Suppliers</div>
     <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
   </div>
   <div class="adm-body">
@@ -1225,6 +1225,7 @@ async function place(){
     document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
+    notifyNewOrder({id:orderId,name,phone,email,items,total,zone:DL[zone],affiliate_code:affCodeApplied||null});
     cart=[];upd();
   }catch(err){console.error(err);toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
@@ -1446,6 +1447,7 @@ async function submitAffReg(){
     if(error)throw error;
     document.getElementById('affForm').style.display='none';
     document.getElementById('affSuccess').style.display='';
+    notifyAffiliateRegistered({name,student_id:sid,hall,whatsapp:wa,storage_type:affSelectedType==='storage'?'With Storage':'No Storage',code:affCode});
     document.getElementById('affName').value='';
     document.getElementById('affWa').value='';
     document.getElementById('affId').value='';
@@ -1507,7 +1509,7 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products"];
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","supplierstab","ownerstab"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
@@ -1609,11 +1611,26 @@ async function admLoadData(){
         orderCount:affOrders.length,totalCommission,totalDiscount};
     });
 
-    // Owner shares
-    const ownerShares=[
-      {name:'Ashik',share:ashikShare,amount:totalNetProfit*ashikShare/100},
-      {name:'Kawsar',share:kawsarShare,amount:totalNetProfit*kawsarShare/100}
-    ];
+    // Owners from settings JSON, fallback to old ashik/kawsar keys
+    let ownersRaw=[];
+    try{ ownersRaw=JSON.parse(cfg.owners_json||'[]'); }catch(e){}
+    if(!ownersRaw.length){
+      ownersRaw=[
+        {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:ashikShare,telegram_chat_id:'-4899351679'},
+        {name:'Kawsar',email:'',share:kawsarShare,telegram_chat_id:'-4899351679'}
+      ];
+    }
+    const ownerShares=ownersRaw.map(o=>({name:o.name,share:parseFloat(o.share||0),amount:totalNetProfit*parseFloat(o.share||0)/100}));
+
+    // Suppliers from settings JSON, fallback to hardcoded
+    let suppliersRaw=[];
+    try{ suppliersRaw=JSON.parse(cfg.suppliers_json||'[]'); }catch(e){}
+    if(!suppliersRaw.length){
+      suppliersRaw=[{name:'T-Shirt Hub',email:'buettees@gmail.com',
+        telegram_token:'7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY',
+        telegram_chat_id:'-4996642816',
+        cost_regular:150,cost_drop:170,cost_hoodie:400,cost_print:0.5,cost_heat_press:5,cost_polybag:3.5}];
+    }
 
     ADM_DATA={
       summary:{totalOrders:confirmed.length,totalRevenue,totalSupplierCost,totalGrossProfit,totalAffComm,totalExtraExpenses,totalNetProfit,margin},
@@ -1622,7 +1639,9 @@ async function admLoadData(){
       ownerShares,
       monthly,
       transactions,
-      suppliers:['T-Shirt Hub'],
+      suppliersRaw,
+      ownersRaw,
+      suppliers:suppliersRaw.map(s=>s.name),
       owners:ownerShares
     };
     document.getElementById("admUpdated").textContent="Updated "+new Date().toLocaleTimeString();
@@ -1812,29 +1831,35 @@ function admRenderAffiliates(){
 }
 
 function admRenderOwners(){
-  const owners=ADM_DATA.ownerShares||[];
-  const total=owners.reduce((s,o)=>s+o.amount,0);
+  const owners=ADM_DATA.ownersRaw||[];
+  const netProfit=ADM_DATA.summary?.totalNetProfit||0;
   document.getElementById("adm-owners").innerHTML=`
-    <div class="adm-sec">Profit Distribution</div>
+    <div class="adm-sec">Owners & Equity</div>
     <div class="adm-owner-grid">${owners.map(o=>`
       <div class="adm-owner-card">
         <div class="adm-owner-name">${o.name}</div>
-        <div class="adm-owner-pct">${o.share.toFixed(1)}% equity</div>
-        <div class="adm-owner-amt">${admFmt(o.amount)}</div>
+        <div class="adm-owner-pct">${parseFloat(o.share||0).toFixed(1)}% equity</div>
+        <div class="adm-owner-amt">${admFmt(netProfit*parseFloat(o.share||0)/100)}</div>
         <div class="adm-owner-bar-bg"><div class="adm-owner-bar" style="width:${o.share}%"></div></div>
-      </div>`).join("")}</div>
-    <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Owner</th><th>Equity Share</th><th>Net Profit Share</th><th>% of Total</th></tr></thead>
-      <tbody>${owners.map(o=>`<tr>
-        <td class="adm-white">${o.name}</td>
-        <td>${o.share.toFixed(1)}%</td>
-        <td class="adm-gold">${admFmt(o.amount)}</td>
-        <td><span class="adm-badge adm-badge-gold">${total>0?(o.amount/total*100).toFixed(1):0}%</span></td>
-      </tr>`).join("")}</tbody>
-    </table></div></div>`;
-  // Animate bars
-  setTimeout(()=>{document.querySelectorAll(".adm-owner-bar").forEach(b=>{const w=b.style.width;b.style.width="0";setTimeout(()=>b.style.width=w,50);});},100);
+        <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.3)">${o.email||'No email'}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.2)">TG Chat: ${o.telegram_chat_id||'—'}</div>
+        <button class="adm-status-btn adm-status-cancel" style="margin-top:10px;font-size:9px" onclick="admRemoveOwner('${o.name}')">✕ Remove</button>
+      </div>`).join("")}
+    </div>
+    <div class="adm-tbl-wrap" style="margin-top:20px">
+      <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div class="adm-tx-title">Add / Edit Owner</div>
+        <div class="adm-tx-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:10px">
+          <input class="adm-tx-input" id="owName" placeholder="Name *"/>
+          <input class="adm-tx-input" id="owEmail" placeholder="Email(s) comma-separated"/>
+          <input class="adm-tx-input" id="owShare" placeholder="Equity % *" type="number" min="0" max="100"/>
+          <input class="adm-tx-input" id="owTgChat" placeholder="Telegram Chat ID"/>
+        </div>
+        <button class="adm-tx-btn" onclick="admSaveOwner()">Save Owner</button>
+      </div>
+    </div>`;
 }
+
 
 function admRenderMonthly(){
   const rows=ADM_DATA.monthly;
@@ -1905,6 +1930,181 @@ async function admAddTx(){
   }catch(e){toast("Failed: "+e.message);}
 }
 
+
+// ══════════════════════════════════════════════════════════
+// NOTIFICATIONS — Telegram + Email (Resend)
+// ══════════════════════════════════════════════════════════
+const RESEND_KEY = 're_TF7EzpmG_LyiKCGJtDy7HGae2boofEoYR';
+const FROM_EMAIL = 'BUET Tees <onboarding@resend.dev>';
+
+async function sendEmail(to, subject, html){
+  if(!to) return;
+  const toArr = Array.isArray(to) ? to : [to];
+  try{
+    await fetch('https://api.resend.com/emails',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({from:FROM_EMAIL, to:toArr, subject, html})
+    });
+  }catch(e){console.error('Email failed:',e);}
+}
+
+async function sendTelegram(token, chatId, text){
+  if(!token||!chatId) return;
+  try{
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:chatId, text, parse_mode:'HTML'})
+    });
+  }catch(e){console.error('Telegram failed:',e);}
+}
+
+function getOwners(){
+  try{
+    return (ADM_DATA&&ADM_DATA.ownersRaw)||[
+      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',telegram_chat_id:'-4899351679'},
+      {name:'Kawsar',email:'',telegram_chat_id:'-4899351679'}
+    ];
+  }catch(e){
+    return[
+      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',telegram_chat_id:'-4899351679'},
+      {name:'Kawsar',email:'',telegram_chat_id:'-4899351679'}
+    ];
+  }
+}
+
+function getSupplier(){
+  try{
+    const raw = ADM_DATA&&ADM_DATA.suppliersRaw;
+    return (raw&&raw[0])||{
+      name:'T-Shirt Hub',
+      email:'buettees@gmail.com',
+      telegram_token:'7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY',
+      telegram_chat_id:'-4996642816'
+    };
+  }catch(e){return{};}
+}
+
+function ownerTelegramToken(){ return '8698121676:AAEP2BclCvo49aam5bawz2wmRgbh2qD-sj4'; }
+
+async function notifyOwnersTelegram(text){
+  const owners = getOwners();
+  const chatIds = [...new Set(owners.map(o=>o.telegram_chat_id).filter(Boolean))];
+  for(const cid of chatIds) await sendTelegram(ownerTelegramToken(), cid, text);
+}
+
+async function notifyOwnersEmail(subject, html){
+  const owners = getOwners();
+  const emails = owners.flatMap(o=>o.email?o.email.split(',').map(e=>e.trim()):[]).filter(Boolean);
+  if(emails.length) await sendEmail(emails, subject, html);
+}
+
+// ── Email HTML templates ─────────────────────────────────
+function emailBase(body){
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #eee">
+    <div style="background:#6D001A;padding:24px 32px">
+      <div style="font-size:22px;font-weight:900;letter-spacing:6px;color:#fff;text-transform:uppercase">BUET TEES</div>
+    </div>
+    <div style="padding:28px 32px;color:#222;line-height:1.7;font-size:14px">${body}</div>
+    <div style="padding:16px 32px;background:#f7f5f2;font-size:11px;color:#999;border-top:1px solid #eee">
+      BUET Tees · bKash: 01782761981 · facebook.com/buettees
+    </div>
+  </div>`;
+}
+
+// ── Trigger functions ────────────────────────────────────
+
+async function notifyNewOrder(order){
+  // order: {id, name, phone, email, items, total, zone, affiliate_code}
+  const tgText = `🛒 <b>New Order — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📦 ${order.items}\n💰 ৳${order.total} · 📍 ${order.zone}${order.affiliate_code?'\n🔗 Affiliate: '+order.affiliate_code:''}`;
+  await notifyOwnersTelegram(tgText);
+  const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">New Order: ${order.id}</h2>
+    <p><b>Customer:</b> ${order.name}<br><b>Phone:</b> ${order.phone}<br><b>Email:</b> ${order.email||'—'}</p>
+    <p><b>Items:</b> ${order.items}</p>
+    <p><b>Total:</b> ৳${order.total} &nbsp;|&nbsp; <b>Zone:</b> ${order.zone}${order.affiliate_code?'<br><b>Affiliate:</b> '+order.affiliate_code:''}</p>`);
+  await notifyOwnersEmail('New Order: '+order.id, html);
+}
+
+async function notifyAffiliateRegistered(aff){
+  // aff: {name, student_id, hall, whatsapp, storage_type, code}
+  const tgText = `📋 <b>New Affiliate Application</b>\n👤 ${aff.name} · ID: ${aff.student_id}\n🏠 ${aff.hall} · 📞 ${aff.whatsapp}\n💾 ${aff.storage_type}\n🔑 Code (inactive): ${aff.code}`;
+  await notifyOwnersTelegram(tgText);
+  const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">New Affiliate Application</h2>
+    <p><b>Name:</b> ${aff.name}<br><b>Student ID:</b> ${aff.student_id}<br><b>Hall:</b> ${aff.hall}<br><b>WhatsApp:</b> ${aff.whatsapp}<br><b>Storage:</b> ${aff.storage_type}</p>
+    <p style="background:#fff3cd;padding:10px 14px;border-radius:6px;font-size:13px">Code <b>${aff.code}</b> is inactive — activate from admin panel to enable it.</p>`);
+  await notifyOwnersEmail('New Affiliate Application: '+aff.name, html);
+}
+
+async function notifyAffiliateActivated(aff){
+  // aff: {email, name, code, commission_regular, commission_drop, commission_hoodie, discount_pct}
+  if(!aff.email) return;
+  const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">You're Approved! 🎉</h2>
+    <p>Hi <b>${aff.name}</b>,</p>
+    <p>Your BUET Tees affiliate application has been approved. Here are your details:</p>
+    <div style="background:#f7f5f2;border-radius:8px;padding:16px 20px;margin:16px 0">
+      <div style="font-size:28px;font-weight:900;letter-spacing:4px;color:#6D001A;text-align:center;margin-bottom:8px">${aff.code}</div>
+      <div style="text-align:center;font-size:12px;color:#666">Your unique affiliate code</div>
+    </div>
+    <p><b>How it works:</b><br>
+    Share your code with buyers — they get <b>${aff.discount_pct||10}% off</b> their order.<br>
+    You earn commission for every confirmed order:</p>
+    <ul style="margin:8px 0;padding-left:20px">
+      <li>Regular T-shirt: <b>৳${aff.commission_regular}</b></li>
+      <li>Drop Shoulder: <b>৳${aff.commission_drop}</b></li>
+      <li>Hoodie: <b>৳${aff.commission_hoodie}</b></li>
+    </ul>
+    <p><b>Order link:</b> buet-tees.vercel.app<br>
+    <b>bKash payment:</b> 01782761981</p>
+    <p>Questions? WhatsApp or message us on Facebook: facebook.com/buettees</p>`);
+  await sendEmail(aff.email, 'Your BUET Tees Affiliate Code: '+aff.code, html);
+}
+
+async function notifyOrderConfirmed(order){
+  // Notify supplier via Telegram + Email
+  const sup = getSupplier();
+  const tgText = `✅ <b>Order Confirmed — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📍 ${order.address} (${order.zone})\n📦 ${order.items}${order.notes?'\n📝 '+order.notes:''}`;
+  await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
+  if(sup.email){
+    const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">Order Confirmed: ${order.id}</h2>
+      <p><b>Customer:</b> ${order.name}<br><b>Phone:</b> ${order.phone}<br><b>Address:</b> ${order.address}<br><b>Zone:</b> ${order.zone}</p>
+      <p><b>Items:</b> ${order.items}</p>
+      ${order.notes?`<p><b>Notes:</b> ${order.notes}</p>`:''}
+      <p style="background:#d4edda;padding:10px 14px;border-radius:6px">Please prepare and dispatch this order.</p>`);
+    await sendEmail(sup.email, 'New Order to Fulfill: '+order.id, html);
+  }
+  // Notify customer
+  if(order.email){
+    const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">Order Confirmed ✅</h2>
+      <p>Hi <b>${order.name}</b>,</p>
+      <p>Your order <b>${order.id}</b> has been confirmed and is being prepared.</p>
+      <p><b>Items:</b> ${order.items}<br><b>Total:</b> ৳${order.total}</p>
+      <p>We'll notify you once your order is dispatched. For updates contact us on WhatsApp: <b>01515637637</b></p>`);
+    await sendEmail(order.email, 'Order Confirmed: '+order.id+' — BUET Tees', html);
+  }
+}
+
+async function notifyOrderDispatched(order){
+  if(!order.email) return;
+  const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">Order Dispatched 📦</h2>
+    <p>Hi <b>${order.name}</b>,</p>
+    <p>Great news! Your order <b>${order.id}</b> has been dispatched and is on its way.</p>
+    <p><b>Delivery zone:</b> ${order.zone}<br><b>Items:</b> ${order.items}</p>
+    <p>Expected delivery: ${order.zone==='Campus (Free)'?'Today or tomorrow':'1–3 business days'}</p>
+    <p>Questions? WhatsApp: <b>01515637637</b> or Facebook: facebook.com/buettees</p>`);
+  await sendEmail(order.email, 'Your BUET Tees Order is On the Way! 🚀', html);
+}
+
+async function notifyOrderDelivered(order){
+  if(!order.email) return;
+  const html = emailBase(`<h2 style="color:#6D001A;margin:0 0 16px">Order Delivered 🎉</h2>
+    <p>Hi <b>${order.name}</b>,</p>
+    <p>Your BUET Tees order <b>${order.id}</b> has been delivered. We hope you love it!</p>
+    <p>If you enjoyed your purchase, please share with your friends and support BUET Tees 🙌</p>
+    <p>Order again: <b>buet-tees.vercel.app</b></p>`);
+  await sendEmail(order.email, 'Your BUET Tees Order Has Been Delivered! 🎉', html);
+}
+
 async function admUpdateOrderStatus(orderId,newStatus){
   if(newStatus==='Cancelled'&&!confirm(`Cancel order ${orderId}? This cannot be undone easily.`))return;
   try{
@@ -1916,6 +2116,13 @@ async function admUpdateOrderStatus(orderId,newStatus){
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
+    // Fetch full order for notifications
+    const{data:ord}=await sbAdmin.from('orders').select('*').eq('id',orderId).single();
+    if(ord){
+      if(newStatus==='Confirmed') notifyOrderConfirmed(ord);
+      else if(newStatus==='Dispatched') notifyOrderDispatched(ord);
+      else if(newStatus==='Delivered') notifyOrderDelivered(ord);
+    }
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }
@@ -1926,6 +2133,10 @@ async function admToggleAffiliate(code,currentStatus){
     const{error}=await sbAdmin.from('affiliates').update({status:newStatus}).eq('code',code);
     if(error)throw error;
     toast(code+' → '+newStatus+' ✓');
+    if(newStatus==='active'){
+      const{data:aff}=await sbAdmin.from('affiliates').select('*').eq('code',code).single();
+      if(aff) notifyAffiliateActivated(aff);
+    }
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }
@@ -1941,38 +2152,140 @@ async function admRemoveAffiliate(code,name){
 }
 
 function admRenderCosts(){
-  const suppliers=ADM_DATA.suppliers||["T-Shirt Hub"];
-  const owners=ADM_DATA.owners||[];
+  const suppliers=ADM_DATA.suppliersRaw||[];
   document.getElementById("adm-costs").innerHTML=`
-    <div class="adm-sec">Supplier Cost Structure</div>
-    <div class="adm-cost-grid">${suppliers.map(sup=>`
+    <div class="adm-sec">Suppliers</div>
+    ${suppliers.length===0?'<div class="adm-empty" style="margin-bottom:16px">No suppliers yet</div>':''}
+    <div class="adm-cost-grid">${suppliers.map((s,si)=>`
       <div class="adm-cost-card">
-        <div class="adm-cost-card-title">${sup}</div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Regular</span><span class="adm-cost-val">৳150</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Drop Shoulder</span><span class="adm-cost-val">৳170</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Blank — Hoodie</span><span class="adm-cost-val">৳400</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Print / sq inch</span><span class="adm-cost-val">৳0.50</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Heat Press / side</span><span class="adm-cost-val">৳5</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Poly bag</span><span class="adm-cost-val">৳3.50</span></div>
+        <div class="adm-cost-card-title">${s.name}</div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Email</span><span class="adm-cost-val" style="font-size:10px">${s.email||'—'}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">TG Token</span><span class="adm-cost-val" style="font-size:9px;word-break:break-all">${s.telegram_token?s.telegram_token.substring(0,20)+'…':'—'}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">TG Chat ID</span><span class="adm-cost-val">${s.telegram_chat_id||'—'}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank Regular</span><span class="adm-cost-val">৳${s.cost_regular||150}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank Drop</span><span class="adm-cost-val">৳${s.cost_drop||170}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Blank Hoodie</span><span class="adm-cost-val">৳${s.cost_hoodie||400}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Print/sq in</span><span class="adm-cost-val">৳${s.cost_print||0.5}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Heat Press</span><span class="adm-cost-val">৳${s.cost_heat_press||5}</span></div>
+        <div class="adm-cost-row"><span class="adm-cost-key">Poly Bag</span><span class="adm-cost-val">৳${s.cost_polybag||3.5}</span></div>
+        <div style="display:flex;gap:6px;margin-top:12px">
+          <button class="adm-status-btn adm-status-confirm" style="font-size:9px" onclick="admEditSupplier(${si})">✏ Edit</button>
+          <button class="adm-status-btn adm-status-cancel" style="font-size:9px" onclick="admRemoveSupplier(${si})">✕ Remove</button>
+        </div>
       </div>`).join("")}
     </div>
-    <div class="adm-sec">Owner Configuration</div>
-    <div class="adm-cost-grid">
-      <div class="adm-cost-card">
-        <div class="adm-cost-card-title">Owners & Equity Shares</div>
-        ${owners.map(o=>`<div class="adm-cost-row"><span class="adm-cost-key">${o.name}</span><span class="adm-cost-val">${o.share.toFixed(1)}%</span></div>`).join("")}
-        <div style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.12);line-height:2;">Edit in Settings tab of Google Sheet</div>
-      </div>
-      <div class="adm-cost-card">
-        <div class="adm-cost-card-title">Affiliate Commissions</div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Regular (With Storage)</span><span class="adm-cost-val">৳30</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Drop Shoulder (With Storage)</span><span class="adm-cost-val">৳40</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (With Storage)</span><span class="adm-cost-val">৳50</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Regular (No Storage)</span><span class="adm-cost-val">৳20</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Drop Shoulder (No Storage)</span><span class="adm-cost-val">৳25</span></div>
-        <div class="adm-cost-row"><span class="adm-cost-key">Hoodie (No Storage)</span><span class="adm-cost-val">৳35</span></div>
+    <div class="adm-tbl-wrap" style="margin-top:20px">
+      <div style="padding:18px 20px">
+        <div class="adm-tx-title" id="supFormTitle">Add New Supplier</div>
+        <input type="hidden" id="supEditIdx" value="-1"/>
+        <div class="adm-tx-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:10px">
+          <input class="adm-tx-input" id="supName" placeholder="Supplier Name *"/>
+          <input class="adm-tx-input" id="supEmail" placeholder="Email"/>
+          <input class="adm-tx-input" id="supTgToken" placeholder="Telegram Bot Token"/>
+          <input class="adm-tx-input" id="supTgChat" placeholder="Telegram Chat ID"/>
+          <input class="adm-tx-input" id="supRegular" placeholder="Blank Regular cost" type="number"/>
+          <input class="adm-tx-input" id="supDrop" placeholder="Blank Drop cost" type="number"/>
+          <input class="adm-tx-input" id="supHoodie" placeholder="Blank Hoodie cost" type="number"/>
+          <input class="adm-tx-input" id="supPrint" placeholder="Print cost/sq in" type="number" step="0.1"/>
+          <input class="adm-tx-input" id="supHeat" placeholder="Heat press cost" type="number"/>
+          <input class="adm-tx-input" id="supPoly" placeholder="Poly bag cost" type="number" step="0.5"/>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="adm-tx-btn" onclick="admSaveSupplier()">Save Supplier</button>
+          <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05)" onclick="admCancelSupplierEdit()">Clear</button>
+        </div>
       </div>
     </div>`;
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// OWNERS & SUPPLIERS CRUD
+// ══════════════════════════════════════════════════════════
+
+async function admSaveOwner(){
+  const name=document.getElementById('owName').value.trim();
+  const email=document.getElementById('owEmail').value.trim();
+  const share=parseFloat(document.getElementById('owShare').value)||0;
+  const tgChat=document.getElementById('owTgChat').value.trim();
+  if(!name||!share){toast('Name and equity % required');return;}
+  const owners=ADM_DATA.ownersRaw||[];
+  const existing=owners.findIndex(o=>o.name.toLowerCase()===name.toLowerCase());
+  const entry={name,email,share,telegram_chat_id:tgChat};
+  if(existing>=0) owners[existing]=entry; else owners.push(entry);
+  const{error}=await sbAdmin.from('settings').upsert({key:'owners_json',value:JSON.stringify(owners)},{onConflict:'key'});
+  if(error){toast('Failed: '+error.message);return;}
+  toast('Owner saved ✓');
+  document.getElementById('owName').value='';document.getElementById('owEmail').value='';
+  document.getElementById('owShare').value='';document.getElementById('owTgChat').value='';
+  admLoadData();
+}
+
+async function admRemoveOwner(name){
+  if(!confirm('Remove owner "'+name+'"?'))return;
+  const owners=(ADM_DATA.ownersRaw||[]).filter(o=>o.name!==name);
+  const{error}=await sbAdmin.from('settings').upsert({key:'owners_json',value:JSON.stringify(owners)},{onConflict:'key'});
+  if(error){toast('Failed: '+error.message);return;}
+  toast(name+' removed ✓');admLoadData();
+}
+
+async function admSaveSupplier(){
+  const idx=parseInt(document.getElementById('supEditIdx').value);
+  const name=document.getElementById('supName').value.trim();
+  if(!name){toast('Supplier name required');return;}
+  const entry={
+    name,
+    email:document.getElementById('supEmail').value.trim(),
+    telegram_token:document.getElementById('supTgToken').value.trim(),
+    telegram_chat_id:document.getElementById('supTgChat').value.trim(),
+    cost_regular:parseFloat(document.getElementById('supRegular').value)||150,
+    cost_drop:parseFloat(document.getElementById('supDrop').value)||170,
+    cost_hoodie:parseFloat(document.getElementById('supHoodie').value)||400,
+    cost_print:parseFloat(document.getElementById('supPrint').value)||0.5,
+    cost_heat_press:parseFloat(document.getElementById('supHeat').value)||5,
+    cost_polybag:parseFloat(document.getElementById('supPoly').value)||3.5
+  };
+  const suppliers=ADM_DATA.suppliersRaw||[];
+  if(idx>=0) suppliers[idx]=entry; else suppliers.push(entry);
+  const{error}=await sbAdmin.from('settings').upsert({key:'suppliers_json',value:JSON.stringify(suppliers)},{onConflict:'key'});
+  if(error){toast('Failed: '+error.message);return;}
+  toast('Supplier saved ✓');admCancelSupplierEdit();admLoadData();
+}
+
+function admEditSupplier(idx){
+  const s=(ADM_DATA.suppliersRaw||[])[idx];
+  if(!s)return;
+  document.getElementById('supEditIdx').value=idx;
+  document.getElementById('supFormTitle').textContent='Edit Supplier: '+s.name;
+  document.getElementById('supName').value=s.name||'';
+  document.getElementById('supEmail').value=s.email||'';
+  document.getElementById('supTgToken').value=s.telegram_token||'';
+  document.getElementById('supTgChat').value=s.telegram_chat_id||'';
+  document.getElementById('supRegular').value=s.cost_regular||150;
+  document.getElementById('supDrop').value=s.cost_drop||170;
+  document.getElementById('supHoodie').value=s.cost_hoodie||400;
+  document.getElementById('supPrint').value=s.cost_print||0.5;
+  document.getElementById('supHeat').value=s.cost_heat_press||5;
+  document.getElementById('supPoly').value=s.cost_polybag||3.5;
+  document.getElementById('supName').focus();
+}
+
+async function admRemoveSupplier(idx){
+  const s=(ADM_DATA.suppliersRaw||[])[idx];
+  if(!confirm('Remove supplier "'+s.name+'"?'))return;
+  const suppliers=(ADM_DATA.suppliersRaw||[]).filter((_,i)=>i!==idx);
+  const{error}=await sbAdmin.from('settings').upsert({key:'suppliers_json',value:JSON.stringify(suppliers)},{onConflict:'key'});
+  if(error){toast('Failed: '+error.message);return;}
+  toast(s.name+' removed ✓');admLoadData();
+}
+
+function admCancelSupplierEdit(){
+  document.getElementById('supEditIdx').value='-1';
+  document.getElementById('supFormTitle').textContent='Add New Supplier';
+  ['supName','supEmail','supTgToken','supTgChat','supRegular','supDrop','supHoodie','supPrint','supHeat','supPoly'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
 }
 
 // ══════════════════════════════════════════════════════════

@@ -1934,21 +1934,20 @@ async function admAddTx(){
 // ══════════════════════════════════════════════════════════
 // NOTIFICATIONS — Telegram + Email (Resend)
 // ══════════════════════════════════════════════════════════
-const RESEND_KEY = 're_TF7EzpmG_LyiKCGJtDy7HGae2boofEoYR';
-const FROM_EMAIL = 'BUET Tees <onboarding@resend.dev>';
+// Email sent via /api/send-email (Vercel serverless — key stored in env)
 
 async function sendEmail(to, subject, html){
   if(!to) return;
-  const toArr = Array.isArray(to) ? to.filter(Boolean) : [to];
+  const toArr = (Array.isArray(to) ? to : [to]).filter(Boolean);
   if(!toArr.length) return;
   try{
-    const r = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({to: toArr, subject, html})
+    const r = await fetch('/api/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({to:toArr, subject, html})
     });
-    if(!r.ok) console.error('Email failed:', await r.text());
-  }catch(e){ console.error('Email failed:', e); }
+    if(!r.ok) console.error('Email failed:',await r.text());
+  }catch(e){console.error('Email failed:',e);}
 }
 
 async function sendTelegram(token, chatId, text){

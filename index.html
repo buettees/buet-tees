@@ -965,7 +965,8 @@ async function loadProducts(){
       categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>({
         category:c.category,price:parseFloat(c.price),
         discountedPrice:c.discounted_price?parseFloat(c.discounted_price):null,
-        image:c.image||'',badge:c.badge||'',sizes:c.sizes||[],colors:c.colors||[],sizeChart:c.size_chart||''
+        image:c.image||'',badge:c.badge||'',sizes:c.sizes||[],colors:c.colors||[],sizeChart:c.size_chart||'',
+        backOnly:c.back_only||false
       }))
     }));
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
@@ -1009,6 +1010,25 @@ function loadCatData(p,idx){
   document.getElementById("szop").innerHTML=(cat.sizes||[]).map(s=>
   `<button class="vb ${s===selSz?"on":""}" data-size="${s}" onclick="pickSz('${s.replace(/'/g,"\\'")}')">${getSizeLabel(cat.sizeChart||'', s)}</button>`).join("");
   document.getElementById("clop").innerHTML=(cat.colors||[]).map(c=>`<button class="vb ${c===selCl?"on":""}" onclick="pickCl('${c}')">${c}</button>`).join("");
+  // Handle print side visibility based on back_only flag
+  const isBackOnly=cat.backOnly||false;
+  const frontBtn=document.getElementById("side-front");
+  const backBtn=document.getElementById("side-back");
+  const sideRow=frontBtn.closest(".vopts");
+  const sideLbl=sideRow?sideRow.previousElementSibling:null;
+  if(isBackOnly){
+    selSide="back";
+    frontBtn.style.display="none";
+    backBtn.classList.add("on");frontBtn.classList.remove("on");
+    if(sideLbl)sideLbl.style.display="none";
+    if(sideRow)sideRow.style.display="none";
+  }else{
+    selSide="front";
+    frontBtn.style.display="";
+    frontBtn.classList.add("on");backBtn.classList.remove("on");
+    if(sideLbl)sideLbl.style.display="";
+    if(sideRow)sideRow.style.display="";
+  }
 }
 
 function pickCat(i){document.querySelectorAll("#catOpts .vb").forEach((b,idx)=>b.classList.toggle("on",idx===i));loadCatData(cur,i);}
@@ -1022,26 +1042,6 @@ function openP(id){
     document.getElementById("catOpts").innerHTML=p.categories.map((c,i)=>`<button class="vb ${i===0?"on":""}" onclick="pickCat(${i})">${c.category}</button>`).join("");
   }else{catRow.style.display="none";}
   loadCatData(p,0);
-  // Handle Hoodie Back — hide front option, auto-select back
-  const firstCat=p.categories&&p.categories[0]?p.categories[0].category:'';
-  const isBackOnly=firstCat==='Hoodie Back';
-  const sideRow=document.getElementById("side-front").closest(".vopts");
-  const sideLbl=sideRow?sideRow.previousElementSibling:null;
-  if(isBackOnly){
-    selSide="back";
-    document.getElementById("side-front").style.display="none";
-    document.getElementById("side-back").classList.add("on");
-    document.getElementById("side-front").classList.remove("on");
-    if(sideLbl)sideLbl.style.display="none";
-    sideRow.style.display="none";
-  }else{
-    selSide="front";
-    document.getElementById("side-front").style.display="";
-    document.getElementById("side-front").classList.add("on");
-    document.getElementById("side-back").classList.remove("on");
-    if(sideLbl)sideLbl.style.display="";
-    if(sideRow)sideRow.style.display="";
-  }
   document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
 }
 

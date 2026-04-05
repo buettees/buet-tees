@@ -1439,7 +1439,9 @@ async function submitAffReg(){
 
   btn.disabled=false;btn.textContent='Register as Affiliate';
   // Generate affiliate code from student ID
-  const affCode=(sid.replace(/\s/g,'')+name.split(' ')[0].substring(0,3)).toUpperCase().substring(0,10);
+  const namePart=name.replace(/[.]/g,'').trim().split(/\s+/)[0];
+  const idPart=sid.replace(/[^0-9]/g,'').slice(-3);
+  const affCode=(namePart+idPart).toUpperCase();
   await sbAdmin.from('affiliates').insert({
     code:affCode,
     full_name:name,whatsapp:wa,student_id:sid,hall,email,
@@ -1933,7 +1935,7 @@ async function admToggleAffiliate(code,currentStatus){
 }
 
 async function admRemoveAffiliate(code,name){
-  if(!confirm(`Permanently remove affiliate "${name}" (${code})?\n\nThis cannot be undone. Orders linked to this code will have their affiliate set to NULL.`))return;
+  if(!confirm(`Permanently remove affiliate "${name}" (${code})?\n\nOrders linked to this code will have their affiliate set to NULL.`))return;
   try{
     const{error}=await sbAdmin.from('affiliates').delete().eq('code',code);
     if(error)throw error;

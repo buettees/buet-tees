@@ -2206,7 +2206,15 @@ function admRenderCosts(){
 // ══════════════════════════════════════════════════════════
 // OWNERS & SUPPLIERS CRUD
 // ══════════════════════════════════════════════════════════
-
+function admEditOwner(name){
+  const o=(ADM_DATA.ownersRaw||[]).find(x=>x.name===name);
+  if(!o)return;
+  document.getElementById('owName').value=o.name;
+  document.getElementById('owEmail').value=o.email||'';
+  document.getElementById('owShare').value=o.share||'';
+  document.getElementById('owTgChat').value=o.telegram_chat_id||'';
+  document.getElementById('owName').focus();
+}
 async function admSaveOwner(){
   const name=document.getElementById('owName').value.trim();
   const email=document.getElementById('owEmail').value.trim();

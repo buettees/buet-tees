@@ -499,6 +499,12 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .adm-prod-cancel-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.3);padding:12px 20px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
 .adm-prod-img-preview{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0d0d0d;display:block;margin-top:8px;}
 .adm-prod-img-preview-placeholder{width:100%;height:80px;border-radius:8px;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:2px;margin-top:8px;}
+.adm-status-btn{padding:5px 10px;border:none;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-right:4px;transition:opacity 0.15s;}
+.adm-status-btn:hover{opacity:0.75;}
+.adm-status-confirm{background:#27ae60;color:#fff;}
+.adm-status-dispatch{background:#C9A84C;color:#000;}
+.adm-status-deliver{background:#2980b9;color:#fff;}
+.adm-status-cancel{background:rgba(192,57,43,0.7);color:#fff;}
 @media(min-width:640px) and (max-width:900px){
   .hero{padding:48px 28px 52px;}.collection{padding:52px 28px 60px;}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:24px;}
@@ -1517,7 +1523,7 @@ async function admLoadData(){
   try{
     // Fetch all data in parallel
     const [ordRes,affRes,txRes,settRes]=await Promise.all([
-      sbAdmin.from('orders').select('*').neq('status','Cancelled').order('created_at',{ascending:false}),
+      sbAdmin.from('orders').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
       sbAdmin.from('settings').select('*')
@@ -1564,6 +1570,7 @@ async function admLoadData(){
       const netProfit=grossProfit-affComm;
       return{
         orderId:o.id,timestamp:o.created_at,items:o.items||'',
+        customerName:o.name||'',
         supplier:o.supplier||'T-Shirt Hub',
         total,supplierCost,grossProfit,affCommission:affComm,netProfit,
         status:o.status,affiliateCode:o.affiliate_code||'',
@@ -1726,15 +1733,17 @@ function admRenderOrders(){
   const totGP=rows.reduce((s,o)=>s+o.grossProfit,0);
   const totComm=rows.reduce((s,o)=>s+o.affCommission,0);
   const totNP=rows.reduce((s,o)=>s+o.netProfit,0);
+  const pending=rows.filter(o=>o.status==='Pending').length;
+  const confirmed2=rows.filter(o=>['Confirmed','Dispatched','Delivered'].includes(o.status)).length;
   document.getElementById("adm-orders").innerHTML=`
     <div class="adm-kpi-row" style="margin-bottom:20px;">
-      <div class="adm-kpi"><div class="adm-kpi-label">Orders</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">All Orders</div><div class="adm-kpi-val c-white">${rows.length}</div><div class="adm-kpi-sub">${pending} pending · ${confirmed2} confirmed</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Revenue</div><div class="adm-kpi-val c-white">${admFmt(totRev)}</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Gross Profit</div><div class="adm-kpi-val ${totGP>=0?"c-green":"c-red"}">${admFmt(totGP)}</div></div>
       <div class="adm-kpi highlight"><div class="adm-kpi-label">Net Profit</div><div class="adm-kpi-val ${totNP>=0?"c-green":"c-red"}">${admFmt(totNP)}</div><div class="adm-kpi-accent"></div></div>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Order ID</th><th>Date</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Supplier Cost</th><th>Gross</th><th>Aff.</th><th>Net Profit</th><th>Margin</th></tr></thead>
+    <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Gross</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody>${rows.map(o=>{
       const margin=o.total>0?(o.netProfit/o.total*100).toFixed(1):0;
       const mc=parseFloat(margin)>=0?"adm-badge-green":"adm-badge-red";
@@ -1749,17 +1758,25 @@ function admRenderOrders(){
         }catch(_){datePart=ts.substring(0,14);}
       }
       const short=o.items.length>32?o.items.substring(0,32)+"…":o.items;
+      // Status badge color
+      const statusColor={Pending:"adm-badge-gray",Confirmed:"adm-badge-green",Dispatched:"adm-badge-gold",Delivered:"adm-badge-green",Cancelled:"adm-badge-red"}[o.status]||"adm-badge-gray";
+      // Action buttons based on current status
+      let actionBtns='';
+      if(o.status==='Pending')actionBtns=`<button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')">✓ Confirm</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕ Cancel</button>`;
+      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">📦 Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕</button>`;
+      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">✓ Delivered</button>`;
+      else if(o.status==='Delivered'||o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">${o.status==='Delivered'?'DONE':'CANCELLED'}</span>`;
       return`<tr>
         <td class="adm-id">${o.orderId}</td>
         <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
+        <td style="font-size:10px;color:rgba(255,255,255,0.5);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(o.customerName||'').replace(/"/g,"'")}">${o.customerName||'—'}</td>
         <td style="font-size:10px;max-width:140px" title="${o.items.replace(/"/g,"'")}">${short}</td>
         <td><span class="adm-badge adm-badge-gray">${o.supplier}</span></td>
         <td class="adm-white">${admFmt(o.total)}</td>
-        <td class="adm-red">${admFmt(o.supplierCost)}</td>
         <td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td>
-        <td>${o.affCommission>0?`<span class="adm-red">${admFmt(o.affCommission)}</span>`:`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
         <td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td>
-        <td><span class="adm-badge ${mc}">${margin}%</span></td>
+        <td><span class="adm-badge ${statusColor}">${o.status}</span></td>
+        <td style="white-space:nowrap">${actionBtns}</td>
       </tr>`;
     }).join("")}</tbody></table></div></div>`;
 }
@@ -1885,6 +1902,22 @@ async function admAddTx(){
   }catch(e){toast("Failed: "+e.message);}
 }
 
+async function admUpdateOrderStatus(orderId,newStatus){
+  const labels={Confirmed:'Confirm',Dispatched:'Dispatch',Delivered:'Mark Delivered',Cancelled:'Cancel'};
+  if(!confirm(`${labels[newStatus]||newStatus} order ${orderId}?`))return;
+  try{
+    const now=new Date().toISOString();
+    const update={status:newStatus};
+    if(newStatus==='Confirmed')update.confirmed_at=now;
+    else if(newStatus==='Dispatched')update.dispatched_at=now;
+    else if(newStatus==='Delivered')update.delivered_at=now;
+    const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
+    if(error)throw error;
+    toast(orderId+' → '+newStatus+' ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
 function admRenderCosts(){
   const suppliers=ADM_DATA.suppliers||["T-Shirt Hub"];
   const owners=ADM_DATA.owners||[];
@@ -1941,7 +1974,10 @@ async function admLoadProducts(){
 
 function admRenderProducts(){
   const filtered=admProdFilter==='all'?admAllProdData:admAllProdData.filter(r=>r.category===admProdFilter);
+  // Count unique active products (not category rows) to avoid inflated numbers
+  const uniqueActiveProducts=new Set(admAllProdData.filter(r=>r.products?.active!==false).map(r=>r.product_id));
   const totalActive=admAllProdData.filter(r=>r.products?.active!==false).length;
+  const activeProductCount=uniqueActiveProducts.size;
   const filterBtns=['all','Regular','Drop Shoulder','Hoodie','Hoodie Back'].map(f=>
     `<button class="adm-prod-filter-btn ${admProdFilter===f?'on':''}" onclick="admSetProdFilter('${f}')">${f==='all'?'All':f}</button>`
   ).join('');
@@ -1985,7 +2021,7 @@ function admRenderProducts(){
       <button class="adm-prod-add-btn" onclick="admProdOpenModal()">+ Add New Product</button>
       <div class="adm-prod-filter">${filterBtns}</div>
     </div>
-    <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active total</div>
+    <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active variants · ${activeProductCount} active design${activeProductCount!==1?'s':''}</div>
     <div class="adm-prod-grid">${cards}</div>
     <div class="adm-prod-modal-bg" id="admProdModalBg" onclick="if(event.target===this)admProdCloseModal()">
       <div class="adm-prod-modal">

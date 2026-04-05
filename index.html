@@ -2221,7 +2221,11 @@ async function admSaveOwner(){
   if(!name||!share){toast('Name and equity % required');return;}
    const others=((ADM_DATA&&ADM_DATA.ownersRaw)||[]).filter(o=>o.name.toLowerCase()!==name.toLowerCase());
    const otherTotal=others.reduce((s,o)=>s+parseFloat(o.share||0),0);
-   if(otherTotal+share>100){alert(`Can't save — total equity would be ${otherTotal+share}%. Max is 100%.`);return;}
+   if(otherTotal+share>100){
+  const t=document.getElementById('toast');
+  if(t){t.textContent=`Total equity would be ${Math.round(otherTotal+share)}%. Max is 100%.`;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),3000);}
+  return;
+}
   const owners=ADM_DATA.ownersRaw||[];
   const existing=owners.findIndex(o=>o.name.toLowerCase()===name.toLowerCase());
   const entry={name,email,share,telegram_chat_id:tgChat};

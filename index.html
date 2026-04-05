@@ -1843,7 +1843,9 @@ function admRenderOwners(){
         <div class="adm-owner-bar-bg"><div class="adm-owner-bar" style="width:${o.share}%"></div></div>
         <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.3)">${o.email||'No email'}</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.2)">TG Chat: ${o.telegram_chat_id||'—'}</div>
-        <button class="adm-status-btn adm-status-cancel" style="margin-top:10px;font-size:9px" onclick="admRemoveOwner('${o.name}')">✕ Remove</button>
+        <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="adm-status-btn adm-status-confirm" style="font-size:9px" onclick="admEditOwner('${o.name}')">✏ Edit</button>
+        <button class="adm-status-btn adm-status-cancel" style="font-size:9px" onclick="admRemoveOwner('${o.name}')">✕ Remove</button></div>
       </div>`).join("")}
     </div>
     <div class="adm-tbl-wrap" style="margin-top:20px">

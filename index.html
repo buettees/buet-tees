@@ -1763,9 +1763,10 @@ function admRenderOrders(){
       // Action buttons based on current status
       let actionBtns='';
       if(o.status==='Pending')actionBtns=`<button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')">✓ Confirm</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕ Cancel</button>`;
-      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">📦 Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕</button>`;
-      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">✓ Delivered</button>`;
-      else if(o.status==='Delivered'||o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">${o.status==='Delivered'?'DONE':'CANCELLED'}</span>`;
+      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">📦 Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" title="Revert to Pending">↩ Revert</button>`;
+      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">✓ Delivered</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
+      else if(o.status==='Delivered')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" title="Revert to Dispatched" style="margin-left:6px">↩</button>`;
+      else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       return`<tr>
         <td class="adm-id">${o.orderId}</td>
         <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
@@ -1796,7 +1797,7 @@ function admRenderAffiliates(){
       <div class="adm-kpi"><div class="adm-kpi-label">Total Discount Given</div><div class="adm-kpi-val c-red">${admFmt(totalDisc)}</div></div>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Orders</th><th>Discount Given</th><th>Commission Owed</th></tr></thead>
+    <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Orders</th><th>Discount Given</th><th>Commission Owed</th><th>Action</th></tr></thead>
     <tbody>${rows.map(a=>`<tr>
       <td class="adm-id">${a.code}</td>
       <td class="adm-white">${a.name||"—"}</td>
@@ -1805,6 +1806,7 @@ function admRenderAffiliates(){
       <td class="${a.orderCount>0?"adm-white":""}">${a.orderCount}</td>
       <td class="${a.totalDiscount>0?"adm-red":""}"> ${a.totalDiscount>0?admFmt(a.totalDiscount):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
       <td class="${a.totalCommission>0?"adm-gold":""}">${a.totalCommission>0?admFmt(a.totalCommission):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td><button class="adm-status-btn ${a.status.toLowerCase()==='active'?'adm-status-cancel':'adm-status-confirm'}" onclick="admToggleAffiliate('${a.code}','${a.status}')">${a.status.toLowerCase()==='active'?'Deactivate':'Activate'}</button></td>
     </tr>`).join("")}</tbody></table></div></div>`;
 }
 
@@ -1903,7 +1905,7 @@ async function admAddTx(){
 }
 
 async function admUpdateOrderStatus(orderId,newStatus){
-  const labels={Confirmed:'Confirm',Dispatched:'Dispatch',Delivered:'Mark Delivered',Cancelled:'Cancel'};
+  const labels={Confirmed:'Confirm',Dispatched:'Dispatch',Delivered:'Mark Delivered',Cancelled:'Cancel',Pending:'Revert to Pending'};
   if(!confirm(`${labels[newStatus]||newStatus} order ${orderId}?`))return;
   try{
     const now=new Date().toISOString();
@@ -1914,6 +1916,17 @@ async function admUpdateOrderStatus(orderId,newStatus){
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admToggleAffiliate(code,currentStatus){
+  const newStatus=currentStatus.toLowerCase()==='active'?'inactive':'active';
+  if(!confirm(`${newStatus==='inactive'?'Deactivate':'Activate'} affiliate ${code}?`))return;
+  try{
+    const{error}=await sbAdmin.from('affiliates').update({status:newStatus}).eq('code',code);
+    if(error)throw error;
+    toast(code+' → '+newStatus+' ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }

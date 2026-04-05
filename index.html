@@ -1442,7 +1442,7 @@ async function submitAffReg(){
   const namePart=name.replace(/[.]/g,'').trim().split(/\s+/)[0];
   const idPart=sid.replace(/[^0-9]/g,'').slice(-3);
   const affCode=(namePart+idPart).toUpperCase();
-  await sbAdmin.from('affiliates').insert({
+  await sbAdmin.from('affiliates').upsert({
     code:affCode,
     full_name:name,whatsapp:wa,student_id:sid,hall,email,
     storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
@@ -1452,7 +1452,7 @@ async function submitAffReg(){
     commission_regular:affSelectedType==='storage'?30:20,
     commission_drop:affSelectedType==='storage'?40:25,
     commission_hoodie:affSelectedType==='storage'?50:35
-  }).then(({error})=>{if(error)console.error('Aff reg error:',error);});
+  },{onConflict:'code',ignoreDuplicates:false}).then(({error})=>{if(error)console.error('Aff reg error:',error);});
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
 

@@ -1963,16 +1963,14 @@ async function sendTelegram(token, chatId, text){
   }catch(e){console.error('Telegram failed:',e);}
 }
 
-function getOwners(){
+async function getOwners(){
   try{
-    return (ADM_DATA&&ADM_DATA.ownersRaw)||[
-      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',telegram_chat_id:'-4899351679'},
-      {name:'Kawsar',email:'',telegram_chat_id:'-4899351679'}
-    ];
+    const {data} = await sb.from('settings').select('value').eq('key','owners_json').single();
+    return JSON.parse(data.value||'[]');
   }catch(e){
     return[
       {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',telegram_chat_id:'-4899351679'},
-      {name:'Kawsar',email:'',telegram_chat_id:'-4899351679'}
+      {name:'Kawsar',email:'emmaoliva6753@gmail.com',telegram_chat_id:'-4899351679'}
     ];
   }
 }
@@ -1992,13 +1990,13 @@ function getSupplier(){
 function ownerTelegramToken(){ return '8698121676:AAEP2BclCvo49aam5bawz2wmRgbh2qD-sj4'; }
 
 async function notifyOwnersTelegram(text){
-  const owners = getOwners();
+  const owners = await getOwners();
   const chatIds = [...new Set(owners.map(o=>o.telegram_chat_id).filter(Boolean))];
   for(const cid of chatIds) await sendTelegram(ownerTelegramToken(), cid, text);
 }
 
 async function notifyOwnersEmail(subject, html){
-  const owners = getOwners();
+  const owners = await getOwners();
   const emails = owners.flatMap(o=>o.email?o.email.split(',').map(e=>e.trim()):[]).filter(Boolean);
   if(emails.length) await sendEmail(emails, subject, html);
 }

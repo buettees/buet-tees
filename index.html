@@ -1428,46 +1428,42 @@ async function submitAffReg(){
 
   const btn=document.getElementById('affSubmitBtn');btn.disabled=true;btn.textContent='Registering...';
 
-  const params=new URLSearchParams({
-    action:'affiliateRegister',
-    fullName:name,whatsapp:wa,studentId:sid,hall,email,
-    storageType:affSelectedType==='storage'?'With Storage':'No Storage',
-    promotionMethod:affSelectedPromos.join(', ')||'Not specified',
-    paymentMethod:affSelectedPay,paymentDetails:payDetails,
-    incomeGoal:affSelectedGoal
-  });
-
-  btn.disabled=false;btn.textContent='Register as Affiliate';
-  // Generate affiliate code from student ID
-  const namePart=name.replace(/[.]/g,'').trim().split(/\s+/)[0];
-  const idPart=sid.replace(/[^0-9]/g,'').slice(-3);
-  const affCode=(namePart+idPart).toUpperCase();
-  await sbAdmin.from('affiliates').upsert({
-    code:affCode,
-    full_name:name,whatsapp:wa,student_id:sid,hall,email,
-    storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
-    promotion_method:affSelectedPromos.join(', ')||'Not specified',
-    payment_method:affSelectedPay,payment_details:payDetails,
-    income_goal:affSelectedGoal,status:'inactive',
-    commission_regular:affSelectedType==='storage'?30:20,
-    commission_drop:affSelectedType==='storage'?40:25,
-    commission_hoodie:affSelectedType==='storage'?50:35
-  },{onConflict:'code',ignoreDuplicates:false}).then(({error})=>{if(error)console.error('Aff reg error:',error);});
-  document.getElementById('affForm').style.display='none';
-  document.getElementById('affSuccess').style.display='';
-
-  document.getElementById('affName').value='';
-  document.getElementById('affWa').value='';
-  document.getElementById('affId').value='';
-  document.getElementById('affHall').value='';
-  document.getElementById('affEmail').value='';
-  document.getElementById('affPayDetails').value='';
-  document.querySelectorAll('#affPromoGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('#affPayGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('#affGoalGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
-  affSelectedPromos=[];affSelectedPay='';affSelectedGoal='';affSelectedType='storage';
-  document.getElementById('affTypeStorage').classList.add('on');
-  document.getElementById('affTypeNoStorage').classList.remove('on');
+  try{
+    const namePart=name.replace(/[.]/g,'').trim().split(/\s+/)[0];
+    const idPart=sid.replace(/[^0-9]/g,'').slice(-3);
+    const affCode=(namePart+idPart).toUpperCase();
+    const{error}=await sbAdmin.from('affiliates').upsert({
+      code:affCode,
+      full_name:name,whatsapp:wa,student_id:sid,hall,email,
+      storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
+      promotion_method:affSelectedPromos.join(', ')||'Not specified',
+      payment_method:affSelectedPay,payment_details:payDetails,
+      income_goal:affSelectedGoal,status:'inactive',
+      commission_regular:affSelectedType==='storage'?30:20,
+      commission_drop:affSelectedType==='storage'?40:25,
+      commission_hoodie:affSelectedType==='storage'?50:35
+    },{onConflict:'code',ignoreDuplicates:false});
+    if(error)throw error;
+    document.getElementById('affForm').style.display='none';
+    document.getElementById('affSuccess').style.display='';
+    document.getElementById('affName').value='';
+    document.getElementById('affWa').value='';
+    document.getElementById('affId').value='';
+    document.getElementById('affHall').value='';
+    document.getElementById('affEmail').value='';
+    document.getElementById('affPayDetails').value='';
+    document.querySelectorAll('#affPromoGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('#affPayGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('#affGoalGrid .aff-promo-btn').forEach(b=>b.classList.remove('on'));
+    affSelectedPromos=[];affSelectedPay='';affSelectedGoal='';affSelectedType='storage';
+    document.getElementById('affTypeStorage').classList.add('on');
+    document.getElementById('affTypeNoStorage').classList.remove('on');
+  }catch(e){
+    toast('Registration failed: '+e.message);
+    console.error('Aff reg error:',e);
+  }finally{
+    btn.disabled=false;btn.textContent='Register as Affiliate';
+  }
 }
 
 

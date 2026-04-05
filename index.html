@@ -1939,14 +1939,16 @@ const FROM_EMAIL = 'BUET Tees <onboarding@resend.dev>';
 
 async function sendEmail(to, subject, html){
   if(!to) return;
-  const toArr = Array.isArray(to) ? to : [to];
+  const toArr = Array.isArray(to) ? to.filter(Boolean) : [to];
+  if(!toArr.length) return;
   try{
-    await fetch('https://api.resend.com/emails',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({from:FROM_EMAIL, to:toArr, subject, html})
+    const r = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({to: toArr, subject, html})
     });
-  }catch(e){console.error('Email failed:',e);}
+    if(!r.ok) console.error('Email failed:', await r.text());
+  }catch(e){ console.error('Email failed:', e); }
 }
 
 async function sendTelegram(token, chatId, text){

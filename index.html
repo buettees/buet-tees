@@ -1019,12 +1019,15 @@ function loadCatData(p,idx){
   if(isBackOnly){
     selSide="back";
     frontBtn.style.display="none";
-    backBtn.classList.add("on");frontBtn.classList.remove("on");
-    if(sideLbl)sideLbl.style.display="none";
-    if(sideRow)sideRow.style.display="none";
+    backBtn.style.display="";
+    backBtn.classList.add("on");
+    frontBtn.classList.remove("on");
+    if(sideLbl)sideLbl.style.display="";
+    if(sideRow)sideRow.style.display="";
   }else{
     selSide="front";
     frontBtn.style.display="";
+    backBtn.style.display="";
     frontBtn.classList.add("on");backBtn.classList.remove("on");
     if(sideLbl)sideLbl.style.display="";
     if(sideRow)sideRow.style.display="";

@@ -1446,7 +1446,7 @@ async function submitAffReg(){
     storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
     promotion_method:affSelectedPromos.join(', ')||'Not specified',
     payment_method:affSelectedPay,payment_details:payDetails,
-    income_goal:affSelectedGoal,status:'active',
+    income_goal:affSelectedGoal,status:'inactive',
     commission_regular:affSelectedType==='storage'?30:20,
     commission_drop:affSelectedType==='storage'?40:25,
     commission_hoodie:affSelectedType==='storage'?50:35
@@ -1806,7 +1806,10 @@ function admRenderAffiliates(){
       <td class="${a.orderCount>0?"adm-white":""}">${a.orderCount}</td>
       <td class="${a.totalDiscount>0?"adm-red":""}"> ${a.totalDiscount>0?admFmt(a.totalDiscount):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
       <td class="${a.totalCommission>0?"adm-gold":""}">${a.totalCommission>0?admFmt(a.totalCommission):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
-      <td><button class="adm-status-btn ${a.status.toLowerCase()==='active'?'adm-status-cancel':'adm-status-confirm'}" onclick="admToggleAffiliate('${a.code}','${a.status}')">${a.status.toLowerCase()==='active'?'Deactivate':'Activate'}</button></td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <button class="adm-status-btn ${a.status.toLowerCase()==='active'?'adm-status-cancel':'adm-status-confirm'}" onclick="admToggleAffiliate('${a.code}','${a.status}')">${a.status.toLowerCase()==='active'?'Deactivate':'Activate'}</button>
+        <button class="adm-status-btn" style="background:rgba(180,20,20,0.25);color:#ff6b6b;border:1px solid rgba(180,20,20,0.4);" onclick="admRemoveAffiliate('${a.code}','${a.name||a.code}')">✕ Remove</button>
+      </td>
     </tr>`).join("")}</tbody></table></div></div>`;
 }
 
@@ -1905,8 +1908,7 @@ async function admAddTx(){
 }
 
 async function admUpdateOrderStatus(orderId,newStatus){
-  const labels={Confirmed:'Confirm',Dispatched:'Dispatch',Delivered:'Mark Delivered',Cancelled:'Cancel',Pending:'Revert to Pending'};
-  if(!confirm(`${labels[newStatus]||newStatus} order ${orderId}?`))return;
+  if(newStatus==='Cancelled'&&!confirm(`Cancel order ${orderId}? This cannot be undone easily.`))return;
   try{
     const now=new Date().toISOString();
     const update={status:newStatus};
@@ -1922,11 +1924,20 @@ async function admUpdateOrderStatus(orderId,newStatus){
 
 async function admToggleAffiliate(code,currentStatus){
   const newStatus=currentStatus.toLowerCase()==='active'?'inactive':'active';
-  if(!confirm(`${newStatus==='inactive'?'Deactivate':'Activate'} affiliate ${code}?`))return;
   try{
     const{error}=await sbAdmin.from('affiliates').update({status:newStatus}).eq('code',code);
     if(error)throw error;
     toast(code+' → '+newStatus+' ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admRemoveAffiliate(code,name){
+  if(!confirm(`Permanently remove affiliate "${name}" (${code})?\n\nThis cannot be undone. Orders linked to this code will have their affiliate set to NULL.`))return;
+  try{
+    const{error}=await sbAdmin.from('affiliates').delete().eq('code',code);
+    if(error)throw error;
+    toast(code+' removed ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }

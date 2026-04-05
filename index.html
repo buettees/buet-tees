@@ -456,6 +456,49 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .aff-type-grid{grid-template-columns:1fr;}
   .toast{font-size:10px;padding:10px 16px;bottom:16px;white-space:normal;text-align:center;max-width:80vw;}
 }
+/* Products Admin Tab */
+.adm-prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px;}
+.adm-prod-card{background:#141414;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;transition:border-color 0.15s;}
+.adm-prod-card.inactive{opacity:0.4;}
+.adm-prod-card:hover{border-color:rgba(255,255,255,0.14);}
+.adm-prod-img{width:100%;aspect-ratio:1;object-fit:cover;background:#0d0d0d;display:block;}
+.adm-prod-img-placeholder{width:100%;aspect-ratio:1;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:2px;text-transform:uppercase;}
+.adm-prod-body{padding:14px 16px;}
+.adm-prod-name{font-size:13px;font-weight:800;color:#fff;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:2px;}
+.adm-prod-cat{font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.adm-prod-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.adm-prod-btn{border:none;border-radius:6px;padding:6px 12px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.adm-prod-btn-edit{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);}
+.adm-prod-btn-edit:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.adm-prod-btn-toggle{background:rgba(39,174,96,0.1);color:#27ae60;}
+.adm-prod-btn-toggle.off{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.2);}
+.adm-prod-btn-del{background:rgba(192,57,43,0.08);color:rgba(192,57,43,0.5);}
+.adm-prod-btn-del:hover{background:rgba(192,57,43,0.18);color:#e74c3c;}
+.adm-prod-add-btn{background:var(--burg);border:none;color:#fff;padding:9px 20px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;margin-bottom:4px;}
+.adm-prod-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px;}
+.adm-prod-filter{display:flex;gap:6px;flex-wrap:wrap;}
+.adm-prod-filter-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.3);padding:6px 14px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.adm-prod-filter-btn.on{background:rgba(109,0,26,0.2);border-color:var(--burg);color:#fff;}
+.adm-prod-count{font-size:10px;color:rgba(255,255,255,0.15);letter-spacing:2px;text-transform:uppercase;margin-top:4px;margin-bottom:8px;}
+.adm-prod-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9500;align-items:center;justify-content:center;padding:20px;}
+.adm-prod-modal-bg.on{display:flex;}
+.adm-prod-modal{background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;animation:su 0.2s ease;}
+.adm-prod-modal-hd{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.adm-prod-modal-title{font-size:13px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;}
+.adm-prod-modal-close{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.adm-prod-modal-body{padding:0 24px 28px;}
+.adm-prod-modal-sec{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.adm-prod-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.adm-prod-form-field{display:flex;flex-direction:column;gap:5px;}
+.adm-prod-form-field label{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
+.adm-prod-fi{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:#fff;padding:9px 12px;border-radius:7px;font-family:'Montserrat',sans-serif;font-size:12px;outline:none;transition:border-color 0.15s;}
+.adm-prod-fi:focus{border-color:var(--burg);}
+.adm-prod-fi option{background:#1a1a1a;}
+.adm-prod-modal-footer{display:flex;gap:10px;margin-top:24px;}
+.adm-prod-save-btn{flex:1;background:var(--burg);border:none;color:#fff;padding:12px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
+.adm-prod-cancel-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.3);padding:12px 20px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.adm-prod-img-preview{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#0d0d0d;display:block;margin-top:8px;}
+.adm-prod-img-preview-placeholder{width:100%;height:80px;border-radius:8px;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:2px;margin-top:8px;}
 @media(min-width:640px) and (max-width:900px){
   .hero{padding:48px 28px 52px;}.collection{padding:52px 28px 60px;}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:24px;}
@@ -853,6 +896,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab" onclick="admTab('monthly')">Monthly</div>
     <div class="adm-tab" onclick="admTab('transactions')">Transactions</div>
     <div class="adm-tab" onclick="admTab('costs')">Cost Settings</div>
+    <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
   </div>
   <div class="adm-body">
     <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
@@ -862,6 +906,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-content" id="adm-monthly"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-transactions"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-costs"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-products"><div class="adm-loading">Loading products...</div></div>
   </div>
 </div>
 
@@ -875,23 +920,12 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 // ══════════════════════════════════════════════════════════
 const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_FL7oRPEqn4Gg18xWaLPsug_fndTnfQm";
+// IMPORTANT: Admin panel needs the SERVICE ROLE key (never expose in public JS)
+// For admin panel API calls we use a separate admin endpoint or Edge Function
+const SUPABASE_SERVICE_KEY = "sb_secret_7ie_t9FcNz599m6fdqwKMw_Qjx50pYJ"; // only used in admin, not exposed to customers
 
-// Public Supabase client (read products, settings, check affiliate codes)
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Edge Function proxy — replaces sbAdmin (secret key is server-side only)
-let _adminHash = null; // set after login
-const API = '/api/admin';
-async function edgeFetch(action, payload = {}, requiresToken = false) {
-  const body = { action, payload };
-  if (requiresToken && _adminHash) body.token = _adminHash;
-  const res = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return res.json();
-}
+const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;
@@ -988,7 +1022,26 @@ function openP(id){
     document.getElementById("catOpts").innerHTML=p.categories.map((c,i)=>`<button class="vb ${i===0?"on":""}" onclick="pickCat(${i})">${c.category}</button>`).join("");
   }else{catRow.style.display="none";}
   loadCatData(p,0);
-  document.getElementById("side-front").classList.add("on");document.getElementById("side-back").classList.remove("on");
+  // Handle Hoodie Back — hide front option, auto-select back
+  const firstCat=p.categories&&p.categories[0]?p.categories[0].category:'';
+  const isBackOnly=firstCat==='Hoodie Back';
+  const sideRow=document.getElementById("side-front").closest(".vopts");
+  const sideLbl=sideRow?sideRow.previousElementSibling:null;
+  if(isBackOnly){
+    selSide="back";
+    document.getElementById("side-front").style.display="none";
+    document.getElementById("side-back").classList.add("on");
+    document.getElementById("side-front").classList.remove("on");
+    if(sideLbl)sideLbl.style.display="none";
+    sideRow.style.display="none";
+  }else{
+    selSide="front";
+    document.getElementById("side-front").style.display="";
+    document.getElementById("side-front").classList.add("on");
+    document.getElementById("side-back").classList.remove("on");
+    if(sideLbl)sideLbl.style.display="";
+    if(sideRow)sideRow.style.display="";
+  }
   document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
 }
 
@@ -1147,21 +1200,18 @@ async function place(){
   const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    // Get next order ID via Edge Function
-    const seqRes=await edgeFetch('nextOrderId');
-    const orderId=seqRes.data||('BT-'+Date.now());
+    // Get next order ID
+    const {data:seqData}=await sbAdmin.rpc('next_order_id');
+    const orderId=seqData||('BT-'+Date.now());
     const itemsJson=cart.map(i=>({...i}));
-    const orderPayload={
+    const {error:oe}=await sbAdmin.from('orders').insert({
       id:orderId,name,email,phone,address:addr,
       zone:DL[zone],items,items_json:itemsJson,
       subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
       payment_method:'bKash',trx_id:trx,
       affiliate_code:affCodeApplied||null,
       status:'Pending'
-    };
-    const orderRes=await edgeFetch('placeOrder',orderPayload);
-    if(orderRes.status>=400)throw new Error(JSON.stringify(orderRes.data));
-    const oe=null; // no error
+    });
     if(oe)throw oe;
     document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
@@ -1381,7 +1431,7 @@ async function submitAffReg(){
   btn.disabled=false;btn.textContent='Register as Affiliate';
   // Generate affiliate code from student ID
   const affCode=(sid.replace(/\s/g,'')+name.split(' ')[0].substring(0,3)).toUpperCase().substring(0,10);
-  const affPayload={
+  await sbAdmin.from('affiliates').insert({
     code:affCode,
     full_name:name,whatsapp:wa,student_id:sid,hall,email,
     storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
@@ -1391,8 +1441,7 @@ async function submitAffReg(){
     commission_regular:affSelectedType==='storage'?30:20,
     commission_drop:affSelectedType==='storage'?40:25,
     commission_hoodie:affSelectedType==='storage'?50:35
-  };
-  edgeFetch('registerAffiliate',affPayload).catch(e=>console.error('Aff reg error:',e));
+  }).then(({error})=>{if(error)console.error('Aff reg error:',error);});
   document.getElementById('affForm').style.display='none';
   document.getElementById('affSuccess').style.display='';
 
@@ -1410,7 +1459,7 @@ async function submitAffReg(){
   document.getElementById('affTypeNoStorage').classList.remove('on');
 }
 
-loadProducts();upd();
+
 
 // ══════════════════════════════════════════════════════════
 // ADMIN PANEL
@@ -1433,7 +1482,6 @@ async function adminLogin(){
   const val=document.getElementById("adminPassInput").value;
   const hash=await sha256(val);
   if(hash===ADMIN_PASS_HASH){
-    _adminHash=hash; // store for Edge Function auth
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
@@ -1452,24 +1500,29 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs"];
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
   document.getElementById("adm-"+name).classList.add("on");
+  if(name==="products"&&admAllProdData.length===0)admLoadProducts();
 }
 
 let ADM_DATA=null;
 async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
-    // Fetch all data via Edge Function (secret key stays server-side)
-    const res=await edgeFetch('adminLoad',{},true);
-    if(res.error)throw new Error(res.error);
-    const orders=res.orders||[];
-    const affiliates=res.affiliates||[];
-    const transactions=res.transactions||[];
-    const settingsArr=res.settings||[];
+    // Fetch all data in parallel
+    const [ordRes,affRes,txRes,settRes]=await Promise.all([
+      sbAdmin.from('orders').select('*').neq('status','Cancelled').order('created_at',{ascending:false}),
+      sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
+      sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
+      sbAdmin.from('settings').select('*')
+    ]);
+    const orders=ordRes.data||[];
+    const affiliates=affRes.data||[];
+    const transactions=txRes.data||[];
+    const settingsArr=settRes.data||[];
     const cfg={};settingsArr.forEach(s=>cfg[s.key]=s.value);
 
     // Cost constants
@@ -1822,8 +1875,8 @@ async function admAddTx(){
   const cat=document.getElementById("txCat").value.trim();
   if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
-    const txRes=await edgeFetch('addTransaction',{date,type,owner,amount:parseFloat(amount),description:desc,category:cat},true);
-    if(txRes.status>=400)throw new Error(JSON.stringify(txRes.data));
+    const {error}=await sbAdmin.from('transactions').insert({date,type,owner,amount:parseFloat(amount),description:desc,category:cat});
+    if(error)throw error;
     document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";
     toast("Transaction added ✓");admLoadData();
   }catch(e){toast("Failed: "+e.message);}
@@ -1864,6 +1917,230 @@ function admRenderCosts(){
     </div>`;
 }
 
+// ══════════════════════════════════════════════════════════
+// PRODUCTS ADMIN — Full CRUD
+// ══════════════════════════════════════════════════════════
+let admProdFilter='all';
+let admProdEditTarget=null;
+let admAllProdData=[];
+
+async function admLoadProducts(){
+  document.getElementById('adm-products').innerHTML='<div class="adm-loading">Loading products...</div>';
+  try{
+    const{data:cats,error}=await sbAdmin.from('product_categories').select('*, products(id,name,active)').order('product_id').order('sort_order');
+    if(error)throw error;
+    admAllProdData=cats||[];
+    admRenderProducts();
+  }catch(e){
+    document.getElementById('adm-products').innerHTML=`<div class="adm-loading" style="color:#c0392b">Failed to load: ${e.message}</div>`;
+  }
+}
+
+function admRenderProducts(){
+  const filtered=admProdFilter==='all'?admAllProdData:admAllProdData.filter(r=>r.category===admProdFilter);
+  const totalActive=admAllProdData.filter(r=>r.products?.active!==false).length;
+  const filterBtns=['all','Regular','Drop Shoulder','Hoodie','Hoodie Back'].map(f=>
+    `<button class="adm-prod-filter-btn ${admProdFilter===f?'on':''}" onclick="admSetProdFilter('${f}')">${f==='all'?'All':f}</button>`
+  ).join('');
+  const cards=filtered.length===0?'<div class="adm-empty">No products in this category</div>':filtered.map(r=>{
+    const active=r.products?.active!==false;
+    const imgHtml=r.image
+      ?`<img class="adm-prod-img" src="${r.image}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"/><div class="adm-prod-img-placeholder" style="display:none">No image</div>`
+      :`<div class="adm-prod-img-placeholder">No image</div>`;
+    const badge=r.badge?`<span class="adm-badge adm-badge-gold" style="margin-left:6px">${r.badge}</span>`:'';
+    const priceHtml=r.discounted_price
+      ?`<span class="adm-prod-price">৳${r.discounted_price}</span><span class="adm-prod-orig">৳${r.price}</span>`
+      :`<span class="adm-prod-price">৳${r.price}</span>`;
+    const sizes=(r.sizes||[]).join(', ')||'—';
+    const colors=(r.colors||[]).join(', ')||'—';
+    const pid=r.product_id;
+    const catId=r.id;
+    const labelEsc=(r.products?.name||pid)+' '+r.category;
+    return`<div class="adm-prod-card ${active?'':'inactive'}">
+      <div style="position:relative">
+        ${imgHtml}
+        <div style="position:absolute;top:8px;left:8px;display:flex;gap:4px">
+          <span class="adm-badge ${active?'adm-badge-green':'adm-badge-gray'}">${active?'Active':'Hidden'}</span>
+          <span class="adm-badge adm-badge-gray">${r.category}</span>
+        </div>
+      </div>
+      <div class="adm-prod-body">
+        <div class="adm-prod-name">${r.products?.name||pid}${badge}</div>
+        <div class="adm-prod-cat">${sizes} · ${colors}</div>
+        <div class="adm-prod-row"><div>${priceHtml}</div></div>
+        <div class="adm-prod-actions">
+          <button class="adm-prod-btn adm-prod-btn-edit" onclick="admProdOpenEdit('${catId}')">✏ Edit</button>
+          <button class="adm-prod-btn adm-prod-btn-toggle ${active?'':'off'}" onclick="admProdToggleActive('${pid}',${active})">${active?'Hide':'Show'}</button>
+          <button class="adm-prod-btn adm-prod-btn-del" onclick="admProdDelete('${catId}','${labelEsc.replace(/'/g,"\\'")}')">✕ Del</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('adm-products').innerHTML=`
+    <div class="adm-prod-hdr">
+      <button class="adm-prod-add-btn" onclick="admProdOpenModal()">+ Add New Product</button>
+      <div class="adm-prod-filter">${filterBtns}</div>
+    </div>
+    <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active total</div>
+    <div class="adm-prod-grid">${cards}</div>
+    <div class="adm-prod-modal-bg" id="admProdModalBg" onclick="if(event.target===this)admProdCloseModal()">
+      <div class="adm-prod-modal">
+        <div class="adm-prod-modal-hd">
+          <div class="adm-prod-modal-title" id="admProdModalTitle">Add Product</div>
+          <button class="adm-prod-modal-close" onclick="admProdCloseModal()">✕</button>
+        </div>
+        <div class="adm-prod-modal-body">
+          <div class="adm-prod-modal-sec">Design Identity</div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field"><label>Design ID *</label><input class="adm-prod-fi" id="pf-pid" placeholder="e.g. BT26" oninput="this.value=this.value.toUpperCase()"/></div>
+            <div class="adm-prod-form-field"><label>Category *</label>
+              <select class="adm-prod-fi" id="pf-cat">
+                <option value="Regular">Regular</option>
+                <option value="Drop Shoulder">Drop Shoulder</option>
+                <option value="Hoodie">Hoodie (Front/Choice)</option>
+                <option value="Hoodie Back">Hoodie Back (Back Only)</option>
+              </select>
+            </div>
+          </div>
+          <div class="adm-prod-modal-sec">Pricing (BDT)</div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field"><label>Original Price *</label><input class="adm-prod-fi" id="pf-price" type="number" placeholder="400"/></div>
+            <div class="adm-prod-form-field"><label>Discounted Price</label><input class="adm-prod-fi" id="pf-disc" type="number" placeholder="360 (blank = none)"/></div>
+          </div>
+          <div class="adm-prod-modal-sec">Sizes & Colors</div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field"><label>Sizes (comma separated) *</label><input class="adm-prod-fi" id="pf-sizes" placeholder="M,L,XL,XXL"/></div>
+            <div class="adm-prod-form-field"><label>Colors (comma separated) *</label><input class="adm-prod-fi" id="pf-colors" placeholder="Black,Maroon"/></div>
+          </div>
+          <div class="adm-prod-modal-sec">Image</div>
+          <div class="adm-prod-form-field full" style="grid-column:1/-1">
+            <label>Supabase Image URL</label>
+            <input class="adm-prod-fi" id="pf-img" placeholder="https://...supabase.co/storage/v1/object/public/product-images/regular/BT26.webp" oninput="admProdPreviewImg(this.value)"/>
+            <div id="pf-img-preview"><div class="adm-prod-img-preview-placeholder">Image preview</div></div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:6px;letter-spacing:1px;line-height:1.8">Upload to Supabase Storage → product-images → folder → copy URL here</div>
+          </div>
+          <div class="adm-prod-modal-sec">Badge & Visibility</div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field"><label>Badge (optional)</label><input class="adm-prod-fi" id="pf-badge" placeholder="New, Hot, 10% OFF"/></div>
+            <div class="adm-prod-form-field"><label>Visibility</label>
+              <select class="adm-prod-fi" id="pf-active">
+                <option value="true">Active (visible on site)</option>
+                <option value="false">Hidden</option>
+              </select>
+            </div>
+          </div>
+          <div class="adm-prod-modal-footer">
+            <button class="adm-prod-cancel-btn" onclick="admProdCloseModal()">Cancel</button>
+            <button class="adm-prod-save-btn" id="admProdSaveBtn" onclick="admProdSave()">Save Product</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function admSetProdFilter(f){admProdFilter=f;admRenderProducts();}
+
+function admProdPreviewImg(url){
+  const el=document.getElementById('pf-img-preview');if(!el)return;
+  el.innerHTML=url&&url.startsWith('http')
+    ?`<img class="adm-prod-img-preview" src="${url}" onerror="this.style.display='none'"/>`
+    :`<div class="adm-prod-img-preview-placeholder">Image preview</div>`;
+}
+
+function admProdOpenModal(){
+  admProdEditTarget=null;
+  document.getElementById('admProdModalTitle').textContent='Add New Product Variant';
+  document.getElementById('pf-pid').value='';
+  document.getElementById('pf-pid').disabled=false;
+  document.getElementById('pf-cat').value='Regular';
+  document.getElementById('pf-price').value='';
+  document.getElementById('pf-disc').value='';
+  document.getElementById('pf-sizes').value='M,L,XL';
+  document.getElementById('pf-colors').value='Black';
+  document.getElementById('pf-img').value='';
+  document.getElementById('pf-badge').value='10% OFF';
+  document.getElementById('pf-active').value='true';
+  admProdPreviewImg('');
+  document.getElementById('admProdModalBg').classList.add('on');
+}
+
+function admProdOpenEdit(categoryId){
+  const r=admAllProdData.find(x=>x.id===categoryId);if(!r)return;
+  admProdEditTarget={categoryId};
+  document.getElementById('admProdModalTitle').textContent='Edit — '+(r.products?.name||r.product_id)+' '+r.category;
+  document.getElementById('pf-pid').value=r.product_id;
+  document.getElementById('pf-pid').disabled=true;
+  document.getElementById('pf-cat').value=r.category;
+  document.getElementById('pf-price').value=r.price||'';
+  document.getElementById('pf-disc').value=r.discounted_price||'';
+  document.getElementById('pf-sizes').value=(r.sizes||[]).join(',');
+  document.getElementById('pf-colors').value=(r.colors||[]).join(',');
+  document.getElementById('pf-img').value=r.image||'';
+  document.getElementById('pf-badge').value=r.badge||'';
+  document.getElementById('pf-active').value=(r.products?.active!==false)?'true':'false';
+  admProdPreviewImg(r.image||'');
+  document.getElementById('admProdModalBg').classList.add('on');
+}
+
+function admProdCloseModal(){document.getElementById('admProdModalBg').classList.remove('on');}
+
+async function admProdSave(){
+  const pid=document.getElementById('pf-pid').value.trim().toUpperCase();
+  const cat=document.getElementById('pf-cat').value;
+  const price=parseFloat(document.getElementById('pf-price').value);
+  const discRaw=document.getElementById('pf-disc').value;
+  const disc=discRaw?parseFloat(discRaw):null;
+  const sizes=document.getElementById('pf-sizes').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const colors=document.getElementById('pf-colors').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const img=document.getElementById('pf-img').value.trim();
+  const badge=document.getElementById('pf-badge').value.trim();
+  const active=document.getElementById('pf-active').value==='true';
+  if(!pid){toast('Please enter a Design ID');return;}
+  if(!price||isNaN(price)){toast('Please enter a valid price');return;}
+  if(!sizes.length){toast('Please enter at least one size');return;}
+  if(!colors.length){toast('Please enter at least one color');return;}
+  const btn=document.getElementById('admProdSaveBtn');
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    if(admProdEditTarget){
+      const{error}=await sbAdmin.from('product_categories').update({category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null}).eq('id',admProdEditTarget.categoryId);
+      if(error)throw error;
+      await sbAdmin.from('products').update({active}).eq('id',pid);
+      toast('Product updated ✓');
+    }else{
+      await sbAdmin.from('products').upsert({id:pid,name:pid,active},{onConflict:'id'});
+      const{error}=await sbAdmin.from('product_categories').insert({product_id:pid,category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null,sort_order:0});
+      if(error)throw error;
+      toast('Product added ✓');
+    }
+    admProdCloseModal();
+    await admLoadProducts();
+    await loadProducts();
+  }catch(e){toast('Error: '+e.message);}
+  finally{btn.disabled=false;btn.textContent='Save Product';}
+}
+
+async function admProdToggleActive(productId,currentlyActive){
+  try{
+    const{error}=await sbAdmin.from('products').update({active:!currentlyActive}).eq('id',productId);
+    if(error)throw error;
+    toast(!currentlyActive?productId+' now visible ✓':productId+' now hidden');
+    await admLoadProducts();await loadProducts();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+async function admProdDelete(categoryId,label){
+  if(!confirm('Delete "'+label+'"?\n\nThis removes this category variant only.'))return;
+  try{
+    const{error}=await sbAdmin.from('product_categories').delete().eq('id',categoryId);
+    if(error)throw error;
+    toast('Deleted ✓');
+    await admLoadProducts();await loadProducts();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+loadProducts();upd();
 </script>
 </body>
 </html>

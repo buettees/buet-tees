@@ -1612,8 +1612,8 @@ async function admLoadData(){
         email:a.email,whatsapp:a.whatsapp,student_id:a.student_id,hall:a.hall,
         payment_method:a.payment_method,payment_details:a.payment_details,
         promotion_method:a.promotion_method,income_goal:a.income_goal,
-        discount_pct:a.discount_pct,
-        commission_regular:a.commission_regular,commission_drop:a.commission_drop,commission_hoodie:a.commission_hoodie,
+        commission_regular:a.commission_regular,commission_drop:a.commission_drop,
+        commission_hoodie:a.commission_hoodie,discount_pct:a.discount_pct,
         total_earned:a.total_earned,total_paid:a.total_paid,created_at:a.created_at};
     });
 
@@ -1836,19 +1836,18 @@ function admRenderAffiliates(){
     </tr>
     <tr id="aff-detail-${a.code}" style="display:none">
       <td colspan="8" style="padding:0">
-        <div style="background:rgba(255,255,255,0.03);border-left:3px solid var(--burg);padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div><div style="font-size:11px;color:#fff">${a.email||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">WhatsApp</div><div style="font-size:11px;color:#fff">${a.whatsapp||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Student ID</div><div style="font-size:11px;color:#fff">${a.student_id||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Hall</div><div style="font-size:11px;color:#fff">${a.hall||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Payment Method</div><div style="font-size:11px;color:#fff">${a.payment_method||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Payment Details</div><div style="font-size:11px;color:#fff">${a.payment_details||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Promotion Method</div><div style="font-size:11px;color:#fff">${a.promotion_method||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Income Goal</div><div style="font-size:11px;color:#fff">${a.income_goal||'—'}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Buyer Discount</div><div style="font-size:11px;color:var(--gold)">${a.discount_pct||0}%</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Commission Rates</div><div style="font-size:11px;color:var(--gold)">Regular ৳${a.commission_regular||20} · Drop ৳${a.commission_drop||25} · Hoodie ৳${a.commission_hoodie||35}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Total Earned / Paid Out</div><div style="font-size:11px;color:#fff">৳${a.total_earned||0} / ৳${a.total_paid||0}</div></div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Joined</div><div style="font-size:11px;color:#fff">${a.created_at?new Date(a.created_at).toLocaleDateString('en-GB'):'—'}</div></div>
+        <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${a.email||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">WhatsApp</div>${a.whatsapp||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Student ID</div>${a.student_id||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Hall</div>${a.hall||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Payment</div>${a.payment_method||'—'} — ${a.payment_details||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Promotion</div>${a.promotion_method||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Income Goal</div>${a.income_goal||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Buyer Discount</div>${a.discount_pct||0}%</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Commission Rates</div>Regular ৳${a.commission_regular||20} · Drop ৳${a.commission_drop||25} · Hoodie ৳${a.commission_hoodie||35}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Earned / Paid Out</div>৳${a.total_earned||0} / ৳${a.total_paid||0}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Joined</div>${a.created_at?new Date(a.created_at).toLocaleDateString('en-GB'):'—'}</div>
         </div>
       </td>
     </tr>`).join("")}</tbody></table></div></div>`;
@@ -2153,9 +2152,8 @@ async function admUpdateOrderStatus(orderId,newStatus){
 }
 
 function admToggleAffDetail(code){
-  const row=document.getElementById('aff-detail-'+code);
-  if(!row)return;
-  row.style.display=row.style.display==='none'?'table-row':'none';
+  const r=document.getElementById('aff-detail-'+code);
+  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
 }
 
 async function admToggleAffiliate(code,currentStatus){

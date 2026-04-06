@@ -1988,13 +1988,13 @@ async function sendTelegram(token, chatId, text){
 
 async function getOwners(){
   try{
-    const {data} = await sb.from('settings').select('value').eq('key','owners_json').single();
+    const {data} = await sbAdmin.from('settings').select('value').eq('key','owners_json').single();
     return JSON.parse(data.value||'[]');
   }catch(e){
     return[
-      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',telegram_chat_id:'-4899351679'},
-      {name:'Kawsar',email:'emmaoliva6753@gmail.com',telegram_chat_id:'-4899351679'}
-    ];
+  {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-4899351679'},
+  {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-4899351679'}
+];
   }
 }
 

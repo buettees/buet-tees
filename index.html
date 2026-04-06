@@ -2553,7 +2553,7 @@ async function admEditSupplierNew(id){
   const SIZE_ORDER=['S','M','L','XL','XXL'];
   ['Regular','Drop','Hoodie'].forEach(cat=>{
     const cd=cats[cat]||{active:false,colors:[],sizes:{}};
-    const isActive=cd.active!==false&&cd.active!==undefined?(cd.active):false;
+    const isActive=cd.active!==false;
     // Set active checkbox and show/hide fields
     const cb=document.getElementById('sc-'+cat+'-active');
     if(cb){cb.checked=isActive;}
@@ -2773,7 +2773,8 @@ function admProdFillSupplierDropdown(selectedName){
   const eligible=sups.filter(s=>{
     if(s.active===false)return false;
     const cd=(s.categories||{})[catKey];
-    return cd&&cd.active!==false;
+    if(!cd)return false;
+    return cd.active===true||cd.active===undefined||cd.active===null;
   });
   sel.innerHTML='<option value="">— select supplier —</option>'+
     eligible.map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');

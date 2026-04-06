@@ -2705,14 +2705,9 @@ function admRenderProducts(){
             </div>
             <div class="adm-prod-form-field">
               <label>Category *</label>
-              <select class="adm-prod-fi" id="pf-cat">
+              <select class="adm-prod-fi" id="pf-cat" onchange="admProdFillFromSupplier()">
                 <option value="">— select supplier first —</option>
               </select>
-            </div>
-          </div>
-          <div class="adm-prod-form-grid" style="margin-top:6px">
-            <div class="adm-prod-form-field" style="grid-column:1/-1">
-              <button type="button" onclick="admProdFillFromSupplier()" style="background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:11px;letter-spacing:1px;width:100%">↺ Auto-fill Sizes &amp; Colors from Supplier</button>
             </div>
           </div>
           <div class="adm-prod-modal-sec">Pricing (BDT)</div>
@@ -2720,10 +2715,18 @@ function admRenderProducts(){
             <div class="adm-prod-form-field"><label>Original Price *</label><input class="adm-prod-fi" id="pf-price" type="number" placeholder="400"/></div>
             <div class="adm-prod-form-field"><label>Discounted Price</label><input class="adm-prod-fi" id="pf-disc" type="number" placeholder="360 (blank = none)"/></div>
           </div>
-          <div class="adm-prod-modal-sec">Sizes &amp; Colors</div>
+          <div class="adm-prod-modal-sec">Sizes &amp; Colors <span style="font-size:9px;color:rgba(255,255,255,0.3);font-weight:400;letter-spacing:1px">(from supplier)</span></div>
           <div class="adm-prod-form-grid">
-            <div class="adm-prod-form-field"><label>Sizes (comma separated) *</label><input class="adm-prod-fi" id="pf-sizes" placeholder="M,L,XL,XXL"/></div>
-            <div class="adm-prod-form-field"><label>Colors (comma separated) *</label><input class="adm-prod-fi" id="pf-colors" placeholder="Black,Maroon"/></div>
+            <div class="adm-prod-form-field">
+              <label>Sizes</label>
+              <div id="pf-sizes-display" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.5);min-height:38px;letter-spacing:0.5px">—</div>
+              <input type="hidden" id="pf-sizes" value=""/>
+            </div>
+            <div class="adm-prod-form-field">
+              <label>Colors</label>
+              <div id="pf-colors-display" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 12px;font-size:12px;color:rgba(255,255,255,0.5);min-height:38px;letter-spacing:0.5px">—</div>
+              <input type="hidden" id="pf-colors" value=""/>
+            </div>
           </div>
           <div class="adm-prod-modal-sec">Image</div>
           <div class="adm-prod-form-field full" style="grid-column:1/-1">
@@ -2799,28 +2802,34 @@ function admProdOnSupplierChange(forceCat){
     catSel.value=forceCat;
     if(!catSel.value)catSel.selectedIndex=0;
   }
+  // Auto-fill sizes & colors immediately
+  admProdFillFromSupplier();
 }
 
 function admProdFillFromSupplier(){
   const supName=document.getElementById('pf-supplier').value;
   const catVal=document.getElementById('pf-cat').value;
-  if(!supName)return;
+  const sizesInput=document.getElementById('pf-sizes');
+  const colorsInput=document.getElementById('pf-colors');
+  const sizesDisplay=document.getElementById('pf-sizes-display');
+  const colorsDisplay=document.getElementById('pf-colors-display');
+  function setDisplay(disp,input,val){
+    if(input)input.value=val;
+    if(disp)disp.textContent=val||'—';
+  }
+  if(!supName||!catVal){setDisplay(sizesDisplay,sizesInput,'');setDisplay(colorsDisplay,colorsInput,'');return;}
   const sup=(ADM_DATA&&ADM_DATA.suppliersRaw||[]).find(s=>s.name===supName);
-  if(!sup||!sup.categories)return;
+  if(!sup||!sup.categories){setDisplay(sizesDisplay,sizesInput,'');setDisplay(colorsDisplay,colorsInput,'');return;}
   const catKey=catVal==='Drop Shoulder'?'Drop':catVal.includes('Hoodie')?'Hoodie':catVal;
   const cd=sup.categories[catKey];
-  if(!cd){toast('This supplier does not offer '+catKey);return;}
-  if(cd.active===false){toast('This category is inactive for '+supName);return;}
+  if(!cd||cd.active===false){setDisplay(sizesDisplay,sizesInput,'');setDisplay(colorsDisplay,colorsInput,'');return;}
   const SIZE_ORDER=['S','M','L','XL','XXL'];
-  if(cd.sizes&&Object.keys(cd.sizes).length){
-    // Sort sizes canonically
-    const std=SIZE_ORDER.filter(s=>cd.sizes[s]);
-    const extras=Object.keys(cd.sizes).filter(s=>!SIZE_ORDER.includes(s));
-    document.getElementById('pf-sizes').value=[...std,...extras].join(',');
-  }
-  if(cd.colors&&cd.colors.length){
-    document.getElementById('pf-colors').value=cd.colors.join(',');
-  }
+  const std=SIZE_ORDER.filter(s=>(cd.sizes||{})[s]);
+  const extras=Object.keys(cd.sizes||{}).filter(s=>!SIZE_ORDER.includes(s));
+  const sizesVal=[...std,...extras].join(',');
+  const colorsVal=(cd.colors||[]).join(', ');
+  setDisplay(sizesDisplay,sizesInput,sizesVal);
+  setDisplay(colorsDisplay,colorsInput,colorsVal);
 }
 
 function admProdOpenModal(){
@@ -2854,9 +2863,20 @@ function admProdOpenEdit(categoryId){
   document.getElementById('pf-img').value=r.image||'';
   document.getElementById('pf-badge').value=r.badge||'';
   document.getElementById('pf-active').value=(r.products?.active!==false)?'true':'false';
-  // Load supplier first (this auto-populates category dropdown), then restore saved category
+  // Load supplier first (auto-populates category dropdown + auto-fills sizes/colors)
   admProdFillSupplierDropdown(r.supplier||'T-Shirt Hub');
   admProdOnSupplierChange(r.category||'Regular');
+  // Fallback: if supplier data missing, show saved sizes/colors from DB
+  const sd=document.getElementById('pf-sizes-display');
+  const cd=document.getElementById('pf-colors-display');
+  if(sd&&!document.getElementById('pf-sizes').value){
+    document.getElementById('pf-sizes').value=(r.sizes||[]).join(',');
+    if(sd)sd.textContent=(r.sizes||[]).join(', ')||'—';
+  }
+  if(cd&&!document.getElementById('pf-colors').value){
+    document.getElementById('pf-colors').value=(r.colors||[]).join(',');
+    if(cd)cd.textContent=(r.colors||[]).join(', ')||'—';
+  }
   admProdPreviewImg(r.image||'');
   document.getElementById('admProdModalBg').classList.add('on');
 }

@@ -1571,6 +1571,19 @@ async function admLoadData(){
       return{
         orderId:o.id,timestamp:o.created_at,items:o.items||'',
         customerName:o.name||'',
+        phone:o.phone||'',
+        email:o.email||'',
+        address:o.address||'',
+        zone:o.zone||'',
+        trxId:o.trx_id||'',
+        notes:o.notes||'',
+        discountAmt:parseFloat(o.discount_amt||0),
+        discountPct:parseFloat(o.discount_pct||0),
+        deliveryFee:parseFloat(o.delivery_fee||0),
+        subtotal:parseFloat(o.subtotal||0),
+        confirmedAt:o.confirmed_at||'',
+        dispatchedAt:o.dispatched_at||'',
+        deliveredAt:o.delivered_at||'',
         supplier:o.supplier||'T-Shirt Hub',
         total,supplierCost,grossProfit,affCommission:affComm,netProfit,
         status:o.status,affiliateCode:o.affiliate_code||'',
@@ -1790,7 +1803,24 @@ function admRenderOrders(){
       else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">✓ Delivered</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
       else if(o.status==='Delivered')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" title="Revert to Dispatched" style="margin-left:6px">↩</button>`;
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
-      return`<tr>
+      // Build detail row fields
+      const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      const detailHtml=`
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Phone</div>${o.phone||'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${o.email||'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Address</div>${o.address||'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Zone</div>${o.zone||'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">bKash Trx ID</div><span style="color:#C9A84C;font-weight:700">${o.trxId||'—'}</span></div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Items (full)</div>${o.items||'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Subtotal / Delivery</div>৳${o.subtotal||0} / ৳${o.deliveryFee||0}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Discount</div>${o.discountPct?o.discountPct+'% (৳'+o.discountAmt+')':'—'}${o.affiliateCode?' via '+o.affiliateCode:''}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Supplier Cost</div>৳${Math.round(o.supplierCost)}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Aff. Commission</div>${o.affCommission>0?admFmt(o.affCommission):'—'}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Confirmed At</div>${fmtDt(o.confirmedAt)}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Dispatched At</div>${fmtDt(o.dispatchedAt)}</div>
+        <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Delivered At</div>${fmtDt(o.deliveredAt)}</div>
+        ${o.notes?`<div style="grid-column:1/-1"><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Notes</div>${o.notes}</div>`:''}`;
+      return`<tr style="cursor:pointer" onclick="admToggleOrderDetail('${o.orderId}')">
         <td class="adm-id">${o.orderId}</td>
         <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
         <td style="font-size:10px;color:rgba(255,255,255,0.5);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(o.customerName||'').replace(/"/g,"'")}">${o.customerName||'—'}</td>
@@ -1800,7 +1830,14 @@ function admRenderOrders(){
         <td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td>
         <td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td>
         <td><span class="adm-badge ${statusColor}">${o.status}</span></td>
-        <td style="white-space:nowrap">${actionBtns}</td>
+        <td style="white-space:nowrap" onclick="event.stopPropagation()">${actionBtns}</td>
+      </tr>
+      <tr id="ord-detail-${o.orderId}" style="display:none">
+        <td colspan="10" style="padding:0">
+          <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
+            ${detailHtml}
+          </div>
+        </td>
       </tr>`;
     }).join("")}</tbody></table></div></div>`;
 }
@@ -2567,6 +2604,11 @@ async function admProdDelete(categoryId,label){
 
 function admToggleAffDetail(code){
   const r=document.getElementById('aff-detail-'+code);
+  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
+}
+
+function admToggleOrderDetail(id){
+  const r=document.getElementById('ord-detail-'+id);
   if(r) r.style.display=r.style.display==='none'?'table-row':'none';
 }
 

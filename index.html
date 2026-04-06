@@ -1854,6 +1854,16 @@ function admRenderAffiliates(){
 }
 
 function admRenderOwners(){
+  if(!sessionStorage.getItem('owners_unlocked')){
+    document.getElementById('adm-owners').innerHTML=`
+      <div style="padding:60px;text-align:center">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase">Owners Tab — Restricted</div>
+        <input id="owners-pass" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:10px 16px;border-radius:6px;outline:none;margin-right:8px;font-size:13px;"/>
+        <button onclick="admUnlockOwners()" style="background:#6D001A;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;letter-spacing:1px">UNLOCK</button>
+      </div>`;
+    return;
+  }
+  const owners=ADM_DATA.ownersRaw||[];
   const owners=ADM_DATA.ownersRaw||[];
   const netProfit=ADM_DATA.summary?.totalNetProfit||0;
   document.getElementById("adm-owners").innerHTML=`
@@ -2155,7 +2165,14 @@ function admToggleAffDetail(code){
   const r=document.getElementById('aff-detail-'+code);
   if(r) r.style.display=r.style.display==='none'?'table-row':'none';
 }
-
+function admUnlockOwners(){
+  if(document.getElementById('owners-pass').value==='buettees2026'){
+    sessionStorage.setItem('owners_unlocked','1');
+    admRenderOwners();
+  }else{
+    toast('Incorrect password');
+  }
+}
 async function admToggleAffiliate(code,currentStatus){
   const newStatus=currentStatus.toLowerCase()==='active'?'inactive':'active';
   try{

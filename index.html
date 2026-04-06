@@ -1808,7 +1808,6 @@ function admRenderOrders(){
 function admRenderAffiliates(){
   const rows=ADM_DATA.affiliates;
   if(!rows.length){document.getElementById("adm-affiliates").innerHTML='<div class="adm-empty">No affiliates yet</div>';return;}
-  // Only show real affiliates (skip obvious test data) — filter where name has real chars
   const active=rows.filter(a=>a.status.toLowerCase()==="active");
   const totalComm=rows.reduce((s,a)=>s+a.totalCommission,0);
   const totalDisc=rows.reduce((s,a)=>s+a.totalDiscount,0);
@@ -2001,9 +2000,9 @@ async function getOwners(){
     return JSON.parse(data.value||'[]');
   }catch(e){
     return[
-  {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-4899351679'},
-  {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-4899351679'}
-];
+      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-4899351679'},
+      {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-4899351679'}
+    ];
   }
 }
 
@@ -2160,18 +2159,6 @@ async function admUpdateOrderStatus(orderId,newStatus){
   }catch(e){toast('Failed: '+e.message);}
 }
 
-function admToggleAffDetail(code){
-  const r=document.getElementById('aff-detail-'+code);
-  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
-}
-function admUnlockOwners(){
-  if(document.getElementById('owners-pass').value==='buettees2026'){
-    sessionStorage.setItem('owners_unlocked','1');
-    admRenderOwners();
-  }else{
-    toast('Incorrect password');
-  }
-}
 async function admToggleAffiliate(code,currentStatus){
   const newStatus=currentStatus.toLowerCase()==='active'?'inactive':'active';
   try{
@@ -2451,8 +2438,12 @@ function admRenderProducts(){
           <div class="adm-prod-form-field full" style="grid-column:1/-1">
             <label>Supabase Image URL</label>
             <input class="adm-prod-fi" id="pf-img" placeholder="https://...supabase.co/storage/v1/object/public/product-images/regular/BT26.webp" oninput="admProdPreviewImg(this.value)"/>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <input type="file" id="pf-img-file" accept="image/*" style="display:none" onchange="admProdUploadImage(this)"/>
+              <button type="button" onclick="document.getElementById('pf-img-file').click()" style="background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:11px;letter-spacing:1px">📁 UPLOAD IMAGE</button>
+              <span id="pf-img-upload-status" style="font-size:10px;color:rgba(255,255,255,0.3)">or paste URL above</span>
+            </div>
             <div id="pf-img-preview"><div class="adm-prod-img-preview-placeholder">Image preview</div></div>
-            <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:6px;letter-spacing:1px;line-height:1.8">Upload to Supabase Storage → product-images → folder → copy URL here</div>
           </div>
           <div class="adm-prod-modal-sec">Badge & Visibility</div>
           <div class="adm-prod-form-grid">
@@ -2572,6 +2563,45 @@ async function admProdDelete(categoryId,label){
     toast('Deleted ✓');
     await admLoadProducts();await loadProducts();
   }catch(e){toast('Error: '+e.message);}
+}
+
+function admToggleAffDetail(code){
+  const r=document.getElementById('aff-detail-'+code);
+  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
+}
+
+function admUnlockOwners(){
+  if(document.getElementById('owners-pass').value==='buettees2026'){
+    sessionStorage.setItem('owners_unlocked','1');
+    admRenderOwners();
+  }else{
+    toast('Incorrect password');
+  }
+}
+
+async function admProdUploadImage(input){
+  const file=input.files[0];
+  if(!file)return;
+  const status=document.getElementById('pf-img-upload-status');
+  status.style.color='#f0c040';status.textContent='Uploading...';
+  try{
+    const catVal=document.getElementById('pf-cat').value||'Regular';
+    const folder=catVal.toLowerCase().includes('drop')?'drop':catVal.toLowerCase().includes('hoodie')?'hoodie':'regular';
+    const form=new FormData();
+    form.append('file',file);
+    form.append('folder',folder);
+    const res=await fetch('/api/upload-image',{method:'POST',body:form});
+    const json=await res.json();
+    if(json.url){
+      document.getElementById('pf-img').value=json.url;
+      admProdPreviewImg(json.url);
+      status.style.color='#4caf50';status.textContent='✓ Uploaded!';
+    }else{
+      status.style.color='#ff6b6b';status.textContent='Failed: '+(json.error||'unknown');
+    }
+  }catch(e){
+    status.style.color='#ff6b6b';status.textContent='Error: '+e.message;
+  }
 }
 
 loadProducts();upd();

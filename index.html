@@ -2694,31 +2694,31 @@ function admRenderProducts(){
           <div class="adm-prod-modal-sec">Design Identity</div>
           <div class="adm-prod-form-grid">
             <div class="adm-prod-form-field"><label>Design ID *</label><input class="adm-prod-fi" id="pf-pid" placeholder="e.g. BT26" oninput="this.value=this.value.toUpperCase()"/></div>
-            <div class="adm-prod-form-field"><label>Category *</label>
-              <select class="adm-prod-fi" id="pf-cat" onchange="admProdFillSupplierDropdown('')">
-                <option value="Regular">Regular</option>
-                <option value="Drop Shoulder">Drop Shoulder</option>
-                <option value="Hoodie">Hoodie (Front/Choice)</option>
-                <option value="Hoodie Back">Hoodie Back (Back Only)</option>
+          </div>
+          <div class="adm-prod-modal-sec">Supplier &amp; Category</div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field">
+              <label>Supplier *</label>
+              <select class="adm-prod-fi" id="pf-supplier" onchange="admProdOnSupplierChange()">
+                <option value="">— select supplier —</option>
               </select>
+            </div>
+            <div class="adm-prod-form-field">
+              <label>Category *</label>
+              <select class="adm-prod-fi" id="pf-cat">
+                <option value="">— select supplier first —</option>
+              </select>
+            </div>
+          </div>
+          <div class="adm-prod-form-grid" style="margin-top:6px">
+            <div class="adm-prod-form-field" style="grid-column:1/-1">
+              <button type="button" onclick="admProdFillFromSupplier()" style="background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:11px;letter-spacing:1px;width:100%">↺ Auto-fill Sizes &amp; Colors from Supplier</button>
             </div>
           </div>
           <div class="adm-prod-modal-sec">Pricing (BDT)</div>
           <div class="adm-prod-form-grid">
             <div class="adm-prod-form-field"><label>Original Price *</label><input class="adm-prod-fi" id="pf-price" type="number" placeholder="400"/></div>
             <div class="adm-prod-form-field"><label>Discounted Price</label><input class="adm-prod-fi" id="pf-disc" type="number" placeholder="360 (blank = none)"/></div>
-          </div>
-          <div class="adm-prod-modal-sec">Supplier (per category)</div>
-          <div class="adm-prod-form-grid" id="pf-supplier-grid">
-            <!-- Populated by admProdFillSupplierDropdown() based on selected category -->
-            <div class="adm-prod-form-field"><label id="pf-supplier-label">Supplier</label>
-              <select class="adm-prod-fi" id="pf-supplier">
-                <option value="">— select supplier —</option>
-              </select>
-            </div>
-            <div class="adm-prod-form-field" style="align-self:end">
-              <button type="button" onclick="admProdFillFromSupplier()" style="background:rgba(255,255,255,0.07);color:#fff;border:1px solid rgba(255,255,255,0.15);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:11px;letter-spacing:1px;width:100%">↺ Auto-fill Sizes &amp; Colors</button>
-            </div>
           </div>
           <div class="adm-prod-modal-sec">Sizes &amp; Colors</div>
           <div class="adm-prod-form-grid">
@@ -2765,22 +2765,40 @@ function admProdPreviewImg(url){
 }
 
 function admProdFillSupplierDropdown(selectedName){
+  // Populate supplier dropdown with all active suppliers
   const sel=document.getElementById('pf-supplier');if(!sel)return;
-  const catVal=document.getElementById('pf-cat')?document.getElementById('pf-cat').value:'';
-  const catKey=catVal==='Drop Shoulder'?'Drop':catVal.includes('Hoodie')?'Hoodie':catVal||'Regular';
-  const sups=ADM_DATA&&ADM_DATA.suppliersRaw?ADM_DATA.suppliersRaw:[];
-  // Only show suppliers that have this category active
-  const eligible=sups.filter(s=>{
-    if(s.active===false)return false;
-    const cd=(s.categories||{})[catKey];
-    if(!cd)return true;
-    return cd.active!==false;
-  });
+  const sups=(ADM_DATA&&ADM_DATA.suppliersRaw)||[];
   sel.innerHTML='<option value="">— select supplier —</option>'+
-    eligible.map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');
-  // Update label to show category context
-  const lbl=document.getElementById('pf-supplier-label');
-  if(lbl)lbl.textContent='Supplier for '+catKey;
+    sups.filter(s=>s.active!==false)
+        .map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');
+  if(selectedName) admProdOnSupplierChange(selectedName);
+}
+
+function admProdOnSupplierChange(forceCat){
+  const supName=document.getElementById('pf-supplier').value;
+  const catSel=document.getElementById('pf-cat');if(!catSel)return;
+  if(!supName){
+    catSel.innerHTML='<option value="">— select supplier first —</option>';
+    return;
+  }
+  const sup=(ADM_DATA&&ADM_DATA.suppliersRaw||[]).find(s=>s.name===supName);
+  const supCats=sup?sup.categories||{}:{};
+  const catDefs=[
+    {key:'Regular',val:'Regular',label:'Regular'},
+    {key:'Drop',val:'Drop Shoulder',label:'Drop Shoulder'},
+    {key:'Hoodie',val:'Hoodie',label:'Hoodie (Front/Choice)'},
+    {key:'Hoodie',val:'Hoodie Back',label:'Hoodie Back (Back Only)'}
+  ];
+  const opts=catDefs.map(c=>{
+    const cd=supCats[c.key];
+    const inactive=cd&&cd.active===false;
+    return `<option value="${c.val}" ${inactive?'disabled':''}>${c.label}${inactive?' (not offered)':''}</option>`;
+  });
+  catSel.innerHTML=opts.join('');
+  if(typeof forceCat==='string'&&forceCat){
+    catSel.value=forceCat;
+    if(!catSel.value)catSel.selectedIndex=0;
+  }
 }
 
 function admProdFillFromSupplier(){
@@ -2810,7 +2828,6 @@ function admProdOpenModal(){
   document.getElementById('admProdModalTitle').textContent='Add New Product Variant';
   document.getElementById('pf-pid').value='';
   document.getElementById('pf-pid').disabled=false;
-  document.getElementById('pf-cat').value='Regular';
   document.getElementById('pf-price').value='';
   document.getElementById('pf-disc').value='';
   document.getElementById('pf-sizes').value='M,L,XL';
@@ -2818,6 +2835,7 @@ function admProdOpenModal(){
   document.getElementById('pf-img').value='';
   document.getElementById('pf-badge').value='10% OFF';
   document.getElementById('pf-active').value='true';
+  // Supplier first — fills category dropdown automatically
   admProdFillSupplierDropdown('T-Shirt Hub');
   admProdPreviewImg('');
   document.getElementById('admProdModalBg').classList.add('on');
@@ -2829,7 +2847,6 @@ function admProdOpenEdit(categoryId){
   document.getElementById('admProdModalTitle').textContent='Edit — '+(r.products?.name||r.product_id)+' '+r.category;
   document.getElementById('pf-pid').value=r.product_id;
   document.getElementById('pf-pid').disabled=true;
-  document.getElementById('pf-cat').value=r.category;
   document.getElementById('pf-price').value=r.price||'';
   document.getElementById('pf-disc').value=r.discounted_price||'';
   document.getElementById('pf-sizes').value=(r.sizes||[]).join(',');
@@ -2837,7 +2854,9 @@ function admProdOpenEdit(categoryId){
   document.getElementById('pf-img').value=r.image||'';
   document.getElementById('pf-badge').value=r.badge||'';
   document.getElementById('pf-active').value=(r.products?.active!==false)?'true':'false';
+  // Load supplier first (this auto-populates category dropdown), then restore saved category
   admProdFillSupplierDropdown(r.supplier||'T-Shirt Hub');
+  admProdOnSupplierChange(r.category||'Regular');
   admProdPreviewImg(r.image||'');
   document.getElementById('admProdModalBg').classList.add('on');
 }

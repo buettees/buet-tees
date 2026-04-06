@@ -2281,21 +2281,33 @@ async function admRemoveAffiliate(code,name){
 function admRenderCosts(){
   const suppliers=ADM_DATA.suppliersRaw||[];
   const CATS=['Regular','Drop','Hoodie'];
-  const DEFAULT_SIZES=['S','M','L','XL','XXL'];
+  const SIZE_ORDER=['S','M','L','XL','XXL'];
+
+  // Sort sizes in canonical order, extras appended after
+  function sortSizes(sizeKeys){
+    const standard=SIZE_ORDER.filter(s=>sizeKeys.includes(s));
+    const extras=sizeKeys.filter(s=>!SIZE_ORDER.includes(s));
+    return [...standard,...extras];
+  }
 
   function renderSupplierCard(s,si){
     const cats=s.categories||{};
     const catHtml=CATS.map(cat=>{
-      const cd=cats[cat]||{colors:[],sizes:{}};
+      const cd=cats[cat]||{active:false,colors:[],sizes:{}};
+      const isActive=cd.active!==false;
       const colorsStr=(cd.colors||[]).join(', ')||'—';
-      const sizeKeys=Object.keys(cd.sizes||{});
+      const sizeKeys=sortSizes(Object.keys(cd.sizes||{}));
       const chartRows=sizeKeys.map(sz=>`<tr><td style="padding:2px 6px">${sz}</td><td style="text-align:center;padding:2px 6px">${(cd.sizes[sz]||{}).chest||'—'}</td><td style="text-align:center;padding:2px 6px">${(cd.sizes[sz]||{}).length||'—'}</td></tr>`).join('');
-      return`<div style="margin-top:8px">
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">${cat}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin:2px 0">Colors: ${colorsStr}</div>
+      return`<div style="margin-top:8px;opacity:${isActive?1:0.4}">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">${cat}</div>
+          ${!isActive?'<span style="font-size:9px;background:rgba(231,76,60,0.2);color:#e74c3c;padding:1px 5px;border-radius:3px;letter-spacing:0.5px">INACTIVE</span>':'<span style="font-size:9px;background:rgba(46,204,113,0.15);color:#2ecc71;padding:1px 5px;border-radius:3px;letter-spacing:0.5px">ACTIVE</span>'}
+        </div>
+        ${isActive?`<div style="font-size:10px;color:rgba(255,255,255,0.45);margin:2px 0">Colors: ${colorsStr}</div>
         ${sizeKeys.length?`<table style="font-size:10px;color:rgba(255,255,255,0.5);border-collapse:collapse;width:100%;margin-top:2px">
           <tr style="color:rgba(255,255,255,0.3)"><th style="text-align:left;padding:2px 6px">Size</th><th style="padding:2px 6px">Chest</th><th style="padding:2px 6px">Length</th></tr>
-          ${chartRows}</table>`:'<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">No sizes set</div>'}
+          ${chartRows}</table>`:'<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">No sizes set</div>'}`:
+        '<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">Not offered by this supplier</div>'}
       </div>`;
     }).join('');
     return`<div class="adm-cost-card">
@@ -2310,14 +2322,23 @@ function admRenderCosts(){
     </div>`;
   }
 
-  // Build size chart editor rows for each category
-  function sizeCols(cat){
-    return DEFAULT_SIZES.map(sz=>`
-      <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;font-size:10px">
+  // Build size chart editor rows for a category (standard sizes + dynamic extras)
+  function sizeCols(cat,extraSizes){
+    const stdRows=SIZE_ORDER.map(sz=>`
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;font-size:10px" id="sc-row-${cat}-${sz}">
         <span style="width:28px;color:rgba(255,255,255,0.5);flex-shrink:0">${sz}</span>
         <input class="adm-tx-input" id="sc-${cat}-${sz}-chest" placeholder="Chest" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
         <input class="adm-tx-input" id="sc-${cat}-${sz}-len" placeholder="Len" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
       </div>`).join('');
+    const extraRows=(extraSizes||[]).map((sz,i)=>`
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;font-size:10px" class="sc-extra-row" data-cat="${cat}">
+        <input class="adm-tx-input sc-extra-name" placeholder="e.g. 3XL" style="width:42px;padding:4px 6px;font-size:11px" value="${sz}"/>
+        <input class="adm-tx-input sc-extra-chest" placeholder="Chest" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
+        <input class="adm-tx-input sc-extra-len" placeholder="Len" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
+        <button type="button" onclick="this.closest('.sc-extra-row').remove()" style="background:rgba(231,76,60,0.2);color:#e74c3c;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px">✕</button>
+      </div>`).join('');
+    return stdRows+`<div id="sc-extra-container-${cat}">${extraRows}</div>
+      <button type="button" onclick="admAddSizeRow('${cat}')" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.5);border:1px dashed rgba(255,255,255,0.15);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:10px;margin-top:2px">+ Add Size</button>`;
   }
 
   document.getElementById("adm-costs").innerHTML=`
@@ -2348,20 +2369,28 @@ function admRenderCosts(){
             <input class="adm-tx-input" id="supTgChat" placeholder="-4996642816"/>
           </div>
           <div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Active</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Supplier Status</div>
             <select class="adm-tx-input" id="supActive"><option value="true">Active</option><option value="false">Inactive</option></select>
           </div>
         </div>
 
         ${CATS.map(cat=>`
-        <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
-          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${cat}</div>
-          <div style="margin-bottom:8px">
-            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Colors (comma separated)</div>
-            <input class="adm-tx-input" id="sc-${cat}-colors" placeholder="Black, White, Navy" style="width:100%;box-sizing:border-box"/>
+        <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.07)" id="sup-cat-block-${cat}">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px">${cat}</div>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:10px;color:rgba(255,255,255,0.5)">
+              <input type="checkbox" id="sc-${cat}-active" onchange="admToggleCatBlock('${cat}')" style="accent-color:#2ecc71;width:14px;height:14px"/>
+              Offered by this supplier
+            </label>
           </div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:6px">Size Chart (Chest &amp; Length in inches)</div>
-          ${sizeCols(cat)}
+          <div id="sc-cat-fields-${cat}" style="display:none">
+            <div style="margin-bottom:8px">
+              <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Colors (comma separated)</div>
+              <input class="adm-tx-input" id="sc-${cat}-colors" placeholder="Black, White, Navy" style="width:100%;box-sizing:border-box"/>
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:6px">Size Chart (Chest &amp; Length in inches)</div>
+            ${sizeCols(cat,[])}
+          </div>
         </div>`).join('')}
 
         <div style="display:flex;gap:8px;margin-top:14px">
@@ -2370,6 +2399,27 @@ function admRenderCosts(){
         </div>
       </div>
     </div>`;
+}
+
+function admToggleCatBlock(cat){
+  const cb=document.getElementById('sc-'+cat+'-active');
+  const fields=document.getElementById('sc-cat-fields-'+cat);
+  if(!cb||!fields)return;
+  fields.style.display=cb.checked?'block':'none';
+}
+
+function admAddSizeRow(cat){
+  const container=document.getElementById('sc-extra-container-'+cat);
+  if(!container)return;
+  const div=document.createElement('div');
+  div.className='sc-extra-row';
+  div.dataset.cat=cat;
+  div.style.cssText='display:flex;gap:4px;align-items:center;margin-bottom:4px;font-size:10px';
+  div.innerHTML=`<input class="adm-tx-input sc-extra-name" placeholder="e.g. 3XL" style="width:42px;padding:4px 6px;font-size:11px"/>
+    <input class="adm-tx-input sc-extra-chest" placeholder="Chest" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
+    <input class="adm-tx-input sc-extra-len" placeholder="Len" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px"/>
+    <button type="button" onclick="this.closest('.sc-extra-row').remove()" style="background:rgba(231,76,60,0.2);color:#e74c3c;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px">✕</button>`;
+  container.appendChild(div);
 }
 
 
@@ -2428,11 +2478,17 @@ function admCancelSupplierEditNew(){
   });
   const el=document.getElementById('supActive');if(el)el.value='true';
   ['Regular','Drop','Hoodie'].forEach(cat=>{
+    // Reset active checkbox and hide fields
+    const cb=document.getElementById('sc-'+cat+'-active');if(cb){cb.checked=false;}
+    const fields=document.getElementById('sc-cat-fields-'+cat);if(fields)fields.style.display='none';
     const cc=document.getElementById('sc-'+cat+'-colors');if(cc)cc.value='';
     ['S','M','L','XL','XXL'].forEach(sz=>{
       const ch=document.getElementById('sc-'+cat+'-'+sz+'-chest');if(ch)ch.value='';
       const ln=document.getElementById('sc-'+cat+'-'+sz+'-len');if(ln)ln.value='';
     });
+    // Remove any extra size rows
+    const container=document.getElementById('sc-extra-container-'+cat);
+    if(container)container.innerHTML='';
   });
 }
 
@@ -2442,15 +2498,28 @@ async function admSaveSupplierNew(){
   const editId=document.getElementById('supEditId').value.trim();
   const categories={};
   ['Regular','Drop','Hoodie'].forEach(cat=>{
+    const cb=document.getElementById('sc-'+cat+'-active');
+    const active=cb?cb.checked:false;
     const colorsEl=document.getElementById('sc-'+cat+'-colors');
     const colors=(colorsEl?colorsEl.value:'').split(',').map(c=>c.trim()).filter(Boolean);
     const sizes={};
-    ['S','M','L','XL','XXL'].forEach(sz=>{
-      const ch=parseFloat((document.getElementById('sc-'+cat+'-'+sz+'-chest')||{}).value)||0;
-      const ln=parseFloat((document.getElementById('sc-'+cat+'-'+sz+'-len')||{}).value)||0;
-      if(ch||ln) sizes[sz]={chest:ch,length:ln};
-    });
-    categories[cat]={colors,sizes};
+    if(active){
+      // Standard sizes
+      ['S','M','L','XL','XXL'].forEach(sz=>{
+        const ch=parseFloat((document.getElementById('sc-'+cat+'-'+sz+'-chest')||{}).value)||0;
+        const ln=parseFloat((document.getElementById('sc-'+cat+'-'+sz+'-len')||{}).value)||0;
+        if(ch||ln) sizes[sz]={chest:ch,length:ln};
+      });
+      // Extra/custom sizes
+      const extraRows=document.querySelectorAll('.sc-extra-row[data-cat="'+cat+'"]');
+      extraRows.forEach(row=>{
+        const szName=(row.querySelector('.sc-extra-name')||{}).value||'';
+        const ch=parseFloat((row.querySelector('.sc-extra-chest')||{}).value)||0;
+        const ln=parseFloat((row.querySelector('.sc-extra-len')||{}).value)||0;
+        if(szName.trim()&&(ch||ln)) sizes[szName.trim()]={chest:ch,length:ln};
+      });
+    }
+    categories[cat]={active,colors,sizes};
   });
   const entry={
     name,
@@ -2481,17 +2550,43 @@ async function admEditSupplierNew(id){
   const activeEl=document.getElementById('supActive');
   if(activeEl)activeEl.value=s.active===false?'false':'true';
   const cats=s.categories||{};
+  const SIZE_ORDER=['S','M','L','XL','XXL'];
   ['Regular','Drop','Hoodie'].forEach(cat=>{
-    const cd=cats[cat]||{colors:[],sizes:{}};
+    const cd=cats[cat]||{active:false,colors:[],sizes:{}};
+    const isActive=cd.active!==false&&cd.active!==undefined?(cd.active):false;
+    // Set active checkbox and show/hide fields
+    const cb=document.getElementById('sc-'+cat+'-active');
+    if(cb){cb.checked=isActive;}
+    const fields=document.getElementById('sc-cat-fields-'+cat);
+    if(fields)fields.style.display=isActive?'block':'none';
+    // Colors
     const cc=document.getElementById('sc-'+cat+'-colors');
     if(cc)cc.value=(cd.colors||[]).join(', ');
-    ['S','M','L','XL','XXL'].forEach(sz=>{
+    // Standard sizes
+    SIZE_ORDER.forEach(sz=>{
       const szd=(cd.sizes||{})[sz]||{};
       const ch=document.getElementById('sc-'+cat+'-'+sz+'-chest');
       const ln=document.getElementById('sc-'+cat+'-'+sz+'-len');
       if(ch)ch.value=szd.chest||'';
       if(ln)ln.value=szd.length||'';
     });
+    // Extra/custom sizes (anything not in SIZE_ORDER)
+    const container=document.getElementById('sc-extra-container-'+cat);
+    if(container){
+      container.innerHTML='';
+      Object.keys(cd.sizes||{}).filter(sz=>!SIZE_ORDER.includes(sz)).forEach(sz=>{
+        const szd=(cd.sizes[sz])||{};
+        const div=document.createElement('div');
+        div.className='sc-extra-row';
+        div.dataset.cat=cat;
+        div.style.cssText='display:flex;gap:4px;align-items:center;margin-bottom:4px;font-size:10px';
+        div.innerHTML=`<input class="adm-tx-input sc-extra-name" placeholder="e.g. 3XL" style="width:42px;padding:4px 6px;font-size:11px" value="${sz}"/>
+          <input class="adm-tx-input sc-extra-chest" placeholder="Chest" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px" value="${szd.chest||''}"/>
+          <input class="adm-tx-input sc-extra-len" placeholder="Len" type="number" step="0.5" style="width:62px;padding:4px 6px;font-size:11px" value="${szd.length||''}"/>
+          <button type="button" onclick="this.closest('.sc-extra-row').remove()" style="background:rgba(231,76,60,0.2);color:#e74c3c;border:none;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:10px">✕</button>`;
+        container.appendChild(div);
+      });
+    }
   });
   // Scroll to form
   document.getElementById('supFormTitle').scrollIntoView({behavior:'smooth',block:'center'});
@@ -2600,7 +2695,7 @@ function admRenderProducts(){
           <div class="adm-prod-form-grid">
             <div class="adm-prod-form-field"><label>Design ID *</label><input class="adm-prod-fi" id="pf-pid" placeholder="e.g. BT26" oninput="this.value=this.value.toUpperCase()"/></div>
             <div class="adm-prod-form-field"><label>Category *</label>
-              <select class="adm-prod-fi" id="pf-cat">
+              <select class="adm-prod-fi" id="pf-cat" onchange="admProdFillSupplierDropdown('')">
                 <option value="Regular">Regular</option>
                 <option value="Drop Shoulder">Drop Shoulder</option>
                 <option value="Hoodie">Hoodie (Front/Choice)</option>
@@ -2613,10 +2708,11 @@ function admRenderProducts(){
             <div class="adm-prod-form-field"><label>Original Price *</label><input class="adm-prod-fi" id="pf-price" type="number" placeholder="400"/></div>
             <div class="adm-prod-form-field"><label>Discounted Price</label><input class="adm-prod-fi" id="pf-disc" type="number" placeholder="360 (blank = none)"/></div>
           </div>
-          <div class="adm-prod-modal-sec">Supplier</div>
-          <div class="adm-prod-form-grid">
-            <div class="adm-prod-form-field"><label>Supplier</label>
-              <select class="adm-prod-fi" id="pf-supplier" onchange="admProdFillFromSupplier()">
+          <div class="adm-prod-modal-sec">Supplier (per category)</div>
+          <div class="adm-prod-form-grid" id="pf-supplier-grid">
+            <!-- Populated by admProdFillSupplierDropdown() based on selected category -->
+            <div class="adm-prod-form-field"><label id="pf-supplier-label">Supplier</label>
+              <select class="adm-prod-fi" id="pf-supplier">
                 <option value="">— select supplier —</option>
               </select>
             </div>
@@ -2670,9 +2766,20 @@ function admProdPreviewImg(url){
 
 function admProdFillSupplierDropdown(selectedName){
   const sel=document.getElementById('pf-supplier');if(!sel)return;
+  const catVal=document.getElementById('pf-cat')?document.getElementById('pf-cat').value:'';
+  const catKey=catVal==='Drop Shoulder'?'Drop':catVal.includes('Hoodie')?'Hoodie':catVal||'Regular';
   const sups=ADM_DATA&&ADM_DATA.suppliersRaw?ADM_DATA.suppliersRaw:[];
+  // Only show suppliers that have this category active
+  const eligible=sups.filter(s=>{
+    if(s.active===false)return false;
+    const cd=(s.categories||{})[catKey];
+    return cd&&cd.active!==false;
+  });
   sel.innerHTML='<option value="">— select supplier —</option>'+
-    sups.map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');
+    eligible.map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');
+  // Update label to show category context
+  const lbl=document.getElementById('pf-supplier-label');
+  if(lbl)lbl.textContent='Supplier for '+catKey;
 }
 
 function admProdFillFromSupplier(){
@@ -2683,9 +2790,14 @@ function admProdFillFromSupplier(){
   if(!sup||!sup.categories)return;
   const catKey=catVal==='Drop Shoulder'?'Drop':catVal.includes('Hoodie')?'Hoodie':catVal;
   const cd=sup.categories[catKey];
-  if(!cd)return;
+  if(!cd){toast('This supplier does not offer '+catKey);return;}
+  if(cd.active===false){toast('This category is inactive for '+supName);return;}
+  const SIZE_ORDER=['S','M','L','XL','XXL'];
   if(cd.sizes&&Object.keys(cd.sizes).length){
-    document.getElementById('pf-sizes').value=Object.keys(cd.sizes).join(',');
+    // Sort sizes canonically
+    const std=SIZE_ORDER.filter(s=>cd.sizes[s]);
+    const extras=Object.keys(cd.sizes).filter(s=>!SIZE_ORDER.includes(s));
+    document.getElementById('pf-sizes').value=[...std,...extras].join(',');
   }
   if(cd.colors&&cd.colors.length){
     document.getElementById('pf-colors').value=cd.colors.join(',');

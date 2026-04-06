@@ -2293,7 +2293,7 @@ function admRenderCosts(){
   function renderSupplierCard(s,si){
     const cats=s.categories||{};
     const catHtml=CATS.map(cat=>{
-      const cd=cats[cat]||{active:false,colors:[],sizes:{}};
+      const cd=cats[cat]||{colors:[],sizes:{}};
       const isActive=cd.active!==false;
       const colorsStr=(cd.colors||[]).join(', ')||'—';
       const sizeKeys=sortSizes(Object.keys(cd.sizes||{}));
@@ -2552,7 +2552,7 @@ async function admEditSupplierNew(id){
   const cats=s.categories||{};
   const SIZE_ORDER=['S','M','L','XL','XXL'];
   ['Regular','Drop','Hoodie'].forEach(cat=>{
-    const cd=cats[cat]||{active:false,colors:[],sizes:{}};
+    const cd=cats[cat]||{colors:[],sizes:{}};
     const isActive=cd.active!==false;
     // Set active checkbox and show/hide fields
     const cb=document.getElementById('sc-'+cat+'-active');
@@ -2773,8 +2773,8 @@ function admProdFillSupplierDropdown(selectedName){
   const eligible=sups.filter(s=>{
     if(s.active===false)return false;
     const cd=(s.categories||{})[catKey];
-    if(!cd)return false;
-    return cd.active===true||cd.active===undefined||cd.active===null;
+    if(!cd)return true;
+    return cd.active!==false;
   });
   sel.innerHTML='<option value="">— select supplier —</option>'+
     eligible.map(s=>`<option value="${s.name}" ${s.name===selectedName?'selected':''}>${s.name}</option>`).join('');

@@ -964,7 +964,7 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 async function loadProducts(){
   try{
     const [{data:products,error:pe},{data:suppliersData}]=await Promise.all([
-      sb.from('products').select('*, product_categories(*)').eq('active',true),
+      sb.from('products').select('*, product_categories(*)').eq('active',true).order('id',{ascending:true}),
       sb.from('suppliers').select('*').eq('active',true)
     ]);
     if(pe)throw pe;

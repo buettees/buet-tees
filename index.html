@@ -1031,25 +1031,36 @@ function render(){
 function renderSzChart(cat,activeSz){
   const tbl=document.getElementById('szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
-  const keys=Object.keys(ss);
+  const ORDER=['S','M','L','XL','XXL','3XL'];
+  const keys=[...ORDER.filter(k=>ss[k]),...Object.keys(ss).filter(k=>!ORDER.includes(k))];
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
-  tbl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:10px;color:rgba(255,255,255,0.6)">
-    <thead><tr>
-      <th style="text-align:left;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Size</th>
-      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Chest (in)</th>
-      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Length (in)</th>
-    </tr></thead>
-    <tbody>${keys.map(sz=>{
-      const active=sz===activeSz;
-      const rowStyle=active?'background:rgba(109,0,26,0.25);color:#fff;font-weight:600':'';
-      return`<tr id="szchr-row-${sz}" style="${rowStyle}">
-        <td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${sz}</td>
-        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].chest||'—'}</td>
-        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].length||'—'}</td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+  tbl.innerHTML=`
+  <div style="margin:14px 0 4px;border:1px solid #e8e4df;border-radius:10px;overflow:hidden;">
+    <div style="background:#f7f5f2;padding:8px 14px;border-bottom:1px solid #e8e4df;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;">Size Chart</span>
+      <span style="font-size:9px;color:#bbb;letter-spacing:1px;">inches</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f0ece8;">
+          <th style="text-align:left;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Size</th>
+          <th style="text-align:center;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Chest</th>
+          <th style="text-align:center;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Length</th>
+        </tr>
+      </thead>
+      <tbody>${keys.map((sz,i)=>{
+        const active=sz===activeSz;
+        const bg=active?'background:#6D001A;':'i%2===0?'background:#fff;':'background:#faf8f6;';
+        const clr=active?'color:#fff;font-weight:700;':'color:#333;';
+        return`<tr id="szchr-row-${sz}" style="${active?'background:#6D001A;':i%2===0?'background:#fff;':'background:#faf8f6;'}">
+          <td style="padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:1px;${active?'color:#fff;':'color:#111;'}border-bottom:1px solid #f0ece8;">${sz}</td>
+          <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].chest||'—'}</td>
+          <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].length||'—'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
 }
 
 function loadCatData(p,idx){
@@ -1110,9 +1121,10 @@ function pickSz(s){
   // Highlight corresponding size chart row
   document.querySelectorAll('[id^="szchr-row-"]').forEach(r=>{
     const active=r.id==='szchr-row-'+s;
-    r.style.background=active?'rgba(109,0,26,0.25)':'';
-    r.style.color=active?'#fff':'';
-    r.style.fontWeight=active?'600':'';
+    const idx=Array.from(r.parentNode.children).indexOf(r);
+      r.style.background=active?'#6D001A':idx%2===0?'#fff':'#faf8f6';
+      r.style.color=active?'#fff':'';
+      r.style.fontWeight=active?'700':'';
   });
 }
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}

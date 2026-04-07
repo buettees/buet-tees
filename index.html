@@ -975,7 +975,13 @@ async function loadProducts(){
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
-      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>{
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
+        const sup=supByName[c.supplier||'T-Shirt Hub'];
+        const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
+        const supCat=sup&&sup.categories&&sup.categories[catKey];
+        if(!sup||!supCat)return true; // no supplier data = show it (backwards compat)
+        return supCat.active!==false; // only hide if explicitly false
+      }).map(c=>{
         // Look up size chart from supplier table
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;

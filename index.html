@@ -1051,9 +1051,8 @@ function renderSzChart(cat,activeSz){
       </thead>
       <tbody>${keys.map((sz,i)=>{
         const active=sz===activeSz;
-        const bg=active?'background:#6D001A;':'i%2===0?'background:#fff;':'background:#faf8f6;';
-        const clr=active?'color:#fff;font-weight:700;':'color:#333;';
-        return`<tr id="szchr-row-${sz}" style="${active?'background:#6D001A;':i%2===0?'background:#fff;':'background:#faf8f6;'}">
+        const rowBg=active?'background:#6D001A;':i%2===0?'background:#fff;':'background:#faf8f6;';
+        return`<tr id="szchr-row-${sz}" style="${rowBg}">
           <td style="padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:1px;${active?'color:#fff;':'color:#111;'}border-bottom:1px solid #f0ece8;">${sz}</td>
           <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].chest||'—'}</td>
           <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].length||'—'}</td>

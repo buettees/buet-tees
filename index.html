@@ -2655,7 +2655,15 @@ async function admLoadProducts(){
 }
 
 function admRenderProducts(){
-  const filtered=admProdFilter==='all'?admAllProdData:admAllProdData.filter(r=>r.category===admProdFilter);
+  const searchEl=document.getElementById('admProdSearch');
+  const searchQ=(searchEl?searchEl.value:'').toLowerCase().trim();
+  const filtered=admAllProdData.filter(r=>{
+    const catMatch=admProdFilter==='all'||r.category===admProdFilter;
+    const searchMatch=!searchQ||
+      (r.product_id||'').toLowerCase().includes(searchQ)||
+      (r.products?.name||'').toLowerCase().includes(searchQ);
+    return catMatch&&searchMatch;
+  });
   // Count unique active products (not category rows) to avoid inflated numbers
   const uniqueActiveProducts=new Set(admAllProdData.filter(r=>r.products?.active!==false).map(r=>r.product_id));
   const totalActive=admAllProdData.filter(r=>r.products?.active!==false).length;
@@ -2702,6 +2710,9 @@ function admRenderProducts(){
     <div class="adm-prod-hdr">
       <button class="adm-prod-add-btn" onclick="admProdOpenModal()">+ Add New Product</button>
       <div class="adm-prod-filter">${filterBtns}</div>
+    </div>
+    <div style="margin:8px 0 4px">
+      <input id="admProdSearch" class="adm-fi" placeholder="🔍  Search by ID or name..." oninput="admRenderProducts()" style="width:100%;max-width:360px;"/>
     </div>
     <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active variants · ${activeProductCount} active design${activeProductCount!==1?'s':''}</div>
     <div class="adm-prod-grid">${cards}</div>

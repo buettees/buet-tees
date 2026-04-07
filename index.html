@@ -1121,9 +1121,13 @@ function pickSz(s){
   document.querySelectorAll('[id^="szchr-row-"]').forEach(r=>{
     const active=r.id==='szchr-row-'+s;
     const idx=Array.from(r.parentNode.children).indexOf(r);
-      r.style.background=active?'#6D001A':idx%2===0?'#fff':'#faf8f6';
-      r.style.color=active?'#fff':'';
-      r.style.fontWeight=active?'700':'';
+    r.style.background=active?'#6D001A':idx%2===0?'#fff':'#faf8f6';
+    r.style.color=active?'#fff':'#333';
+    r.style.fontWeight=active?'700':'400';
+    // Also fix child td colors
+    r.querySelectorAll('td').forEach((td,tdi)=>{
+      td.style.color=active?'#fff':tdi===0?'#111':'#444';
+    });
   });
 }
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}

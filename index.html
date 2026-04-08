@@ -1028,7 +1028,10 @@ function render(){
   g.innerHTML=prods.map(p=>{
     const cat0=(p.categories&&p.categories.length)?p.categories[0]:p;
     const dp=cat0.discountedPrice||cat0.price||0;
-    const img=cat0.image||"";const badge=cat0.badge||"";const catName=cat0.category||"";
+    const img=cat0.image||"";const badge=cat0.badge||"";
+    const catName=(p.categories&&p.categories.length>1)
+      ?p.categories.map(c=>c.category).join(' · ')
+      :(cat0.category||"");
     return`<div class="pcard" onclick="openP('${p.id}')">
       <div class="pimg"><img src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.1'"/>
         <div class="pov"><div class="pov-lbl">Select</div></div>

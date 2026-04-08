@@ -545,8 +545,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 <div class="ticker">
   <div class="ticker-t">
-    <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>Support 01515637637</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
-    <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>Support 01515637637</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
+    <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
+    <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
   </div>
 </div>
 
@@ -626,17 +626,17 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="is-item"><div class="is-num">FREE</div><div class="is-lbl">Campus Delivery</div></div>
   <div class="is-item"><div class="is-num">6<em> Days</em></div><div class="is-lbl">Delivery Time</div></div>
   <div class="is-item"><div class="is-num"><em>৳</em>70</div><div class="is-lbl">Inside Dhaka</div></div>
-  <div class="is-item"><div class="is-num">01515<em>637637</em></div><div class="is-lbl">Customer Support</div></div>
+  <div class="is-item"><div class="is-num">01782<em>761981</em></div><div class="is-lbl">bKash Number</div></div>
 </div>
 
 <footer>
   <div class="ft-grid">
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
-    <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">Customer Support: 01515637637</div></div>
+    <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
     <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
-  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">Support <span>01515637637</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
 
 <!-- Affiliate Registration Modal -->
@@ -904,6 +904,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab" onclick="admTab('transactions')">Transactions</div>
     <div class="adm-tab" onclick="admTab('costs')">Suppliers</div>
     <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
+    <div class="adm-tab" onclick="admTab('offers')">🏷 Offers</div>
   </div>
   <div class="adm-body">
     <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
@@ -914,6 +915,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-content" id="adm-transactions"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-costs"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-products"><div class="adm-loading">Loading products...</div></div>
+    <div class="adm-content" id="adm-offers"><div class="adm-loading">Loading offers...</div></div>
   </div>
 </div>
 
@@ -964,24 +966,20 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 async function loadProducts(){
   try{
     const [{data:products,error:pe},{data:suppliersData}]=await Promise.all([
-      sb.from('products').select('*, product_categories(*)').eq('active',true).order('id',{ascending:true}),
+      sb.from('products').select('*, product_categories(*)').eq('active',true),
       sb.from('suppliers').select('*').eq('active',true)
     ]);
     if(pe)throw pe;
     const {data:setting}=await sb.from('settings').select('value').eq('key','affiliate_discount_pct').single();
     if(setting)affDiscountPct=parseFloat(setting.value)||10;
+    // Load offers config
+    await loadOffersConfig();
     // Build supplier lookup by name
     const supByName={};
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
-      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
-        const sup=supByName[c.supplier||'T-Shirt Hub'];
-        const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
-        const supCat=sup&&sup.categories&&sup.categories[catKey];
-        if(!sup||!supCat)return true; // no supplier data = show it (backwards compat)
-        return supCat.active!==false; // only hide if explicitly false
-      }).map(c=>{
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>{
         // Look up size chart from supplier table
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
@@ -1031,35 +1029,25 @@ function render(){
 function renderSzChart(cat,activeSz){
   const tbl=document.getElementById('szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
-  const ORDER=['S','M','L','XL','XXL','3XL'];
-  const keys=[...ORDER.filter(k=>ss[k]),...Object.keys(ss).filter(k=>!ORDER.includes(k))];
+  const keys=Object.keys(ss);
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
-  tbl.innerHTML=`
-  <div style="margin:14px 0 4px;border:1px solid #e8e4df;border-radius:10px;overflow:hidden;">
-    <div style="background:#f7f5f2;padding:8px 14px;border-bottom:1px solid #e8e4df;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;">Size Chart</span>
-      <span style="font-size:9px;color:#bbb;letter-spacing:1px;">inches</span>
-    </div>
-    <table style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr style="background:#f0ece8;">
-          <th style="text-align:left;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Size</th>
-          <th style="text-align:center;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Chest</th>
-          <th style="text-align:center;padding:7px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;border-bottom:1px solid #e8e4df;">Length</th>
-        </tr>
-      </thead>
-      <tbody>${keys.map((sz,i)=>{
-        const active=sz===activeSz;
-        const rowBg=active?'background:#6D001A;':i%2===0?'background:#fff;':'background:#faf8f6;';
-        return`<tr id="szchr-row-${sz}" style="${rowBg}">
-          <td style="padding:8px 14px;font-size:12px;font-weight:700;letter-spacing:1px;${active?'color:#fff;':'color:#111;'}border-bottom:1px solid #f0ece8;">${sz}</td>
-          <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].chest||'—'}</td>
-          <td style="padding:8px 14px;text-align:center;font-size:12px;${active?'color:#fff;':'color:#444;'}border-bottom:1px solid #f0ece8;">${ss[sz].length||'—'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>
-  </div>`;
+  tbl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:10px;color:rgba(255,255,255,0.6)">
+    <thead><tr>
+      <th style="text-align:left;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Size</th>
+      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Chest (in)</th>
+      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Length (in)</th>
+    </tr></thead>
+    <tbody>${keys.map(sz=>{
+      const active=sz===activeSz;
+      const rowStyle=active?'background:rgba(109,0,26,0.25);color:#fff;font-weight:600':'';
+      return`<tr id="szchr-row-${sz}" style="${rowStyle}">
+        <td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${sz}</td>
+        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].chest||'—'}</td>
+        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].length||'—'}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
 }
 
 function loadCatData(p,idx){
@@ -1120,14 +1108,9 @@ function pickSz(s){
   // Highlight corresponding size chart row
   document.querySelectorAll('[id^="szchr-row-"]').forEach(r=>{
     const active=r.id==='szchr-row-'+s;
-    const idx=Array.from(r.parentNode.children).indexOf(r);
-    r.style.background=active?'#6D001A':idx%2===0?'#fff':'#faf8f6';
-    r.style.color=active?'#fff':'#333';
-    r.style.fontWeight=active?'700':'400';
-    // Also fix child td colors
-    r.querySelectorAll('td').forEach((td,tdi)=>{
-      td.style.color=active?'#fff':tdi===0?'#111':'#444';
-    });
+    r.style.background=active?'rgba(109,0,26,0.25)':'';
+    r.style.color=active?'#fff':'';
+    r.style.fontWeight=active?'600':'';
   });
 }
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}
@@ -1192,16 +1175,24 @@ function updSum(){
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const fee=DF[zone];
   const discPct=coAffValid?affDiscountPct:0;
-  const discAmt=discPct>0?Math.round(sub*discPct/100):0;
-  const total=sub-discAmt+fee;
+  const affDiscAmt=discPct>0?Math.round(sub*discPct/100):0;
+  // Custom offer discount (only if no affiliate code applied)
+  const offerResult=(!coAffValid)?computeOfferDiscount(cart):{discAmt:0,label:'',type:''};
+  const offerDiscAmt=offerResult.discAmt||0;
+  const totalDisc=affDiscAmt+offerDiscAmt;
+  const total=sub-totalDisc+fee;
   document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
   const discRow=document.getElementById("discRow");
-  if(discAmt>0){
+  if(affDiscAmt>0){
     discRow.style.display="";
     document.getElementById("discLabel").textContent=`Affiliate Discount (${discPct}%)`;
-    document.getElementById("stdisc").textContent=`-${C} ${discAmt}`;
+    document.getElementById("stdisc").textContent=`-${C} ${affDiscAmt}`;
+  }else if(offerDiscAmt>0){
+    discRow.style.display="";
+    document.getElementById("discLabel").textContent=offerResult.label||'Offer Discount';
+    document.getElementById("stdisc").textContent=`-${C} ${offerDiscAmt}`;
   }else{discRow.style.display="none";}
 }
 
@@ -1278,7 +1269,10 @@ async function place(){
   if(!trx){toast("Please enter your bKash TrxID");return;}
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const discPct=coAffValid?affDiscountPct:0;
-  const discAmt=discPct>0?Math.round(sub*discPct/100):0;
+  const affDiscAmt=discPct>0?Math.round(sub*discPct/100):0;
+  const offerResult=(!coAffValid)?computeOfferDiscount(cart):{discAmt:0,label:'',type:''};
+  const offerDiscAmt=offerResult.discAmt||0;
+  const discAmt=affDiscAmt+offerDiscAmt;
   const fee=DF[zone],total=sub-discAmt+fee;
   const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
@@ -1293,6 +1287,7 @@ async function place(){
       subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
       payment_method:'bKash',trx_id:trx,
       affiliate_code:affCodeApplied||null,
+      notes:(offerDiscAmt>0?(offerResult.label||'Offer applied'):''),
       status:'Pending'
     });
     if(oe)throw oe;
@@ -1583,12 +1578,13 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","supplierstab","ownerstab"];
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
   document.getElementById("adm-"+name).classList.add("on");
   if(name==="products"&&admAllProdData.length===0)admLoadProducts();
+  if(name==="offers")admRenderOffers();
 }
 
 let ADM_DATA=null;
@@ -2655,15 +2651,7 @@ async function admLoadProducts(){
 }
 
 function admRenderProducts(){
-  const searchEl=document.getElementById('admProdSearch');
-  const searchQ=(searchEl?searchEl.value:'').toLowerCase().trim();
-  const filtered=admAllProdData.filter(r=>{
-    const catMatch=admProdFilter==='all'||r.category===admProdFilter;
-    const searchMatch=!searchQ||
-      (r.product_id||'').toLowerCase().includes(searchQ)||
-      (r.products?.name||'').toLowerCase().includes(searchQ);
-    return catMatch&&searchMatch;
-  });
+  const filtered=admProdFilter==='all'?admAllProdData:admAllProdData.filter(r=>r.category===admProdFilter);
   // Count unique active products (not category rows) to avoid inflated numbers
   const uniqueActiveProducts=new Set(admAllProdData.filter(r=>r.products?.active!==false).map(r=>r.product_id));
   const totalActive=admAllProdData.filter(r=>r.products?.active!==false).length;
@@ -2710,9 +2698,6 @@ function admRenderProducts(){
     <div class="adm-prod-hdr">
       <button class="adm-prod-add-btn" onclick="admProdOpenModal()">+ Add New Product</button>
       <div class="adm-prod-filter">${filterBtns}</div>
-    </div>
-    <div style="margin:8px 0 4px">
-      <input id="admProdSearch" class="adm-fi" placeholder="🔍  Search by ID or name..." oninput="admRenderProducts()" style="width:100%;max-width:360px;"/>
     </div>
     <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active variants · ${activeProductCount} active design${activeProductCount!==1?'s':''}</div>
     <div class="adm-prod-grid">${cards}</div>
@@ -3013,6 +2998,357 @@ async function admProdUploadImage(input){
   }catch(e){
     status.style.color='#ff6b6b';status.textContent='Error: '+e.message;
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// OFFERS SYSTEM
+// ══════════════════════════════════════════════════════════
+// offersConfig: { flatDiscount:{active,type,value,label}, customOffers:[{id,name,desc,type,value,minQty,active}] }
+let offersConfig={flatDiscount:{active:false,type:'pct',value:0,label:''},customOffers:[]};
+let activeOffer=null; // resolved offer applied to cart at checkout
+
+async function loadOffersConfig(){
+  try{
+    const {data}=await sb.from('settings').select('value').eq('key','offers_config').single();
+    if(data&&data.value){offersConfig=JSON.parse(data.value);}
+  }catch(e){}
+  resolveActiveOffer();
+}
+
+function resolveActiveOffer(){
+  // Apply flat discount OR first active custom offer (flat takes priority if active)
+  const fd=offersConfig.flatDiscount||{};
+  if(fd.active&&parseFloat(fd.value)>0){
+    activeOffer={source:'flat',type:fd.type,value:parseFloat(fd.value),label:fd.label||'Sitewide Offer'};
+  }else{
+    const custom=(offersConfig.customOffers||[]).find(o=>o.active);
+    activeOffer=custom?{source:'custom',...custom}:null;
+  }
+  // Push flat discount into product prices for storefront display
+  applyFlatDiscountToProducts();
+}
+
+function applyFlatDiscountToProducts(){
+  if(!prods.length)return;
+  const fd=offersConfig.flatDiscount||{};
+  prods.forEach(p=>{
+    (p.categories||[]).forEach(cat=>{
+      const base=cat._basePrice||cat.price;
+      cat._basePrice=base; // preserve original
+      if(fd.active&&parseFloat(fd.value)>0){
+        let discounted;
+        if(fd.type==='pct') discounted=Math.round(base*(1-parseFloat(fd.value)/100));
+        else discounted=Math.max(0,base-parseFloat(fd.value));
+        cat.discountedPrice=discounted;
+        cat._offerApplied=true;
+      }else{
+        // Remove offer price only if it was set by offer system (not manual)
+        if(cat._offerApplied){cat.discountedPrice=null;cat._offerApplied=false;}
+      }
+    });
+  });
+  render();
+}
+
+// Compute offer discount for the checkout summary
+function computeOfferDiscount(cart){
+  if(!activeOffer)return{discAmt:0,label:'',type:''};
+  const o=activeOffer;
+  const totalQty=cart.reduce((s,i)=>s+i.qty,0);
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  if(o.source==='flat'){
+    // Already applied to product prices; no extra checkout deduction needed
+    return{discAmt:0,label:'',type:'flat_in_price'};
+  }
+  // Custom offer types
+  if(o.type==='buy_x_get_y_free'){
+    // Buy minQty, get value items free (cheapest items free)
+    const minQ=parseInt(o.minQty)||3;
+    const freeCount=Math.floor(totalQty/minQ)*parseInt(o.value||1);
+    if(freeCount>0){
+      const sortedPrices=cart.flatMap(i=>Array(i.qty).fill(i.price)).sort((a,b)=>a-b);
+      const discAmt=sortedPrices.slice(0,freeCount).reduce((s,p)=>s+p,0);
+      return{discAmt:Math.round(discAmt),label:`${o.name} (${freeCount} item${freeCount>1?'s':''} free)`,type:'custom'};
+    }
+  }else if(o.type==='buy_x_get_pct'){
+    // Buy minQty or more, get % off total
+    const minQ=parseInt(o.minQty)||2;
+    if(totalQty>=minQ){
+      const discAmt=Math.round(sub*parseFloat(o.value)/100);
+      return{discAmt,label:`${o.name} (${o.value}% off)`,type:'custom'};
+    }
+  }else if(o.type==='buy_x_get_flat'){
+    // Buy minQty or more, get fixed ৳ off
+    const minQ=parseInt(o.minQty)||2;
+    if(totalQty>=minQ){
+      return{discAmt:Math.min(Math.round(o.value),sub),label:`${o.name} (৳${o.value} off)`,type:'custom'};
+    }
+  }
+  return{discAmt:0,label:'',type:''};
+}
+
+// Admin: render offers tab
+function admRenderOffers(){
+  const fd=offersConfig.flatDiscount||{active:false,type:'pct',value:0,label:''};
+  const customs=offersConfig.customOffers||[];
+
+  const customRows=customs.map((o,i)=>{
+    const typeLabel={buy_x_get_y_free:'Buy X Get Y Free',buy_x_get_pct:'Buy X Get % Off',buy_x_get_flat:'Buy X Get ৳ Off'}[o.type]||o.type;
+    const detailStr=o.type==='buy_x_get_y_free'?`Buy ${o.minQty}, get ${o.value} free`
+      :o.type==='buy_x_get_pct'?`Buy ${o.minQty}+, get ${o.value}% off`
+      :`Buy ${o.minQty}+, get ৳${o.value} off`;
+    return`<tr>
+      <td style="font-weight:700;color:#fff">${o.name}</td>
+      <td><span class="adm-badge adm-badge-gray">${typeLabel}</span></td>
+      <td style="font-size:11px;color:rgba(255,255,255,0.5)">${detailStr}</td>
+      <td style="font-size:11px;color:rgba(255,255,255,0.4)">${o.desc||'—'}</td>
+      <td>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" ${o.active?'checked':''} onchange="admToggleCustomOffer(${i},this.checked)" style="width:14px;height:14px;accent-color:var(--burg)"/>
+          <span style="font-size:10px;color:${o.active?'#2ecc71':'rgba(255,255,255,0.25)'}">${o.active?'ACTIVE':'INACTIVE'}</span>
+        </label>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <button class="adm-status-btn adm-status-confirm" style="font-size:9px" onclick="admEditCustomOffer(${i})">✏ Edit</button>
+        <button class="adm-status-btn adm-status-cancel" style="font-size:9px" onclick="admDeleteCustomOffer(${i})">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('adm-offers').innerHTML=`
+    <!-- Flat Discount -->
+    <div class="adm-sec">Flat Sitewide Discount</div>
+    <div class="adm-tbl-wrap" style="margin-bottom:20px">
+      <div style="padding:20px 22px">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:16px;line-height:1.7">
+          A flat discount auto-applies to ALL product prices on the storefront — no need to set discounted prices individually per product. When active, product cards show the offer price with the original crossed out.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;align-items:end;flex-wrap:wrap">
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Status</div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px">
+              <input type="checkbox" id="fd-active" ${fd.active?'checked':''} style="width:16px;height:16px;accent-color:var(--burg)"/>
+              <span style="font-size:12px;font-weight:600;color:${fd.active?'#2ecc71':'rgba(255,255,255,0.4)'}" id="fd-status-lbl">${fd.active?'Active':'Inactive'}</span>
+            </label>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Discount Type</div>
+            <select class="adm-tx-input" id="fd-type" style="width:100%">
+              <option value="pct" ${fd.type==='pct'?'selected':''}>Percentage (%)</option>
+              <option value="flat" ${fd.type==='flat'?'selected':''}>Fixed Amount (৳)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Value</div>
+            <input class="adm-tx-input" id="fd-value" type="number" min="0" step="0.5" value="${fd.value||0}" placeholder="e.g. 10" style="width:100%"/>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Banner Label <span style="font-weight:400;color:rgba(255,255,255,0.2)">(optional)</span></div>
+            <input class="adm-tx-input" id="fd-label" type="text" value="${fd.label||''}" placeholder="e.g. EID OFFER — 15% OFF" style="width:100%"/>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+          <button class="adm-status-btn adm-status-confirm" style="padding:8px 20px;font-size:10px" onclick="admSaveFlatDiscount()">💾 Save Flat Discount</button>
+          <div id="fd-save-status" style="font-size:11px;color:rgba(255,255,255,0.3)"></div>
+        </div>
+        ${fd.active&&fd.value?`<div style="margin-top:12px;padding:10px 14px;background:rgba(109,0,26,0.2);border:1px solid rgba(109,0,26,0.4);border-radius:8px;font-size:11px;color:rgba(255,255,255,0.6)">
+          ✅ Currently active: <strong>${fd.type==='pct'?fd.value+'% off all products':'৳'+fd.value+' off all products'}</strong>${fd.label?' — "'+fd.label+'"':''}
+        </div>`:''}
+      </div>
+    </div>
+
+    <!-- Custom Offers -->
+    <div class="adm-sec">Custom Offers</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:12px;line-height:1.7">
+      Custom offers apply at checkout based on cart quantity. Only one custom offer can be active at a time. Examples: Buy 3 Get 1 Free, Buy 2 Get 10% Off.
+    </div>
+
+    ${customs.length?`<div class="adm-tbl-wrap" style="margin-bottom:16px">
+      <div class="adm-tbl-scroll"><table class="adm-tbl">
+        <thead><tr><th>Name</th><th>Type</th><th>Rule</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${customRows}</tbody>
+      </table></div>
+    </div>`:'<div class="adm-empty" style="margin-bottom:16px">No custom offers yet. Create one below.</div>'}
+
+    <!-- Add/Edit Custom Offer Form -->
+    <div class="adm-tbl-wrap">
+      <div style="padding:18px 20px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px" id="custom-offer-form-title">New Custom Offer</div>
+        <input type="hidden" id="cof-edit-idx" value="-1"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Offer Name *</div>
+            <input class="adm-tx-input" id="cof-name" type="text" placeholder="e.g. Buy 3 Get 1 Free" style="width:100%"/>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Offer Type *</div>
+            <select class="adm-tx-input" id="cof-type" style="width:100%" onchange="admOfferTypeChanged()">
+              <option value="buy_x_get_y_free">Buy X Get Y Free</option>
+              <option value="buy_x_get_pct">Buy X Get % Off</option>
+              <option value="buy_x_get_flat">Buy X Get ৳ Off</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px" id="cof-minqty-label">Min Qty to Trigger *</div>
+            <input class="adm-tx-input" id="cof-minqty" type="number" min="1" value="3" placeholder="e.g. 3" style="width:100%"/>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px" id="cof-value-label">Free Items / % / ৳ *</div>
+            <input class="adm-tx-input" id="cof-value" type="number" min="0" step="0.5" value="1" placeholder="e.g. 1" style="width:100%"/>
+          </div>
+          <div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Active</div>
+            <select class="adm-tx-input" id="cof-active" style="width:100%">
+              <option value="false">Inactive</option>
+              <option value="true">Active</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px">Description <span style="font-weight:400;color:rgba(255,255,255,0.2)">(shown to customer at checkout)</span></div>
+          <input class="adm-tx-input" id="cof-desc" type="text" placeholder="e.g. Buy any 3 items and get 1 free!" style="width:100%"/>
+        </div>
+        <div id="cof-preview" style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid rgba(109,0,26,0.6)"></div>
+        <div style="display:flex;gap:8px">
+          <button class="adm-status-btn adm-status-confirm" style="padding:8px 20px;font-size:10px" onclick="admSaveCustomOffer()">💾 Save Offer</button>
+          <button class="adm-status-btn" style="padding:8px 16px;font-size:10px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="admResetOfferForm()">✕ Clear</button>
+          <div id="cof-save-status" style="font-size:11px;color:rgba(255,255,255,0.3);align-self:center"></div>
+        </div>
+      </div>
+    </div>`;
+
+  // Wire up live preview
+  ['cof-type','cof-minqty','cof-value'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',admOfferPreview);
+  });
+  admOfferTypeChanged();
+  admOfferPreview();
+
+  // Wire flat discount status label toggle
+  const fdChk=document.getElementById('fd-active');
+  const fdLbl=document.getElementById('fd-status-lbl');
+  if(fdChk&&fdLbl){
+    fdChk.addEventListener('change',()=>{fdLbl.textContent=fdChk.checked?'Active':'Inactive';fdLbl.style.color=fdChk.checked?'#2ecc71':'rgba(255,255,255,0.4)';});
+  }
+}
+
+function admOfferTypeChanged(){
+  const type=document.getElementById('cof-type')?.value;
+  const minLbl=document.getElementById('cof-minqty-label');
+  const valLbl=document.getElementById('cof-value-label');
+  if(!type)return;
+  if(minLbl)minLbl.textContent=type==='buy_x_get_y_free'?'Buy (Min Qty) *':'Min Cart Qty *';
+  if(valLbl)valLbl.textContent=type==='buy_x_get_y_free'?'Free Items *':type==='buy_x_get_pct'?'Discount % *':'৳ Amount Off *';
+  admOfferPreview();
+}
+
+function admOfferPreview(){
+  const el=document.getElementById('cof-preview');if(!el)return;
+  const type=document.getElementById('cof-type')?.value;
+  const minQ=document.getElementById('cof-minqty')?.value||'?';
+  const val=document.getElementById('cof-value')?.value||'?';
+  let txt='';
+  if(type==='buy_x_get_y_free')txt=`Preview: Customer adds ${minQ}+ items → ${val} cheapest item(s) become free`;
+  else if(type==='buy_x_get_pct')txt=`Preview: Customer adds ${minQ}+ items → ${val}% off total subtotal`;
+  else if(type==='buy_x_get_flat')txt=`Preview: Customer adds ${minQ}+ items → ৳${val} off total`;
+  el.textContent=txt;
+}
+
+async function admSaveFlatDiscount(){
+  const active=document.getElementById('fd-active').checked;
+  const type=document.getElementById('fd-type').value;
+  const value=parseFloat(document.getElementById('fd-value').value)||0;
+  const label=document.getElementById('fd-label').value.trim();
+  const statusEl=document.getElementById('fd-save-status');
+  if(active&&value<=0){toast('Please enter a discount value greater than 0');return;}
+  statusEl.textContent='Saving...';
+  offersConfig.flatDiscount={active,type,value,label};
+  try{
+    const json=JSON.stringify(offersConfig);
+    const {error}=await sbAdmin.from('settings').upsert({key:'offers_config',value:json},{onConflict:'key'});
+    if(error)throw error;
+    statusEl.style.color='#2ecc71';statusEl.textContent='✓ Saved!';
+    resolveActiveOffer();
+    admRenderOffers();
+    toast('Flat discount saved ✓');
+  }catch(e){statusEl.style.color='#e74c3c';statusEl.textContent='Error: '+e.message;}
+}
+
+function admEditCustomOffer(idx){
+  const o=offersConfig.customOffers[idx];if(!o)return;
+  document.getElementById('cof-edit-idx').value=idx;
+  document.getElementById('cof-name').value=o.name||'';
+  document.getElementById('cof-type').value=o.type||'buy_x_get_y_free';
+  document.getElementById('cof-minqty').value=o.minQty||3;
+  document.getElementById('cof-value').value=o.value||1;
+  document.getElementById('cof-active').value=o.active?'true':'false';
+  document.getElementById('cof-desc').value=o.desc||'';
+  document.getElementById('custom-offer-form-title').textContent='Edit Offer';
+  admOfferTypeChanged();admOfferPreview();
+  document.getElementById('adm-offers').scrollTop=document.getElementById('adm-offers').scrollHeight;
+}
+
+function admResetOfferForm(){
+  document.getElementById('cof-edit-idx').value=-1;
+  document.getElementById('cof-name').value='';
+  document.getElementById('cof-type').value='buy_x_get_y_free';
+  document.getElementById('cof-minqty').value=3;
+  document.getElementById('cof-value').value=1;
+  document.getElementById('cof-active').value='false';
+  document.getElementById('cof-desc').value='';
+  document.getElementById('custom-offer-form-title').textContent='New Custom Offer';
+  admOfferPreview();
+}
+
+async function admSaveCustomOffer(){
+  const name=document.getElementById('cof-name').value.trim();
+  const type=document.getElementById('cof-type').value;
+  const minQty=parseInt(document.getElementById('cof-minqty').value)||0;
+  const value=parseFloat(document.getElementById('cof-value').value)||0;
+  const active=document.getElementById('cof-active').value==='true';
+  const desc=document.getElementById('cof-desc').value.trim();
+  const editIdx=parseInt(document.getElementById('cof-edit-idx').value);
+  const statusEl=document.getElementById('cof-save-status');
+  if(!name){toast('Please enter an offer name');return;}
+  if(minQty<1){toast('Min qty must be at least 1');return;}
+  if(value<=0){toast('Please enter a valid value');return;}
+  // If activating this offer, deactivate others
+  if(active) offersConfig.customOffers.forEach(o=>o.active=false);
+  const offer={id:editIdx>=0?(offersConfig.customOffers[editIdx]?.id||Date.now()):Date.now(),name,type,minQty,value,active,desc};
+  if(editIdx>=0) offersConfig.customOffers[editIdx]=offer;
+  else offersConfig.customOffers.push(offer);
+  statusEl.textContent='Saving...';
+  try{
+    const {error}=await sbAdmin.from('settings').upsert({key:'offers_config',value:JSON.stringify(offersConfig)},{onConflict:'key'});
+    if(error)throw error;
+    statusEl.style.color='#2ecc71';statusEl.textContent='✓ Saved!';
+    resolveActiveOffer();
+    admRenderOffers();
+    toast('Offer saved ✓');
+  }catch(e){statusEl.style.color='#e74c3c';statusEl.textContent='Error: '+e.message;}
+}
+
+async function admToggleCustomOffer(idx,checked){
+  if(checked) offersConfig.customOffers.forEach((o,i)=>{if(i!==idx)o.active=false;});
+  offersConfig.customOffers[idx].active=checked;
+  try{
+    await sbAdmin.from('settings').upsert({key:'offers_config',value:JSON.stringify(offersConfig)},{onConflict:'key'});
+    resolveActiveOffer();admRenderOffers();
+    toast((checked?'Offer activated':'Offer deactivated')+' ✓');
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admDeleteCustomOffer(idx){
+  if(!confirm('Delete this offer?'))return;
+  offersConfig.customOffers.splice(idx,1);
+  try{
+    await sbAdmin.from('settings').upsert({key:'offers_config',value:JSON.stringify(offersConfig)},{onConflict:'key'});
+    resolveActiveOffer();admRenderOffers();
+    toast('Offer deleted ✓');
+  }catch(e){toast('Failed: '+e.message);}
 }
 
 loadProducts();upd();

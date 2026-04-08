@@ -8,23 +8,15 @@
 <style>
 :root{--burg:#6D001A;--burg2:#850020;--w:#FFFFFF;--w2:#F7F5F2;--w3:#EEEBE6;--black:#000000;--black2:#0d0d0d;--black3:#1a1a1a;--g2:#999;}
 /* ── Offer announcement bar ── */
-.offer-topbar{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a,#C9A84C);color:#000;text-align:center;padding:8px 16px;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;position:relative;z-index:101;}
+.offer-topbar{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a,#C9A84C);color:#000;text-align:center;padding:10px 16px;font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;position:relative;z-index:101;}
 .offer-topbar.on{display:block;}
-.offer-topbar-inner{display:flex;align-items:center;justify-content:center;gap:10px;}
-.offer-topbar-icon{font-size:13px;}
-.offer-topbar-txt{letter-spacing:2px;}
+.offer-topbar-inner{display:flex;align-items:center;justify-content:center;gap:12px;}
+.offer-topbar-icon{font-size:16px;}
+.offer-topbar-txt{letter-spacing:4px;}
 /* ── Offer pill in header ── */
-.offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:5px 14px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite;}
-.offer-pill.on{display:flex;align-items:center;gap:5px;}
-@keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.03);}}
-/* ── Offer badge on hero ── */
-.hero-offer-badge{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:8px 20px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;width:fit-content;}
-.hero-offer-badge.on{display:block;}
-/* ── Offer banner above collection ── */
-.offer-collection-bar{display:none;background:linear-gradient(90deg,#C9A84C 0%,#e8c96a 50%,#C9A84C 100%);padding:14px 40px;text-align:center;}
-.offer-collection-bar.on{display:block;}
-.offer-collection-bar-inner{display:inline-flex;align-items:center;gap:12px;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#000;}
-.offer-collection-bar-icon{font-size:16px;}
+.offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite;}
+.offer-pill.on{display:flex;align-items:center;gap:6px;}
+@keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.04);}}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--w);color:var(--black);font-family:'Montserrat',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
@@ -559,7 +551,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="hero-geo"></div><div class="hero-geo2"></div>
   <div class="hero-inner">
     <div class="hero-kicker"><div class="hero-kicker-bar"></div><div class="hero-kicker-txt">BUET Campus · Dhaka · Bangladesh</div></div>
-    <div class="hero-offer-badge" id="heroOfferBadge" onclick="document.querySelector('.collection').scrollIntoView({behavior:'smooth'})" style="cursor:pointer">🏷 <span id="heroOfferBadgeTxt"></span></div>
     <h1 class="hero-h1"><span class="l1">Wear Your</span><span class="l2">BUET</span><span class="l3">Spirit.</span></h1>
     <div class="hero-stats">
       <div class="hstat"><div class="hstat-n">FREE</div><div class="hstat-l">Campus Delivery</div></div>
@@ -575,15 +566,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="ticker-t" id="tickerInner">
     <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
     <span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
-  </div>
-</div>
-
-<!-- Offer Banner above Collection -->
-<div class="offer-collection-bar" id="offerCollectionBar">
-  <div class="offer-collection-bar-inner">
-    <span class="offer-collection-bar-icon">🏷</span>
-    <span id="offerCollectionBarTxt"></span>
-    <span class="offer-collection-bar-icon">🏷</span>
   </div>
 </div>
 
@@ -3096,21 +3078,11 @@ function updateOfferUI(){
   const pillTxt=document.getElementById('offerHeaderPillTxt');
   if(pill&&pillTxt){pillTxt.textContent=offerTxt;pill.classList.toggle('on',hasOffer);}
 
-  // 3. Hero badge
-  const badge=document.getElementById('heroOfferBadge');
-  const badgeTxt=document.getElementById('heroOfferBadgeTxt');
-  if(badge&&badgeTxt){badgeTxt.textContent=offerTxt;badge.classList.toggle('on',hasOffer);}
-
-  // 4. Collection bar
-  const colBar=document.getElementById('offerCollectionBar');
-  const colBarTxt=document.getElementById('offerCollectionBarTxt');
-  if(colBar&&colBarTxt){colBarTxt.textContent=offerTxt;colBar.classList.toggle('on',hasOffer);}
-
-  // 5. Ticker — inject offer spans if active, else use default
+  // 3. Ticker — inject offer spans if active, else use default
   const ticker=document.getElementById('tickerInner');
   if(ticker){
     const base=`<span>BUET Tees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>`;
-    const offerSpan=hasOffer?`<span style="color:#C9A84C;font-weight:800">🏷 ${offerTxt}</span><span class="sep">◆</span>`:'';
+    const offerSpan=hasOffer?`<span style="color:#C9A84C;font-weight:900;font-size:13px;letter-spacing:3px">🏷 ${offerTxt}</span><span class="sep">◆</span>`:'';
     const half=offerSpan+base;
     ticker.innerHTML=half+half;
   }

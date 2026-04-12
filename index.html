@@ -1058,22 +1058,9 @@ function renderSzChart(cat,activeSz){
   const keys=Object.keys(ss);
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
-  tbl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:10px;color:rgba(255,255,255,0.6)">
-    <thead><tr>
-      <th style="text-align:left;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Size</th>
-      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Chest (in)</th>
-      <th style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:600;color:rgba(255,255,255,0.4)">Length (in)</th>
-    </tr></thead>
-    <tbody>${keys.map(sz=>{
-      const active=sz===activeSz;
-      const rowStyle=active?'background:rgba(109,0,26,0.25);color:#fff;font-weight:600':'';
-      return`<tr id="szchr-row-${sz}" style="${rowStyle}">
-        <td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${sz}</td>
-        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].chest||'—'}</td>
-        <td style="text-align:center;padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.05)">${ss[sz].length||'—'}</td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+  const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length</div></div>`;
+  const rows=keys.map((sz,i)=>{const active=sz===activeSz;const bg=active?'background:rgba(109,0,26,0.35);':i%2===0?'background:rgba(255,255,255,0.02);':'';const fw=active?'700':'500';const clr=active?'#fff':'rgba(255,255,255,0.55)';return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:1fr 1fr 1fr;${bg}color:${clr};transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:11px;font-weight:${fw}">${sz}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].chest||'—'}<span style="font-size:9px;opacity:0.5;margin-left:2px">in</span></div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].length||'—'}<span style="font-size:9px;opacity:0.5;margin-left:2px">in</span></div></div>`;}).join('');
+  tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">${hdr}${rows}</div>`;
 }
 
 function loadCatData(p,idx){
@@ -1132,11 +1119,11 @@ function pickSz(s){
   selSz=s;
   document.querySelectorAll("#szop .vb").forEach(b=>b.classList.toggle("on",b.dataset.size===s));
   // Highlight corresponding size chart row
-  document.querySelectorAll('[id^="szchr-row-"]').forEach(r=>{
+  document.querySelectorAll('[id^="szchr-row-"]').forEach((r,i)=>{
     const active=r.id==='szchr-row-'+s;
-    r.style.background=active?'rgba(109,0,26,0.25)':'';
-    r.style.color=active?'#fff':'';
-    r.style.fontWeight=active?'600':'';
+    r.style.background=active?'rgba(109,0,26,0.35)':i%2===0?'rgba(255,255,255,0.02)':'';
+    r.style.color=active?'#fff':'rgba(255,255,255,0.55)';
+    r.style.fontWeight=active?'700':'';
   });
 }
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}

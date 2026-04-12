@@ -991,6 +991,11 @@ async function loadProducts(){
       sb.from('suppliers').select('*').eq('active',true)
     ]);
     if(pe)throw pe;
+     (products||[]).sort((a,b)=>{
+  const na=parseInt(a.id.replace(/\D/g,''))||0;
+  const nb=parseInt(b.id.replace(/\D/g,''))||0;
+  return na-nb;
+});
     const {data:setting}=await sb.from('settings').select('value').eq('key','affiliate_discount_pct').single();
     if(setting)affDiscountPct=parseFloat(setting.value)||10;
     // Load offers config

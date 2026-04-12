@@ -1060,7 +1060,7 @@ function renderSzChart(cat,activeSz){
   tbl.style.display='';
   const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length (in)</div></div>`;
   const rows=keys.map((sz,i)=>{const active=sz===activeSz;const bg=active?'background:rgba(109,0,26,0.35);':i%2===0?'background:rgba(255,255,255,0.02);':'';const fw=active?'700':'500';const clr=active?'#fff':'rgba(255,255,255,0.55)';return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:1fr 1fr 1fr;${bg}color:${clr};transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:11px;font-weight:${fw}">${sz}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].chest||'—'}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].length||'—'}</div></div>`;}).join('');
-  tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">${hdr}${rows}</div>`;`;
+  tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">${hdr}${rows}</div>`;
 }
 
 function loadCatData(p,idx){

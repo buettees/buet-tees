@@ -2225,8 +2225,8 @@ function emailItemRowsFull(order){
     const unitPrice = parseFloat(item.price||0);
     const lineTotal = unitPrice * (item.qty||1);
     if(item.type==='bothsides'){
-      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="60" height="60" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:60px;height:60px;background:#f0ede8;border-radius:3px;"></div>`;
-      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="60" height="60" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:60px;height:60px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="120" height="120" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:120px;height:120px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="120" height="120" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:120px;height:120px;background:#f0ede8;border-radius:3px;"></div>`;
       return `<tr>
         <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
           <table cellpadding="0" cellspacing="0"><tr>
@@ -2247,8 +2247,8 @@ function emailItemRowsFull(order){
       </tr>`;
     }
     const img = item.image
-      ? `<img src="${item.image}" width="64" height="64" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
-      : `<div style="width:64px;height:64px;background:#f0ede8;border-radius:3px;"></div>`;
+      ? `<img src="${item.image}" width="120" height="120" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
+      : `<div style="width:120px;height:120px;background:#f0ede8;border-radius:3px;"></div>`;
     return `<tr>
       <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
         <table cellpadding="0" cellspacing="0"><tr>

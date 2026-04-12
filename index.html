@@ -998,14 +998,7 @@ async function loadProducts(){
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
-      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
-        // Hide category if supplier has it explicitly marked inactive
-        const sup=supByName[c.supplier||'T-Shirt Hub'];
-        const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
-        const supCat=sup&&sup.categories&&sup.categories[catKey];
-        // backwards compat: missing active = true (treat as active)
-        return !supCat||supCat.active!==false;
-      }).map(c=>{
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>{
         // Look up size chart from supplier table
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
@@ -1023,7 +1016,7 @@ async function loadProducts(){
           backOnly:c.back_only||false
         };
       })
-    })).filter(p=>p.categories&&p.categories.length>0);
+    }));
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
@@ -1059,7 +1052,14 @@ function renderSzChart(cat,activeSz){
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
   const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length (in)</div></div>`;
-  const rows=keys.map((sz,i)=>{const active=sz===activeSz;const bg=active?'background:rgba(109,0,26,0.35);':i%2===0?'background:rgba(255,255,255,0.02);':'';const fw=active?'700':'500';const clr=active?'#fff':'rgba(255,255,255,0.55)';return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:1fr 1fr 1fr;${bg}color:${clr};transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:11px;font-weight:${fw}">${sz}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].chest||'—'}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${ss[sz].length||'—'}</div></div>`;}).join('');
+  const rows=keys.map((sz,i)=>{
+    const active=sz===activeSz;
+    const data=ss[sz]||{};
+    const bg=active?'background:rgba(109,0,26,0.35);':i%2===0?'background:rgba(255,255,255,0.02);':'';
+    const clr=active?'color:#fff;':'color:rgba(255,255,255,0.55);';
+    const fw=active?'font-weight:700;':'font-weight:500;';
+    return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:1fr 1fr 1fr;${bg}${clr}transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:11px;${fw}">${sz}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${data.chest||'—'}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${data.length||'—'}</div></div>`;
+  }).join('');
   tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">${hdr}${rows}</div>`;
 }
 

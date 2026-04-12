@@ -2182,80 +2182,132 @@ async function notifyOwnersEmail(subject, html){
 
 function emailBase(body, accentColor){
   const accent = accentColor || '#6D001A';
-  return `<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e8e4e0;">
+  return `<div style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e0dbd6;">
     <!-- Header -->
-    <div style="background:${accent};padding:28px 36px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:6px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:4px">BANGLADESH · EST. 2024</div>
-        <div style="font-size:26px;font-weight:900;letter-spacing:8px;color:#ffffff;text-transform:uppercase;line-height:1">BUET TEES</div>
-      </div>
-      <div style="width:44px;height:44px;border:2px solid rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-        <div style="width:20px;height:20px;background:rgba(255,255,255,0.9);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)"></div>
-      </div>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:${accent};">
+      <tr>
+        <td style="padding:24px 32px;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.45);text-transform:uppercase;margin-bottom:5px;">BUET CAMPUS · DHAKA · EST. 2024</div>
+          <div style="font-size:28px;font-weight:900;letter-spacing:10px;color:#ffffff;text-transform:uppercase;line-height:1;">BUET TEES</div>
+          <div style="margin-top:10px;width:40px;height:2px;background:rgba(255,255,255,0.3);"></div>
+        </td>
+      </tr>
+    </table>
     <!-- Body -->
-    <div style="padding:36px 36px 28px;color:#1a1a1a;line-height:1.7;font-size:14px;">
+    <div style="padding:32px 32px 24px;color:#1a1a1a;line-height:1.7;font-size:14px;">
       ${body}
     </div>
     <!-- Footer -->
-    <div style="background:#f7f5f2;border-top:3px solid ${accent};padding:20px 36px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:11px;color:#888;letter-spacing:1px;">
-          <span style="font-weight:700;color:#555">BUET TEES</span> · BUET Campus, Dhaka
-        </div>
-        <div style="font-size:11px;color:#888;letter-spacing:1px;">
-          bKash: <span style="font-weight:700;color:#555">01782761981</span> · Support: <span style="font-weight:700;color:#555">01515637637</span>
-        </div>
-      </div>
-      <div style="margin-top:8px;font-size:10px;color:#bbb;letter-spacing:1px;">facebook.com/buettees · buettees.shop</div>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f5f2;border-top:2px solid ${accent};">
+      <tr>
+        <td style="padding:18px 32px;">
+          <div style="font-size:11px;color:#888;margin-bottom:4px;">
+            <span style="font-weight:800;color:#444;letter-spacing:2px;text-transform:uppercase;">BUET TEES</span>
+            &nbsp;·&nbsp; BUET Campus, Dhaka, Bangladesh
+          </div>
+          <div style="font-size:11px;color:#aaa;">
+            bKash: <span style="color:#555;font-weight:700;">01782761981</span>
+            &nbsp;·&nbsp; Support: <span style="color:#555;font-weight:700;">01515637637</span>
+            &nbsp;·&nbsp; facebook.com/buettees
+            &nbsp;·&nbsp; buettees.shop
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>`;
 }
 
-// Build invoice-style item rows from items_json or items string
-function emailItemRows(order){
+// Item rows WITH prices (owner/customer)
+function emailItemRowsFull(order){
   const items = order.items_json || [];
-  if(items.length){
-    return items.map(item=>{
-      const isBothSides = item.type === 'bothsides';
-      const unitPrice = item.price || 0;
-      const lineTotal = unitPrice * (item.qty || 1);
-      if(isBothSides){
-        const imgFront = item.imageFront ? `<img src="${item.imageFront}" width="52" height="52" style="object-fit:cover;border-radius:4px;border:1px solid #eee;" onerror="this.style.display='none'"/>` : '';
-        const imgBack  = item.imageBack  ? `<img src="${item.imageBack}"  width="52" height="52" style="object-fit:cover;border-radius:4px;border:1px solid #eee;" onerror="this.style.display='none'"/>` : '';
-        return `<tr>
-          <td style="padding:14px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
-            <div style="display:flex;gap:6px;margin-bottom:8px;">${imgFront}${imgBack}</div>
-            <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:2px;">Both Sides — ${item.shirtType||''}</div>
-            <div style="font-size:12px;color:#888;">Front: ${item.frontName||'—'} &nbsp;·&nbsp; Back: ${item.backName||'—'}</div>
-            <div style="font-size:12px;color:#888;">${[item.size,item.color].filter(Boolean).join(' · ')} &nbsp;·&nbsp; +৳100 surcharge</div>
-          </td>
-          <td style="padding:14px 0 14px 16px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
-            <div style="font-size:12px;color:#999;">৳${unitPrice} × ${item.qty||1}</div>
-            <div style="font-size:15px;font-weight:800;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
-          </td>
-        </tr>`;
-      }
-      const img = item.image ? `<img src="${item.image}" width="56" height="56" style="object-fit:cover;border-radius:4px;border:1px solid #eee;flex-shrink:0;" onerror="this.style.display='none'"/>` : `<div style="width:56px;height:56px;background:#f0ede8;border-radius:4px;flex-shrink:0;"></div>`;
+  if(!items.length) return `<tr><td colspan="2" style="padding:16px 0;font-size:13px;color:#555;border-bottom:1px solid #f0ede8;">${order.items||'—'}</td></tr>`;
+  return items.map(item=>{
+    const unitPrice = parseFloat(item.price||0);
+    const lineTotal = unitPrice * (item.qty||1);
+    if(item.type==='bothsides'){
+      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="60" height="60" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:60px;height:60px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="60" height="60" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:60px;height:60px;background:#f0ede8;border-radius:3px;"></div>`;
       return `<tr>
-        <td style="padding:14px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
-          <div style="display:flex;gap:12px;align-items:flex-start;">
-            ${img}
-            <div>
-              <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:2px;">${item.name||''} — ${item.category||''}</div>
-              <div style="font-size:12px;color:#888;">${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''}</div>
-            </div>
-          </div>
+        <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
+          <table cellpadding="0" cellspacing="0"><tr>
+            <td style="padding-right:6px;">${imgF}</td>
+            <td style="padding-right:12px;">${imgB}</td>
+            <td style="vertical-align:top;">
+              <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">Both Sides — ${item.shirtType||''}</div>
+              <div style="font-size:12px;color:#888;margin-bottom:1px;">Front: <b>${item.frontName||'—'}</b></div>
+              <div style="font-size:12px;color:#888;margin-bottom:1px;">Back: <b>${item.backName||'—'}</b></div>
+              <div style="font-size:11px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')} · +৳100 surcharge · Qty ${item.qty||1}</div>
+            </td>
+          </tr></table>
         </td>
-        <td style="padding:14px 0 14px 16px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
-          <div style="font-size:12px;color:#999;">৳${unitPrice} × ${item.qty||1}</div>
-          <div style="font-size:15px;font-weight:800;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
+        <td style="padding:16px 0 16px 12px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
+          <div style="font-size:11px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
+          <div style="font-size:16px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
         </td>
       </tr>`;
-    }).join('');
-  }
-  // Fallback: plain text items string
-  return `<tr><td colspan="2" style="padding:14px 0;border-bottom:1px solid #f0ede8;font-size:13px;color:#555;">${order.items||'—'}</td></tr>`;
+    }
+    const img = item.image
+      ? `<img src="${item.image}" width="64" height="64" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
+      : `<div style="width:64px;height:64px;background:#f0ede8;border-radius:3px;"></div>`;
+    return `<tr>
+      <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:14px;vertical-align:top;">${img}</td>
+          <td style="vertical-align:top;">
+            <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">${item.name||''}</div>
+            <div style="font-size:12px;color:#888;margin-bottom:1px;">${item.category||''}</div>
+            <div style="font-size:11px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''} · Qty ${item.qty||1}</div>
+          </td>
+        </tr></table>
+      </td>
+      <td style="padding:16px 0 16px 12px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
+        <div style="font-size:11px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
+        <div style="font-size:16px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// Item rows WITHOUT prices (supplier — no financial info)
+function emailItemRowsSupplier(order){
+  const items = order.items_json || [];
+  if(!items.length) return `<tr><td style="padding:16px 0;font-size:13px;color:#555;border-bottom:1px solid #f0ede8;">${order.items||'—'}</td></tr>`;
+  return items.map(item=>{
+    if(item.type==='bothsides'){
+      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="72" height="72" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:72px;height:72px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="72" height="72" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:72px;height:72px;background:#f0ede8;border-radius:3px;"></div>`;
+      return `<tr>
+        <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
+          <table cellpadding="0" cellspacing="0"><tr>
+            <td style="padding-right:6px;">${imgF}</td>
+            <td style="padding-right:16px;">${imgB}</td>
+            <td style="vertical-align:middle;">
+              <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">Both Sides — ${item.shirtType||''}</div>
+              <div style="font-size:12px;color:#555;margin-bottom:2px;">Front print: <b>${item.frontName||'—'}</b></div>
+              <div style="font-size:12px;color:#555;margin-bottom:2px;">Back print: <b>${item.backName||'—'}</b></div>
+              <div style="font-size:12px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
+            </td>
+          </tr></table>
+        </td>
+      </tr>`;
+    }
+    const img = item.image
+      ? `<img src="${item.image}" width="80" height="80" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
+      : `<div style="width:80px;height:80px;background:#f0ede8;border-radius:3px;"></div>`;
+    const side = item.side ? (item.side==='front'?'Front print':'Back print') : '';
+    return `<tr>
+      <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:16px;vertical-align:top;">${img}</td>
+          <td style="vertical-align:middle;">
+            <div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">${item.name||''}</div>
+            <div style="font-size:12px;color:#555;margin-bottom:2px;">${item.category||''} ${side?'— '+side:''}</div>
+            <div style="font-size:12px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
+          </td>
+        </tr></table>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 // Invoice totals block
@@ -2265,26 +2317,27 @@ function emailTotals(order){
   const disc = parseFloat(order.discount_amt||0);
   const total = parseFloat(order.total||0);
   const rows = [];
-  rows.push(`<tr><td style="padding:5px 0;font-size:13px;color:#666;">Subtotal</td><td style="padding:5px 0;text-align:right;font-size:13px;color:#333;">৳${sub.toLocaleString()}</td></tr>`);
-  if(disc>0) rows.push(`<tr><td style="padding:5px 0;font-size:13px;color:#2e7d32;">Discount${order.discount_pct?` (${order.discount_pct}%)`:''}</td><td style="padding:5px 0;text-align:right;font-size:13px;color:#2e7d32;">−৳${disc.toLocaleString()}</td></tr>`);
-  rows.push(`<tr><td style="padding:5px 0;font-size:13px;color:#666;">Delivery (${order.zone||'—'})</td><td style="padding:5px 0;text-align:right;font-size:13px;color:#333;">${fee===0?'Free':'৳'+fee}</td></tr>`);
-  rows.push(`<tr style="border-top:2px solid #1a1a1a;"><td style="padding:12px 0 4px;font-size:15px;font-weight:800;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase;">Total Paid</td><td style="padding:12px 0 4px;text-align:right;font-size:20px;font-weight:900;color:#6D001A;">৳${total.toLocaleString()}</td></tr>`);
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:4px;">${rows.join('')}</table>`;
+  rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#666;">Subtotal</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#333;">৳${sub.toLocaleString()}</td></tr>`);
+  if(disc>0) rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#2e7d32;">Discount${order.discount_pct?' ('+order.discount_pct+'%)':''}</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#2e7d32;">−৳${disc.toLocaleString()}</td></tr>`);
+  rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#666;">Delivery</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#333;">${fee===0?'Free':'৳'+fee.toLocaleString()}</td></tr>`);
+  rows.push(`<tr><td colspan="2" style="padding:0;"><div style="height:1px;background:#1a1a1a;margin:10px 0;"></div></td></tr>`);
+  rows.push(`<tr><td style="padding:4px 0 0;font-size:14px;font-weight:800;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase;">Total Paid</td><td style="padding:4px 0 0;text-align:right;font-size:22px;font-weight:900;color:#6D001A;">৳${total.toLocaleString()}</td></tr>`);
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">${rows.join('')}</table>`;
 }
 
-// Info pill row (label + value pairs)
+// Info grid (label + value pairs)
 function emailInfoRow(pairs){
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;background:#f7f5f2;border-radius:6px;overflow:hidden;">
-    ${pairs.map(([label,value],i)=>`<tr style="border-bottom:1px solid #ede9e4;">
-      <td style="padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;width:130px;">${label}</td>
-      <td style="padding:10px 16px;font-size:13px;color:#1a1a1a;font-weight:600;">${value||'—'}</td>
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border:1px solid #e8e4e0;border-radius:4px;overflow:hidden;">
+    ${pairs.map(([label,value])=>`<tr style="border-bottom:1px solid #f0ede8;">
+      <td style="padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;background:#faf9f7;width:120px;white-space:nowrap;">${label}</td>
+      <td style="padding:9px 14px;font-size:13px;color:#1a1a1a;font-weight:600;">${value||'—'}</td>
     </tr>`).join('')}
   </table>`;
 }
 
 // Section heading
 function emailSection(title){
-  return `<div style="font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#999;border-bottom:1px solid #e8e4e0;padding-bottom:8px;margin:24px 0 0;">${title}</div>`;
+  return `<div style="font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#aaa;padding-bottom:8px;margin:28px 0 0;border-bottom:1px solid #e8e4e0;">${title}</div>`;
 }
 
 // ── Trigger functions ────────────────────────────────────
@@ -2293,17 +2346,17 @@ async function notifyNewOrder(order){
   const tgText = `🛒 <b>New Order — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📦 ${order.items}\n💰 ৳${order.total} · 📍 ${order.zone}${order.affiliate_code?'\n🔗 Affiliate: '+order.affiliate_code:''}`;
   await notifyOwnersTelegram(tgText);
   const html = emailBase(`
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#999;text-transform:uppercase;margin-bottom:4px;">New Order Received</div>
-    <div style="font-size:28px;font-weight:900;color:#6D001A;letter-spacing:2px;margin-bottom:4px;">${order.id}</div>
-    <div style="font-size:12px;color:#aaa;margin-bottom:28px;">${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:6px;">New Order Received</div>
+    <div style="font-size:32px;font-weight:900;color:#6D001A;letter-spacing:3px;margin-bottom:2px;">${order.id}</div>
+    <div style="font-size:12px;color:#bbb;margin-bottom:32px;">${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
     ${emailSection('Customer')}
-    ${emailInfoRow([['Name',order.name],['Phone',order.phone],['Email',order.email||'—'],['Zone',order.zone],['Affiliate',order.affiliate_code||'None']])}
-    ${emailSection('Items')}
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">${emailItemRows(order)}</table>
-    ${emailSection('Payment')}
+    ${emailInfoRow([['Name',order.name],['Phone',order.phone],['Email',order.email||'—'],['Delivery Zone',order.zone],['Affiliate Code',order.affiliate_code||'None']])}
+    ${emailSection('Items Ordered')}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
+    ${emailSection('Payment Summary')}
     ${emailTotals(order)}
-    <div style="margin-top:24px;background:#fff3cd;border-left:4px solid #f0c040;padding:12px 16px;font-size:13px;color:#555;">
-      ⚡ Action required — confirm this order in the admin panel.
+    <div style="margin-top:28px;background:#fffbec;border-left:3px solid #f0c040;padding:14px 16px;font-size:13px;color:#7a6000;">
+      ⚡ <b>Action required</b> — Log in to the admin panel to confirm this order.
     </div>`);
   await notifyOwnersEmail('🛒 New Order: '+order.id+' — ৳'+order.total, html);
 }
@@ -2312,57 +2365,72 @@ async function notifyAffiliateRegistered(aff){
   const tgText = `📋 <b>New Affiliate Application</b>\n👤 ${aff.name} · ID: ${aff.student_id}\n🏠 ${aff.hall} · 📞 ${aff.whatsapp}\n💾 ${aff.storage_type}\n🔑 Code (inactive): ${aff.code}`;
   await notifyOwnersTelegram(tgText);
   const html = emailBase(`
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#999;text-transform:uppercase;margin-bottom:4px;">New Application</div>
-    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:28px;">Affiliate Registration</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:6px;">New Application</div>
+    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:32px;">Affiliate Registration</div>
     ${emailSection('Applicant Details')}
-    ${emailInfoRow([['Name',aff.name],['Student ID',aff.student_id],['Hall',aff.hall],['WhatsApp',aff.whatsapp],['Type',aff.storage_type]])}
-    ${emailSection('Pending Code')}
-    <div style="background:#f7f5f2;border-radius:6px;padding:16px 20px;margin-top:12px;display:flex;align-items:center;gap:16px;">
-      <div style="font-size:24px;font-weight:900;letter-spacing:4px;color:#6D001A;">${aff.code}</div>
-      <div style="font-size:12px;color:#888;line-height:1.6;">Currently <b>inactive</b>.<br>Activate from Admin → Affiliates.</div>
+    ${emailInfoRow([['Full Name',aff.name],['Student ID',aff.student_id],['Hall',aff.hall],['WhatsApp',aff.whatsapp],['Storage Type',aff.storage_type]])}
+    ${emailSection('Generated Code')}
+    <div style="margin-top:14px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:20px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:#6D001A;">${aff.code}</div>
+      <div style="font-size:11px;color:#aaa;margin-top:6px;letter-spacing:1px;">CURRENTLY INACTIVE — Activate from Admin → Affiliates</div>
     </div>`);
-  await notifyOwnersEmail('📋 New Affiliate Application: '+aff.name, html);
+  await notifyOwnersEmail('📋 New Affiliate: '+aff.name, html);
 }
 
 async function notifyAffiliateActivated(aff){
   if(!aff.email) return;
   const html = emailBase(`
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">You're Approved!</div>
-    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Welcome to BUET Tees Affiliates</div>
-    <div style="font-size:14px;color:#666;margin-bottom:28px;">Hi <b>${aff.name}</b>, your application has been approved. Here's everything you need to start earning.</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Application Approved</div>
+    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Welcome, ${aff.name}!</div>
+    <div style="font-size:14px;color:#666;margin-bottom:32px;">You're now an official BUET Tees affiliate. Here's everything you need to start earning.</div>
     ${emailSection('Your Affiliate Code')}
-    <div style="margin-top:12px;background:#6D001A;border-radius:8px;padding:24px;text-align:center;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:4px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:8px;">Share this code</div>
-      <div style="font-size:36px;font-weight:900;letter-spacing:8px;color:#ffffff;">${aff.code}</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:8px;">Buyers get <b style="color:#fff">${aff.discount_pct||10}% off</b> when they use your code</div>
+    <div style="margin-top:14px;background:#6D001A;padding:28px;text-align:center;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">Share this with buyers</div>
+      <div style="font-size:40px;font-weight:900;letter-spacing:10px;color:#ffffff;">${aff.code}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;">Buyers get <b style="color:#fff;">${aff.discount_pct||10}% off</b> their order when they enter your code at checkout</div>
     </div>
-    ${emailSection('Your Commission Rates')}
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background:#f7f5f2;border-radius:6px;overflow:hidden;">
+    ${emailSection('Your Commission per Sale')}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border:1px solid #e8e4e0;border-radius:4px;overflow:hidden;">
       <tr style="background:#1a1a1a;">
-        <td style="padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;">Product</td>
-        <td style="padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;text-align:right;">You Earn</td>
+        <td style="padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;">Product Type</td>
+        <td style="padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;text-align:right;">You Earn</td>
       </tr>
-      <tr style="border-bottom:1px solid #ede9e4;">
-        <td style="padding:12px 16px;font-size:13px;color:#1a1a1a;">Regular T-Shirt</td>
-        <td style="padding:12px 16px;font-size:16px;font-weight:800;color:#6D001A;text-align:right;">৳${aff.commission_regular}</td>
+      <tr style="border-bottom:1px solid #f0ede8;">
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Regular T-Shirt</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_regular}</td>
       </tr>
-      <tr style="border-bottom:1px solid #ede9e4;">
-        <td style="padding:12px 16px;font-size:13px;color:#1a1a1a;">Drop Shoulder</td>
-        <td style="padding:12px 16px;font-size:16px;font-weight:800;color:#6D001A;text-align:right;">৳${aff.commission_drop}</td>
+      <tr style="border-bottom:1px solid #f0ede8;">
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Drop Shoulder</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_drop}</td>
       </tr>
       <tr>
-        <td style="padding:12px 16px;font-size:13px;color:#1a1a1a;">Hoodie</td>
-        <td style="padding:12px 16px;font-size:16px;font-weight:800;color:#6D001A;text-align:right;">৳${aff.commission_hoodie}</td>
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Hoodie</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_hoodie}</td>
       </tr>
     </table>
     ${emailSection('How It Works')}
-    <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
-      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;background:#6D001A;border-radius:50%;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div><div style="font-size:13px;color:#444;padding-top:3px;">Share your code <b>${aff.code}</b> with potential buyers</div></div>
-      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;background:#6D001A;border-radius:50%;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div><div style="font-size:13px;color:#444;padding-top:3px;">They enter the code at checkout on <b>buettees.shop</b> — they save ${aff.discount_pct||10}%</div></div>
-      <div style="display:flex;gap:12px;align-items:flex-start;"><div style="width:24px;height:24px;background:#6D001A;border-radius:50%;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div><div style="font-size:13px;color:#444;padding-top:3px;">Once confirmed, your commission is recorded. Payouts are made regularly.</div></div>
-    </div>
-    <div style="margin-top:24px;background:#f7f5f2;border-radius:6px;padding:16px 20px;font-size:13px;color:#555;">
-      Questions? WhatsApp us at <b>01515637637</b> or message on Facebook: <b>facebook.com/buettees</b>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+      <tr><td style="padding:10px 0;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">1</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">Share your code <b>${aff.code}</b> with friends, classmates, or on social media.</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">2</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">They visit <b>buettees.shop</b>, enter your code at checkout, and get ${aff.discount_pct||10}% off.</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;">
+        <table cellpadding="0" cellspacing="0"><tr>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">3</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">You earn commission on every confirmed order. Payouts are made directly to your account.</td>
+        </tr></table>
+      </td></tr>
+    </table>
+    <div style="margin-top:24px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:16px;font-size:13px;color:#666;text-align:center;">
+      Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b> or message us at <b style="color:#1a1a1a;">facebook.com/buettees</b>
     </div>`);
   await sendEmail(aff.email, 'Your BUET Tees Affiliate Code: '+aff.code, html);
 }
@@ -2372,79 +2440,79 @@ async function notifyOrderConfirmed(order){
   const tgText = `✅ <b>Order Confirmed — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📍 ${order.address} (${order.zone})\n📦 ${order.items}${order.notes?'\n📝 '+order.notes:''}`;
   await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
 
-  // Supplier email — fulfillment brief
+  // Supplier email — no prices, just fulfillment details
   if(sup.email){
     const html = emailBase(`
-      <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#999;text-transform:uppercase;margin-bottom:4px;">Fulfillment Request</div>
-      <div style="font-size:28px;font-weight:900;color:#6D001A;letter-spacing:2px;margin-bottom:4px;">${order.id}</div>
-      <div style="font-size:12px;color:#aaa;margin-bottom:28px;">Confirmed ${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-      ${emailSection('Ship To')}
+      <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:6px;">Fulfillment Request</div>
+      <div style="font-size:32px;font-weight:900;color:#1a1a1a;letter-spacing:2px;margin-bottom:2px;">${order.id}</div>
+      <div style="font-size:12px;color:#bbb;margin-bottom:32px;">Confirmed ${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      ${emailSection('Deliver To')}
       ${emailInfoRow([['Customer',order.name],['Phone',order.phone],['Address',order.address],['Zone',order.zone]])}
       ${emailSection('Items to Prepare')}
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">${emailItemRows(order)}</table>
-      ${order.notes?`<div style="margin-top:16px;background:#fff3cd;border-left:4px solid #f0c040;padding:12px 16px;font-size:13px;color:#555;"><b>Note:</b> ${order.notes}</div>`:''}
-      <div style="margin-top:20px;background:#d4edda;border-left:4px solid #28a745;padding:12px 16px;font-size:13px;color:#155724;">
-        Please prepare and dispatch this order as soon as possible.
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsSupplier(order)}</table>
+      ${order.notes?`<div style="margin-top:16px;background:#fffbec;border-left:3px solid #f0c040;padding:14px 16px;font-size:13px;color:#7a6000;"><b>Note:</b> ${order.notes}</div>`:''}
+      <div style="margin-top:24px;background:#e8f5e9;border-left:3px solid #2e7d32;padding:14px 16px;font-size:13px;color:#1b5e20;">
+        Please prepare and dispatch this order promptly. Thank you!
       </div>`, '#1a1a1a');
-    await sendEmail(sup.email, '📦 Fulfill Order '+order.id+' — BUET Tees', html);
+    await sendEmail(sup.email, 'Fulfill Order '+order.id+' — BUET Tees', html);
   }
 
-  // Customer email — order confirmation with invoice
+  // Customer email — full invoice
   if(order.email){
     const html = emailBase(`
-      <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">Order Confirmed ✓</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Order Confirmed</div>
       <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Thank you, ${order.name}!</div>
-      <div style="font-size:14px;color:#666;margin-bottom:28px;">Your order has been confirmed and is now being prepared. We'll notify you once it's on the way.</div>
+      <div style="font-size:14px;color:#666;margin-bottom:32px;">Your order has been confirmed and is being prepared. We'll notify you once it ships.</div>
       ${emailSection('Order Reference')}
-      ${emailInfoRow([['Order ID',order.id],['Date',new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})],['Payment','bKash'],['Status','Confirmed']])}
+      ${emailInfoRow([['Order ID',order.id],['Date',new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})],['Payment','bKash'],['Status','Confirmed ✓']])}
       ${emailSection('Items')}
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">${emailItemRows(order)}</table>
-      ${emailSection('Summary')}
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
+      ${emailSection('Payment Summary')}
       ${emailTotals(order)}
       ${emailSection('Delivery')}
       ${emailInfoRow([['Zone',order.zone],['Address',order.address],['Estimated','Within 6 days']])}
-      <div style="margin-top:24px;background:#f7f5f2;border-radius:6px;padding:16px 20px;font-size:13px;color:#555;text-align:center;">
-        Questions? WhatsApp <b>01515637637</b> or visit <b>facebook.com/buettees</b>
+      <div style="margin-top:28px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:16px;font-size:13px;color:#666;text-align:center;">
+        Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b> or visit <b style="color:#1a1a1a;">facebook.com/buettees</b>
       </div>`);
-    await sendEmail(order.email, '✓ Order Confirmed: '+order.id+' — BUET Tees', html);
+    await sendEmail(order.email, 'Order Confirmed: '+order.id+' — BUET Tees', html);
   }
 }
 
 async function notifyOrderDispatched(order){
   if(!order.email) return;
   const html = emailBase(`
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#1565c0;text-transform:uppercase;margin-bottom:4px;">On the Way</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#1565c0;text-transform:uppercase;margin-bottom:6px;">On the Way</div>
     <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Your Order is Dispatched!</div>
-    <div style="font-size:14px;color:#666;margin-bottom:28px;">Hi <b>${order.name}</b>, great news — your BUET Tees order is on its way to you.</div>
-    ${emailSection('Order Details')}
-    ${emailInfoRow([['Order ID',order.id],['Zone',order.zone],['Estimated',order.zone&&order.zone.includes('Campus')?'Today or tomorrow':'1–3 business days']])}
+    <div style="font-size:14px;color:#666;margin-bottom:32px;">Hi <b>${order.name}</b>, your BUET Tees order is on its way to you.</div>
+    ${emailSection('Shipment Details')}
+    ${emailInfoRow([['Order ID',order.id],['Zone',order.zone],['Estimated',order.zone&&order.zone.toLowerCase().includes('campus')?'Today or tomorrow':'1–3 business days']])}
     ${emailSection('What You Ordered')}
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">${emailItemRows(order)}</table>
-    <div style="margin-top:24px;background:#e3f2fd;border-left:4px solid #1565c0;padding:14px 16px;font-size:13px;color:#0d47a1;">
-      📦 Your order is on its way. Stay available to receive it!<br>
-      <span style="font-size:12px;color:#555;margin-top:4px;display:block;">Questions? WhatsApp <b>01515637637</b></span>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
+    <div style="margin-top:28px;background:#e3f2fd;border-left:3px solid #1565c0;padding:14px 16px;font-size:13px;color:#0d47a1;">
+      📦 Please stay available to receive your order.<br>
+      <span style="font-size:12px;color:#555;margin-top:4px;display:block;">Need help? WhatsApp <b>01515637637</b></span>
     </div>`);
-  await sendEmail(order.email, '📦 Your BUET Tees Order '+order.id+' is On the Way!', html);
+  await sendEmail(order.email, 'Your Order '+order.id+' is On the Way — BUET Tees', html);
 }
 
 async function notifyOrderDelivered(order){
   if(!order.email) return;
   const html = emailBase(`
-    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">Delivered!</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Delivered!</div>
     <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Enjoy Your BUET Tees!</div>
-    <div style="font-size:14px;color:#666;margin-bottom:28px;">Hi <b>${order.name}</b>, your order <b>${order.id}</b> has been delivered. We hope you love it!</div>
-    <div style="background:#6D001A;border-radius:8px;padding:24px;text-align:center;margin-bottom:24px;">
-      <div style="font-size:32px;margin-bottom:8px;">🎉</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">Wear Your BUET Spirit</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);">Thank you for supporting BUET Tees</div>
+    <div style="font-size:14px;color:#666;margin-bottom:32px;">Hi <b>${order.name}</b>, your order <b>${order.id}</b> has been delivered. We hope you love it!</div>
+    <div style="background:#6D001A;padding:28px;text-align:center;margin-bottom:28px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:8px;">Wear Your</div>
+      <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:#ffffff;text-transform:uppercase;">BUET Spirit</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;">Thank you for supporting BUET Tees 🙌</div>
     </div>
-    ${emailSection('What You Ordered')}
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">${emailItemRows(order)}</table>
-    <div style="margin-top:24px;text-align:center;font-size:13px;color:#666;line-height:2;">
-      Loved your order? Share with friends and use code from your affiliate.<br>
+    ${emailSection('Your Order')}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
+    <div style="margin-top:28px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:16px;font-size:13px;color:#666;text-align:center;line-height:2;">
+      Loved it? Share with friends.<br>
       Order again at <b style="color:#6D001A;">buettees.shop</b>
     </div>`);
-  await sendEmail(order.email, '🎉 Your BUET Tees Order Has Arrived!', html);
+  await sendEmail(order.email, 'Your BUET Tees Order Has Been Delivered! 🎉', html);
 }
 
 async function admUpdateOrderStatus(orderId,newStatus){

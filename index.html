@@ -998,8 +998,13 @@ async function loadProducts(){
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
-      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>{
-        // Look up size chart from supplier table
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
+        // Hide category if supplier has it explicitly marked inactive
+        const sup=supByName[c.supplier||'T-Shirt Hub'];
+        const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
+        const supCat=sup&&sup.categories&&sup.categories[catKey];
+        return !supCat||supCat.active!==false;
+      }).map(c=>{
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
         const supCat=sup&&sup.categories&&sup.categories[catKey];
@@ -1011,12 +1016,12 @@ async function loadProducts(){
           image:c.image||'',badge:c.badge||'',sizes:c.sizes||[],
           colors:supplierColors||c.colors||[],
           sizeChart:c.size_chart||'',
-          supplierSizes,  // {S:{chest,length}, M:{...}, ...}
+          supplierSizes,
           supplierName:c.supplier||'T-Shirt Hub',
           backOnly:c.back_only||false
         };
       })
-    }));
+    })).filter(p=>p.categories&&p.categories.length>0);
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
@@ -1048,7 +1053,11 @@ function render(){
 function renderSzChart(cat,activeSz){
   const tbl=document.getElementById('szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
-  const keys=(cat.sizes&&cat.sizes.length)?cat.sizes:Object.keys(ss);
+  const ssKeys=Object.keys(ss);
+  const catKeys=cat.sizes&&cat.sizes.length?cat.sizes:[];
+  // Merge both — show all supplier sizes + any extra from cat.sizes
+  const allKeys=[...new Set([...ssKeys,...catKeys])];
+  const keys=allKeys.length?allKeys:[];
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
   const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length (in)</div></div>`;

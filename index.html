@@ -2574,6 +2574,9 @@ async function admSaveSupplierNew(){
   });
   const entry={
     name,
+    email:document.getElementById('supEmail').value.trim(),
+    telegram_token:document.getElementById('supTgToken').value.trim(),
+    telegram_chat_id:document.getElementById('supTgChat').value.trim(),
     categories,
     active:document.getElementById('supActive').value==='true'
   };

@@ -3134,7 +3134,7 @@ function computeOfferDiscount(cart){
   if(o.type==='buy_x_get_y_free'){
     // Buy minQty, get value items free (cheapest items free)
     const minQ=parseInt(o.minQty)||3;
-    const freeCount=Math.floor(totalQty/minQ)*parseInt(o.value||1);
+    const freeCount=Math.floor(totalQty/(minQ+parseInt(o.value||1)))*parseInt(o.value||1);
     if(freeCount>0){
       const sortedPrices=cart.flatMap(i=>Array(i.qty).fill(i.price)).sort((a,b)=>a-b);
       const discAmt=sortedPrices.slice(0,freeCount).reduce((s,p)=>s+p,0);

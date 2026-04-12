@@ -1056,7 +1056,7 @@ function renderSzChart(cat,activeSz){
   const ssKeys=Object.keys(ss);
   const catKeys=cat.sizes&&cat.sizes.length?cat.sizes:[];
   // Merge both — show all supplier sizes + any extra from cat.sizes
-  const allKeys=[...new Set([...ssKeys,...catKeys])];
+  const allKeys=[...new Set([...catKeys,...ssKeys])].sort((a,b)=>{const o=SIZE_ORDER.indexOf(a),p=SIZE_ORDER.indexOf(b);return(o<0?99:o)-(p<0?99:p);});
   const keys=allKeys.length?allKeys:[];
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';

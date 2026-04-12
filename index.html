@@ -1055,7 +1055,7 @@ function render(){
 function renderSzChart(cat,activeSz){
   const tbl=document.getElementById('szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
-  const keys=Object.keys(ss);
+  const keys=(cat.sizes&&cat.sizes.length)?cat.sizes:Object.keys(ss);
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
   const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length (in)</div></div>`;

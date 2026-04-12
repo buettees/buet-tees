@@ -2293,7 +2293,7 @@ function emailItemRowsSupplier(order){
     }
     const img = item.image
       ? `<img src="${item.image}" width="160" height="160" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
-      : `<div style="width:80px;height:80px;background:#f0ede8;border-radius:3px;"></div>`;
+      : `<div style="width:160px;height:160px;background:#f0ede8;border-radius:3px;"></div>`;
     const side = item.side ? (item.side==='front'?'Front print':'Back print') : '';
     return `<tr>
       <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">

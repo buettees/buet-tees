@@ -2121,8 +2121,12 @@ async function sendEmail(to, subject, html){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({to:toArr, subject, html})
     });
-    if(!r.ok) console.error('Email failed:',await r.text());
-  }catch(e){console.error('Email failed:',e);}
+    if(!r.ok){
+      const errText=await r.text();
+      console.error('Email failed:',errText);
+      toast('⚠️ Email failed: '+errText.substring(0,80));
+    }
+  }catch(e){console.error('Email failed:',e);toast('⚠️ Email error: '+e.message);}
 }
 
 async function sendTelegram(token, chatId, text){

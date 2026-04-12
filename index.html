@@ -2274,8 +2274,8 @@ function emailItemRowsSupplier(order){
   if(!items.length) return `<tr><td style="padding:16px 0;font-size:13px;color:#555;border-bottom:1px solid #f0ede8;">${order.items||'—'}</td></tr>`;
   return items.map(item=>{
     if(item.type==='bothsides'){
-      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="72" height="72" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:72px;height:72px;background:#f0ede8;border-radius:3px;"></div>`;
-      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="72" height="72" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:72px;height:72px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgF = item.imageFront ? `<img src="${item.imageFront}" width="160" height="160" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:160px;height:160px;background:#f0ede8;border-radius:3px;"></div>`;
+      const imgB = item.imageBack  ? `<img src="${item.imageBack}"  width="160" height="160" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>` : `<div style="width:160px;height:160px;background:#f0ede8;border-radius:3px;"></div>`;
       return `<tr>
         <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">
           <table cellpadding="0" cellspacing="0"><tr>
@@ -2292,8 +2292,8 @@ function emailItemRowsSupplier(order){
       </tr>`;
     }
     const img = item.image
-      ? `<img src="${item.image}" width="80" height="80" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
-      : `<div style="width:80px;height:80px;background:#f0ede8;border-radius:3px;"></div>`;
+      ? `<img src="${item.image}" width="160" height="160" style="display:block;object-fit:cover;border-radius:3px;border:1px solid #e0dbd6;"/>`
+      : `<div style="width:160px;height:160px;background:#f0ede8;border-radius:3px;"></div>`;
     const side = item.side ? (item.side==='front'?'Front print':'Back print') : '';
     return `<tr>
       <td style="padding:16px 0;border-bottom:1px solid #f0ede8;vertical-align:top;">

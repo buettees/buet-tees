@@ -1062,10 +1062,8 @@ function renderSzChart(cat,activeSz){
   const tbl=document.getElementById('szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
   const ssKeys=Object.keys(ss);
-  const catKeys=cat.sizes&&cat.sizes.length?cat.sizes:[];
-  // Merge both — show all supplier sizes + any extra from cat.sizes
-  const allKeys=[...new Set([...catKeys,...ssKeys])].sort((a,b)=>{const o=SIZE_ORDER.indexOf(a),p=SIZE_ORDER.indexOf(b);return(o<0?99:o)-(p<0?99:p);});
-  const keys=allKeys.length?allKeys:[];
+  // Use supplier sizes only — size buttons and chart always reflect supplier data
+  const keys=ssKeys.sort((a,b)=>{const o=SIZE_ORDER.indexOf(a),p=SIZE_ORDER.indexOf(b);return(o<0?99:o)-(p<0?99:p);});
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
   const hdr=`<div style="display:grid;grid-template-columns:80px 1fr 1fr;background:#f0ede8;border-bottom:1px solid #ddd"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;text-align:center">Length (in)</div></div>`;
@@ -1081,7 +1079,10 @@ function renderSzChart(cat,activeSz){
 
 function loadCatData(p,idx){
   const cat=(p.categories&&p.categories[idx])?p.categories[idx]:p;
-  selCatIdx=idx;selSz=cat.sizes&&cat.sizes[0]?cat.sizes[0]:null;selCl=cat.colors&&cat.colors[0]?cat.colors[0]:null;
+  // Use supplier sizes for buttons — always live from supplier data
+  const supSizeKeys=Object.keys(cat.supplierSizes||{}).sort((a,b)=>{const o=SIZE_ORDER.indexOf(a),p=SIZE_ORDER.indexOf(b);return(o<0?99:o)-(p<0?99:p);});
+  const effectiveSizes=supSizeKeys.length?supSizeKeys:(cat.sizes||[]);
+  selCatIdx=idx;selSz=effectiveSizes[0]||null;selCl=cat.colors&&cat.colors[0]?cat.colors[0]:null;
   const dp=cat.discountedPrice||cat.price||0;
   document.getElementById("pmimg").src=cat.image||"";document.getElementById("pmimg").alt=p.name;
   document.getElementById("pmname").textContent=p.name;document.getElementById("pmcat").textContent=cat.category||"";
@@ -1089,7 +1090,7 @@ function loadCatData(p,idx){
   document.getElementById("qval").textContent="1";qty=1;
   const oe=document.getElementById("pmorig");
   if(cat.discountedPrice){oe.style.display="";oe.textContent=`${C} ${(cat.price||0).toLocaleString()}`;}else{oe.style.display="none";}
-  document.getElementById("szop").innerHTML=(cat.sizes||[]).map(s=>
+  document.getElementById("szop").innerHTML=effectiveSizes.map(s=>
   `<button class="vb ${s===selSz?"on":""}" data-size="${s}" onclick="pickSz('${s.replace(/'/g,"\'")}')">` +
   `${getSizeLabel(cat.sizeChart||'', s)}</button>`).join("");
   renderSzChart(cat,selSz);

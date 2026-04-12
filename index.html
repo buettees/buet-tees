@@ -998,7 +998,14 @@ async function loadProducts(){
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
-      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).map(c=>{
+      categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
+        // Hide category if supplier has it explicitly marked inactive
+        const sup=supByName[c.supplier||'T-Shirt Hub'];
+        const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
+        const supCat=sup&&sup.categories&&sup.categories[catKey];
+        // backwards compat: missing active = true (treat as active)
+        return !supCat||supCat.active!==false;
+      }).map(c=>{
         // Look up size chart from supplier table
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
@@ -1016,7 +1023,7 @@ async function loadProducts(){
           backOnly:c.back_only||false
         };
       })
-    }));
+    })).filter(p=>p.categories&&p.categories.length>0);
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}

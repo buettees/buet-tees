@@ -958,6 +958,7 @@ const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
+const SIZE_ORDER=['S','M','L','XL','XXL'];
 let prods=[],cart=[],cur=null,selSz=null,selCl=null,qty=1,zone="campus",selSide="front",selCatIdx=0;
 let affDiscountPct=0,affCodeApplied="",coAffValid=false;
 

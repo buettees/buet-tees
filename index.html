@@ -1060,16 +1060,15 @@ function renderSzChart(cat,activeSz){
   const keys=allKeys.length?allKeys:[];
   if(!keys.length){tbl.style.display='none';return;}
   tbl.style.display='';
-  const hdr=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(255,255,255,0.05)"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);text-align:center">Length (in)</div></div>`;
+  const hdr=`<div style="display:grid;grid-template-columns:80px 1fr 1fr;background:#f0ede8;border-bottom:1px solid #ddd"><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999">Size</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;text-align:center">Chest (in)</div><div style="padding:7px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#999;text-align:center">Length (in)</div></div>`;
   const rows=keys.map((sz,i)=>{
     const active=sz===activeSz;
     const data=ss[sz]||{};
-    const bg=active?'background:rgba(109,0,26,0.35);':i%2===0?'background:rgba(255,255,255,0.02);':'';
-    const clr=active?'color:#fff;':'color:rgba(255,255,255,0.55);';
-    const fw=active?'font-weight:700;':'font-weight:500;';
-    return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:1fr 1fr 1fr;${bg}${clr}transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:11px;${fw}">${sz}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${data.chest||'—'}</div><div style="padding:8px 12px;font-size:11px;text-align:center">${data.length||'—'}</div></div>`;
+    const bg=active?'background:rgba(109,0,26,0.12);':'background:'+(i%2===0?'#fff':'#faf9f7')+';';
+    const clr=active?'color:#6D001A;font-weight:700;':'color:#555;font-weight:500;';
+    return`<div id="szchr-row-${sz}" style="display:grid;grid-template-columns:80px 1fr 1fr;${bg}${clr}border-bottom:1px solid #eee;transition:background 0.15s,color 0.15s"><div style="padding:8px 12px;font-size:12px">${sz}</div><div style="padding:8px 12px;font-size:12px;text-align:center">${data.chest||'—'}</div><div style="padding:8px 12px;font-size:12px;text-align:center">${data.length||'—'}</div></div>`;
   }).join('');
-  tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">${hdr}${rows}</div>`;
+  tbl.innerHTML=`<div style="margin:10px 0 6px;border-radius:10px;overflow:hidden;border:1px solid #e0ddd8">${hdr}${rows}</div>`;
 }
 
 function loadCatData(p,idx){
@@ -1130,9 +1129,9 @@ function pickSz(s){
   // Highlight corresponding size chart row
   document.querySelectorAll('[id^="szchr-row-"]').forEach((r,i)=>{
     const active=r.id==='szchr-row-'+s;
-    r.style.background=active?'rgba(109,0,26,0.35)':i%2===0?'rgba(255,255,255,0.02)':'';
-    r.style.color=active?'#fff':'rgba(255,255,255,0.55)';
-    r.style.fontWeight=active?'700':'';
+    r.style.background=active?'rgba(109,0,26,0.12)':i%2===0?'#fff':'#faf9f7';
+    r.style.color=active?'#6D001A':'#555';
+    r.style.fontWeight=active?'700':'500';
   });
 }
 function pickCl(c){selCl=c;document.querySelectorAll("#clop .vb").forEach(b=>b.classList.toggle("on",b.textContent===c));}

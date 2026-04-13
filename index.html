@@ -926,6 +926,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
     <div class="adm-tab" onclick="admTab('offers')">🏷 Offers</div>
     <div class="adm-tab" onclick="admTab('finance')">💰 Finance</div>
+    <div class="adm-tab" onclick="admTab('crm')">👥 Customers</div>
   </div>
   <div class="adm-body">
     <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
@@ -938,6 +939,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-content" id="adm-products"><div class="adm-loading">Loading products...</div></div>
     <div class="adm-content" id="adm-offers"><div class="adm-loading">Loading offers...</div></div>
     <div class="adm-content" id="adm-finance"><div class="adm-loading">Loading...</div></div>
+    <div class="adm-content" id="adm-crm"><div class="adm-loading">Loading customers...</div></div>
   </div>
 </div>
 
@@ -1610,7 +1612,7 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers","finance"];
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers","finance","crm"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
@@ -1618,6 +1620,7 @@ function admTab(name){
   if(name==="products"&&admAllProdData.length===0)admLoadProducts();
   if(name==="offers")admRenderOffers();
   if(name==="finance"&&ADM_DATA)admRenderFinance();
+  if(name==="crm"&&ADM_DATA)admRenderCRM();
 }
 
 let ADM_DATA=null;
@@ -1789,7 +1792,7 @@ async function admLoadData(){
 function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
 function admFmtShort(n){if(Math.abs(n)>=1000)return"৳"+(n/1000).toFixed(1)+"k";return"৳"+Math.round(n);}
 
-function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();}
+function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();admRenderCRM();}
 
 function admRenderOverview(){
   const s=ADM_DATA.summary;
@@ -4000,6 +4003,191 @@ async function admSavePayout(){
     toast('Payout recorded ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
+}
+
+
+// ══════════════════════════════════════════════════════════
+// CUSTOMERS TAB — CRM (Step 4)
+// ══════════════════════════════════════════════════════════
+
+let crmSearch='';
+let crmSort='spent'; // 'spent'|'orders'|'recent'|'name'
+
+function admRenderCRM(){
+  const orders=ADM_DATA.orders||[];
+
+  // ── Build customer map keyed by phone (normalised) ────
+  const byPhone={};
+  orders.forEach(o=>{
+    const phone=(o.phone||'').replace(/\s/g,'');
+    if(!phone)return;
+    if(!byPhone[phone]){
+      byPhone[phone]={
+        phone,
+        name:o.customerName||'Unknown',
+        email:o.email||'',
+        address:o.address||'',
+        zone:o.zone||'',
+        orders:[],
+        totalSpent:0,
+        confirmedSpent:0,
+        affiliateCodes:new Set(),
+        statuses:new Set(),
+        firstOrder:o.timestamp,
+        lastOrder:o.timestamp
+      };
+    }
+    const c=byPhone[phone];
+    // Keep most recent name & email (later orders overwrite)
+    if(o.customerName)c.name=o.customerName;
+    if(o.email)c.email=o.email;
+    if(o.address)c.address=o.address;
+    if(o.zone)c.zone=o.zone;
+    c.orders.push(o);
+    c.totalSpent+=o.total;
+    if(o.isConfirmed)c.confirmedSpent+=o.total;
+    if(o.affiliateCode)c.affiliateCodes.add(o.affiliateCode);
+    c.statuses.add(o.status);
+    if(o.timestamp<c.firstOrder)c.firstOrder=o.timestamp;
+    if(o.timestamp>c.lastOrder)c.lastOrder=o.timestamp;
+  });
+
+  let customers=Object.values(byPhone);
+
+  // ── KPIs ────────────────────────────────────────────────
+  const totalCustomers=customers.length;
+  const repeatCustomers=customers.filter(c=>c.orders.length>1).length;
+  const repeatRate=totalCustomers>0?Math.round(repeatCustomers/totalCustomers*100):0;
+  const avgOrderValue=totalCustomers>0?customers.reduce((s,c)=>s+c.confirmedSpent,0)/customers.reduce((s,c)=>s+c.orders.filter(o=>o.isConfirmed).length,0)||0:0;
+  const topSpender=customers.length?customers.reduce((a,b)=>a.confirmedSpent>b.confirmedSpent?a:b):null;
+
+  // ── Filter + Sort ────────────────────────────────────────
+  const q=crmSearch.toLowerCase().trim();
+  if(q){
+    customers=customers.filter(c=>
+      c.name.toLowerCase().includes(q)||
+      c.phone.includes(q)||
+      (c.email||'').toLowerCase().includes(q)
+    );
+  }
+  if(crmSort==='spent')customers.sort((a,b)=>b.confirmedSpent-a.confirmedSpent);
+  else if(crmSort==='orders')customers.sort((a,b)=>b.orders.length-a.orders.length);
+  else if(crmSort==='recent')customers.sort((a,b)=>(b.lastOrder||'').localeCompare(a.lastOrder||''));
+  else if(crmSort==='name')customers.sort((a,b)=>a.name.localeCompare(b.name));
+
+  const fmtDate=dt=>dt?new Date(dt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+
+  document.getElementById('adm-crm').innerHTML=`
+  <!-- ── KPIs ── -->
+  <div class="adm-kpi-row" style="margin-bottom:20px">
+    <div class="adm-kpi highlight">
+      <div class="adm-kpi-label">👥 Total Customers</div>
+      <div class="adm-kpi-val c-white">${totalCustomers}</div>
+      <div class="adm-kpi-accent"></div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🔁 Repeat Customers</div>
+      <div class="adm-kpi-val c-gold">${repeatCustomers}</div>
+      <div class="adm-kpi-sub">${repeatRate}% of all customers</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">💵 Avg Order Value</div>
+      <div class="adm-kpi-val c-green">${admFmt(Math.round(avgOrderValue))}</div>
+      <div class="adm-kpi-sub">Confirmed orders only</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🏆 Top Spender</div>
+      <div class="adm-kpi-val" style="font-size:14px;color:#fff;word-break:break-word">${topSpender?topSpender.name:'—'}</div>
+      <div class="adm-kpi-sub">${topSpender?admFmt(topSpender.confirmedSpent):''}</div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH + SORT BAR ── -->
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+    <input class="adm-fi" id="crmSearchInput" placeholder="🔍  Search by name, phone or email…"
+      style="flex:1;min-width:200px;max-width:360px"
+      value="${crmSearch.replace(/"/g,'&quot;')}"
+      oninput="crmSearch=this.value;admRenderCRM()"/>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${['spent','orders','recent','name'].map(s=>`
+        <button onclick="crmSort='${s}';admRenderCRM()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(255,255,255,${crmSort===s?'0.3':'0.07'});background:${crmSort===s?'rgba(109,0,26,0.6)':'rgba(255,255,255,0.03)'};color:${crmSort===s?'#fff':'rgba(255,255,255,0.35)'};font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer">${{spent:'Top Spenders',orders:'Most Orders',recent:'Most Recent',name:'A–Z'}[s]}</button>
+      `).join('')}
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px;white-space:nowrap">${customers.length} result${customers.length!==1?'s':''}</div>
+  </div>
+
+  <!-- ── CUSTOMER TABLE ── -->
+  ${customers.length?`
+  <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
+    <thead><tr>
+      <th>Customer</th>
+      <th>Phone</th>
+      <th>Orders</th>
+      <th>Confirmed Spend</th>
+      <th>Last Order</th>
+      <th>Zone</th>
+      <th>Type</th>
+    </tr></thead>
+    <tbody>${customers.map(c=>{
+      const orderCount=c.orders.length;
+      const confirmedCount=c.orders.filter(o=>o.isConfirmed).length;
+      const isRepeat=orderCount>1;
+      const affList=[...c.affiliateCodes].join(', ');
+      // Build expanded order history
+      const historyRows=c.orders
+        .sort((a,b)=>(b.timestamp||'').localeCompare(a.timestamp||''))
+        .map(o=>`
+          <tr style="background:rgba(255,255,255,0.015)">
+            <td class="adm-id" style="padding:8px 14px">${o.orderId}</td>
+            <td style="padding:8px 14px;font-size:10px;color:rgba(255,255,255,0.3)">${fmtDate(o.timestamp)}</td>
+            <td style="padding:8px 14px;font-size:11px;color:rgba(255,255,255,0.5);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.items||'—'}</td>
+            <td style="padding:8px 14px" class="${o.isConfirmed?'adm-green':''}">${admFmt(o.total)}</td>
+            <td style="padding:8px 14px"><span class="adm-badge ${{Pending:'adm-badge-gray',Confirmed:'adm-badge-green',Dispatched:'adm-badge-gold',Delivered:'adm-badge-green',Cancelled:'adm-badge-red'}[o.status]||'adm-badge-gray'}">${o.status}</span></td>
+            <td style="padding:8px 14px;font-size:10px;color:rgba(255,255,255,0.25)">${o.affiliateCode?`<span style="color:#C9A84C">${o.affiliateCode}</span>`:'—'}</td>
+          </tr>`).join('');
+      const detailKey=`crm-detail-${c.phone.replace(/\D/g,'')}`;
+      return`
+      <tr style="cursor:pointer" onclick="admToggleCRMDetail('${detailKey}')">
+        <td>
+          <div class="adm-white" style="font-size:12px">${c.name}</div>
+          ${c.email?`<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px">${c.email}</div>`:''}
+        </td>
+        <td style="color:rgba(255,255,255,0.5);letter-spacing:0.5px">${c.phone}</td>
+        <td>
+          <span style="color:#fff;font-weight:700">${orderCount}</span>
+          ${confirmedCount<orderCount?`<span style="color:rgba(255,255,255,0.2);font-size:10px"> (${confirmedCount} confirmed)</span>`:''}
+        </td>
+        <td class="${c.confirmedSpent>0?'adm-gold':''}">${c.confirmedSpent>0?admFmt(c.confirmedSpent):'<span style="color:rgba(255,255,255,0.12)">—</span>'}</td>
+        <td style="font-size:10px;color:rgba(255,255,255,0.3);white-space:nowrap">${fmtDate(c.lastOrder)}</td>
+        <td style="font-size:10px;color:rgba(255,255,255,0.35)">${c.zone||'—'}</td>
+        <td>
+          ${isRepeat?`<span class="adm-badge adm-badge-gold">Repeat</span>`:`<span class="adm-badge adm-badge-gray">New</span>`}
+          ${affList?`<span class="adm-badge adm-badge-gray" style="margin-top:3px;display:block;font-size:8px">${affList}</span>`:''}
+        </td>
+      </tr>
+      <tr id="${detailKey}" style="display:none">
+        <td colspan="7" style="padding:0">
+          <div style="background:rgba(255,255,255,0.02);border-left:3px solid #C9A84C;padding:6px 0 6px 0">
+            <div style="padding:8px 20px 6px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)">Order History</div>
+            <table class="adm-tbl" style="margin:0">
+              <thead><tr>
+                <th>Order ID</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th>Affiliate</th>
+              </tr></thead>
+              <tbody>${historyRows}</tbody>
+            </table>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table></div></div>`
+  :'<div class="adm-empty">No customers found</div>'}
+  `;
+}
+
+function admToggleCRMDetail(id){
+  const el=document.getElementById(id);
+  if(el)el.style.display=el.style.display==='none'?'table-row':'none';
 }
 
 loadProducts();upd();

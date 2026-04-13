@@ -925,6 +925,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab" onclick="admTab('costs')">Suppliers</div>
     <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
     <div class="adm-tab" onclick="admTab('offers')">🏷 Offers</div>
+    <div class="adm-tab" onclick="admTab('finance')">💰 Finance</div>
   </div>
   <div class="adm-body">
     <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
@@ -936,6 +937,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-content" id="adm-costs"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-products"><div class="adm-loading">Loading products...</div></div>
     <div class="adm-content" id="adm-offers"><div class="adm-loading">Loading offers...</div></div>
+    <div class="adm-content" id="adm-finance"><div class="adm-loading">Loading...</div></div>
   </div>
 </div>
 
@@ -1608,13 +1610,14 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers"];
+    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers","finance"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));
   document.getElementById("adm-"+name).classList.add("on");
   if(name==="products"&&admAllProdData.length===0)admLoadProducts();
   if(name==="offers")admRenderOffers();
+  if(name==="finance"&&ADM_DATA)admRenderFinance();
 }
 
 let ADM_DATA=null;
@@ -1622,12 +1625,13 @@ async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
     // Fetch all data in parallel
-    const [ordRes,affRes,txRes,settRes,supRes]=await Promise.all([
+    const [ordRes,affRes,txRes,settRes,supRes,payoutRes]=await Promise.all([
       sbAdmin.from('orders').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
       sbAdmin.from('settings').select('*'),
-      sbAdmin.from('suppliers').select('*').order('created_at',{ascending:true})
+      sbAdmin.from('suppliers').select('*').order('created_at',{ascending:true}),
+      sbAdmin.from('affiliate_payouts').select('*').order('paid_at',{ascending:false})
     ]);
     const orders=ordRes.data||[];
     const affiliates=affRes.data||[];
@@ -1646,6 +1650,7 @@ async function admLoadData(){
 
     // Compute per-order profit
     const confirmedStatuses=['Confirmed','Dispatched','Delivered'];
+    const affiliatePayouts=payoutRes.data||[];
     const enrichedOrders=orders.map(o=>{
       const isConfirmed=confirmedStatuses.includes(o.status);
       // Determine supplier cost from items string
@@ -1763,6 +1768,7 @@ async function admLoadData(){
       ownerShares,
       monthly,
       transactions,
+      affiliatePayouts,
       suppliersRaw,
       ownersRaw,
       suppliers:suppliersRaw.map(s=>s.name),
@@ -1780,7 +1786,7 @@ async function admLoadData(){
 function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
 function admFmtShort(n){if(Math.abs(n)>=1000)return"৳"+(n/1000).toFixed(1)+"k";return"৳"+Math.round(n);}
 
-function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();}
+function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();}
 
 function admRenderOverview(){
   const s=ADM_DATA.summary;
@@ -3660,6 +3666,222 @@ async function admDeleteCustomOffer(idx){
     await sbAdmin.from('settings').upsert({key:'offers_config',value:JSON.stringify(offersConfig)},{onConflict:'key'});
     resolveActiveOffer();admRenderOffers();
     toast('Offer deleted ✓');
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+
+// ══════════════════════════════════════════════════════════
+// FINANCE TAB — Cash Balance Dashboard (Step 1)
+// ══════════════════════════════════════════════════════════
+
+function admRenderFinance(){
+  const s=ADM_DATA.summary;
+  const transactions=ADM_DATA.transactions||[];
+  const payouts=ADM_DATA.affiliatePayouts||[];
+  const orders=ADM_DATA.orders||[];
+  const confirmed=orders.filter(o=>o.isConfirmed);
+
+  // ── Cash Flow Components ──────────────────────────────
+  const capitalIn   =transactions.filter(t=>t.type==='Capital In').reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const capitalOut  =transactions.filter(t=>t.type==='Capital Out').reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const revenueCollected = s.totalRevenue; // confirmed orders total
+  const supplierPaid = transactions.filter(t=>t.type==='Expense'&&(t.category||'').toLowerCase().includes('supplier')).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const expensesPaid = transactions.filter(t=>t.type==='Expense').reduce((s,t)=>s+parseFloat(t.amount||0),0);
+  const affPayoutsMade = payouts.reduce((s,p)=>s+parseFloat(p.amount||0),0);
+
+  // Cash Balance = Capital In + Revenue - Supplier Payments - Affiliate Payouts - Other Expenses - Capital Out
+  const cashBalance = capitalIn + revenueCollected - expensesPaid - affPayoutsMade - capitalOut;
+
+  // ── Affiliate Earned vs Paid vs Owed ─────────────────
+  const totalAffEarned = s.totalAffComm; // total owed from confirmed orders
+  const totalAffPaid   = affPayoutsMade;
+  const totalAffOwed   = totalAffEarned - totalAffPaid;
+
+  // Per-affiliate breakdown
+  const affByCode={};
+  ADM_DATA.affiliates.forEach(a=>{
+    affByCode[a.code]={name:a.name,code:a.code,email:a.email,payment_method:a.payment_method,payment_details:a.payment_details,earned:a.totalCommission,paid:0,orders:a.orderCount};
+  });
+  payouts.forEach(p=>{
+    if(affByCode[p.affiliate_code])affByCode[p.affiliate_code].paid+=parseFloat(p.amount||0);
+    else affByCode[p.affiliate_code]={name:p.affiliate_code,code:p.affiliate_code,earned:0,paid:parseFloat(p.amount||0),orders:0};
+  });
+  const affRows=Object.values(affByCode).filter(a=>a.earned>0||a.paid>0);
+  affRows.sort((a,b)=>(b.earned-b.paid)-(a.earned-a.paid));
+
+  // ── Capital contributions per owner ──────────────────
+  const ownerCapital={};
+  transactions.filter(t=>t.type==='Capital In'||t.type==='Capital Out').forEach(t=>{
+    const o=t.owner||'Unspecified';
+    if(!ownerCapital[o])ownerCapital[o]={in:0,out:0};
+    if(t.type==='Capital In')ownerCapital[o].in+=parseFloat(t.amount||0);
+    if(t.type==='Capital Out')ownerCapital[o].out+=parseFloat(t.amount||0);
+  });
+  const capRows=Object.entries(ownerCapital).map(([name,v])=>({name,in:v.in,out:v.out,net:v.in-v.out}));
+
+  // ── Recent payouts ────────────────────────────────────
+  const recentPayouts=payouts.slice(0,10);
+
+  const balColor=cashBalance>=0?'c-green':'c-red';
+  const owedColor=totalAffOwed>0?'c-gold':'c-green';
+
+  document.getElementById('adm-finance').innerHTML=`
+  <!-- ── TOP KPIs ── -->
+  <div class="adm-kpi-row" style="margin-bottom:12px">
+    <div class="adm-kpi highlight">
+      <div class="adm-kpi-label">💵 Cash Balance</div>
+      <div class="adm-kpi-val ${balColor}">${admFmt(cashBalance)}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.18);margin-top:6px;letter-spacing:1px">Capital In + Revenue − All Outflows</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">📈 Net Profit (Earned)</div>
+      <div class="adm-kpi-val ${s.totalNetProfit>=0?'c-green':'c-red'}">${admFmt(s.totalNetProfit)}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.18);margin-top:6px;letter-spacing:1px">Not the same as Cash Balance</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🏦 Capital In (Total)</div>
+      <div class="adm-kpi-val c-white">${admFmt(capitalIn)}</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">💸 Capital Out (Withdrawals)</div>
+      <div class="adm-kpi-val ${capitalOut>0?'c-red':'c-white'}">${admFmt(capitalOut)}</div>
+    </div>
+  </div>
+  <div class="adm-kpi-row row2" style="margin-bottom:20px">
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🧾 Revenue Collected</div>
+      <div class="adm-kpi-val c-green">${admFmt(revenueCollected)}</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">📦 Expenses Paid</div>
+      <div class="adm-kpi-val c-red">${admFmt(expensesPaid)}</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🤝 Affiliate Payouts Made</div>
+      <div class="adm-kpi-val ${affPayoutsMade>0?'c-gold':'c-white'}">${admFmt(affPayoutsMade)}</div>
+    </div>
+  </div>
+
+  <!-- ── FORMULA EXPLAINER ── -->
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 22px;margin-bottom:16px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05);">Cash Balance Formula</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:rgba(255,255,255,0.35)">+ Capital In</span><span style="color:#fff">${admFmt(capitalIn)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:rgba(255,255,255,0.35)">+ Revenue Collected</span><span style="color:#27ae60">${admFmt(revenueCollected)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:rgba(255,255,255,0.35)">− Expenses Paid</span><span style="color:#c0392b">${admFmt(expensesPaid)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:rgba(255,255,255,0.35)">− Affiliate Payouts</span><span style="color:#C9A84C">${admFmt(affPayoutsMade)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:rgba(255,255,255,0.35)">− Capital Out</span><span style="color:#e74c3c">${admFmt(capitalOut)}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700"><span style="color:rgba(255,255,255,0.7)">= Cash Balance</span><span style="${cashBalance>=0?'color:#27ae60':'color:#e74c3c'};font-size:14px">${admFmt(cashBalance)}</span></div>
+    </div>
+  </div>
+
+  <!-- ── AFFILIATE COMMISSION TRACKER ── -->
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);">Affiliate Commission — Earned vs Paid vs Owed</div>
+      <div style="display:flex;gap:16px;font-size:11px;">
+        <span>Earned: <strong style="color:#C9A84C">${admFmt(totalAffEarned)}</strong></span>
+        <span>Paid: <strong style="color:#27ae60">${admFmt(totalAffPaid)}</strong></span>
+        <span>Owed: <strong style="${totalAffOwed>0?'color:#e74c3c':'color:#27ae60'}">${admFmt(totalAffOwed)}</strong></span>
+      </div>
+    </div>
+    ${affRows.length?`
+    <div class="adm-tbl-scroll"><table class="adm-tbl">
+      <thead><tr><th>Affiliate</th><th>Orders</th><th>Earned</th><th>Paid Out</th><th>Owed</th><th>Pay Now</th></tr></thead>
+      <tbody>${affRows.map(a=>{
+        const owed=a.earned-a.paid;
+        return`<tr>
+          <td><div class="adm-id">${a.code}</div><div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px">${a.name||''}</div></td>
+          <td style="color:rgba(255,255,255,0.4)">${a.orders}</td>
+          <td class="adm-gold">${admFmt(a.earned)}</td>
+          <td class="${a.paid>0?'adm-green':''}"> ${a.paid>0?admFmt(a.paid):'<span style="color:rgba(255,255,255,0.12)">—</span>'}</td>
+          <td class="${owed>0?'adm-red':owed===0?'adm-green':''}">${admFmt(owed)}</td>
+          <td>${owed>0?`<button class="adm-tx-btn" onclick="admOpenPayoutModal('${a.code}','${(a.name||a.code).replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`:'<div class="adm-empty">No affiliate commissions yet</div>'}
+  </div>
+
+  <!-- ── RECORD PAYOUT MODAL (inline) ── -->
+  <div id="finPayoutModal" style="display:none;background:#1a0508;border:1px solid rgba(109,0,26,0.4);border-radius:12px;padding:20px 22px;margin-bottom:16px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
+    <input type="hidden" id="finPayoutCode"/>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
+        <select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select>
+      </div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="adm-tx-btn" onclick="admSavePayout()">✓ Save Payout</button>
+      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── CAPITAL LOG ── -->
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Capital In / Out — Per Owner</div>
+    </div>
+    ${capRows.length?`
+    <div class="adm-tbl-scroll"><table class="adm-tbl">
+      <thead><tr><th>Owner</th><th>Capital In</th><th>Capital Out</th><th>Net Contribution</th></tr></thead>
+      <tbody>${capRows.map(r=>`<tr>
+        <td class="adm-white">${r.name}</td>
+        <td class="adm-green">${admFmt(r.in)}</td>
+        <td class="${r.out>0?'adm-red':''}">${r.out>0?admFmt(r.out):'—'}</td>
+        <td class="${r.net>=0?'adm-gold':'adm-red'}">${admFmt(r.net)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:'<div class="adm-empty">No capital entries yet — add via Transactions tab</div>'}
+  </div>
+
+  <!-- ── RECENT PAYOUTS ── -->
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25)">Recent Affiliate Payouts</div>
+    </div>
+    ${recentPayouts.length?`
+    <div class="adm-tbl-scroll"><table class="adm-tbl">
+      <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
+      <tbody>${recentPayouts.map(p=>`<tr>
+        <td style="font-size:10px;color:rgba(255,255,255,0.25)">${p.paid_at?new Date(p.paid_at).toLocaleDateString('en-GB'):'—'}</td>
+        <td class="adm-id">${p.affiliate_code}</td>
+        <td class="adm-gold">${admFmt(p.amount)}</td>
+        <td style="color:rgba(255,255,255,0.4)">${p.method||'—'}</td>
+        <td style="color:rgba(255,255,255,0.3);font-size:11px">${p.note||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:'<div class="adm-empty">No payouts recorded yet</div>'}
+  </div>
+  `;
+}
+
+function admOpenPayoutModal(code, name, owed){
+  document.getElementById('finPayoutCode').value=code;
+  document.getElementById('finPayoutName').value=name+' ('+code+')';
+  document.getElementById('finPayoutAmt').value=Math.round(owed);
+  document.getElementById('finPayoutNote').value='';
+  document.getElementById('finPayoutModal').style.display='block';
+  document.getElementById('finPayoutModal').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function admSavePayout(){
+  const code=document.getElementById('finPayoutCode').value;
+  const amt=parseFloat(document.getElementById('finPayoutAmt').value);
+  const method=document.getElementById('finPayoutMethod').value;
+  const note=document.getElementById('finPayoutNote').value.trim();
+  if(!code||!amt||amt<=0){toast('Enter a valid amount');return;}
+  try{
+    const {error}=await sbAdmin.from('affiliate_payouts').insert({affiliate_code:code,amount:amt,method,note:note||null});
+    if(error)throw error;
+    // Also update total_paid on affiliates table
+    const {data:aff}=await sbAdmin.from('affiliates').select('total_paid').eq('code',code).single();
+    const newPaid=(parseFloat(aff?.total_paid||0)+amt);
+    await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
+    document.getElementById('finPayoutModal').style.display='none';
+    toast('Payout recorded ✓');
+    admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }
 

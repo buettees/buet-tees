@@ -2194,18 +2194,18 @@ function emailBase(body, accentColor){
       </tr>
     </table>
     <!-- Body -->
-    <div style="padding:32px 32px 24px;color:#1a1a1a;line-height:1.7;font-size:14px;">
+    <div style="padding:32px 32px 24px;color:#1a1a1a;line-height:1.8;font-size:16px;">
       ${body}
     </div>
     <!-- Footer -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f5f2;border-top:2px solid ${accent};">
       <tr>
         <td style="padding:18px 32px;">
-          <div style="font-size:11px;color:#888;margin-bottom:4px;">
+          <div style="font-size:12px;color:#888;margin-bottom:4px;">
             <span style="font-weight:800;color:#444;letter-spacing:2px;text-transform:uppercase;">BUET TEES</span>
             &nbsp;·&nbsp; BUET Campus, Dhaka, Bangladesh
           </div>
-          <div style="font-size:11px;color:#aaa;">
+          <div style="font-size:12px;color:#aaa;">
             bKash: <span style="color:#555;font-weight:700;">01782761981</span>
             &nbsp;·&nbsp; Support: <span style="color:#555;font-weight:700;">01515637637</span>
             &nbsp;·&nbsp; facebook.com/buettees
@@ -2233,16 +2233,16 @@ function emailItemRowsFull(order){
             <td style="padding-right:6px;">${imgF}</td>
             <td style="padding-right:12px;">${imgB}</td>
             <td style="vertical-align:top;">
-              <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">Both Sides — ${item.shirtType||''}</div>
-              <div style="font-size:12px;color:#888;margin-bottom:1px;">Front: <b>${item.frontName||'—'}</b></div>
-              <div style="font-size:12px;color:#888;margin-bottom:1px;">Back: <b>${item.backName||'—'}</b></div>
-              <div style="font-size:11px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')} · +৳100 surcharge · Qty ${item.qty||1}</div>
+              <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">Both Sides — ${item.shirtType||''}</div>
+              <div style="font-size:14px;color:#888;margin-bottom:1px;">Front: <b>${item.frontName||'—'}</b></div>
+              <div style="font-size:14px;color:#888;margin-bottom:1px;">Back: <b>${item.backName||'—'}</b></div>
+              <div style="font-size:13px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')} · +৳100 surcharge · Qty ${item.qty||1}</div>
             </td>
           </tr></table>
         </td>
         <td style="padding:16px 0 16px 12px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
-          <div style="font-size:11px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
-          <div style="font-size:16px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
+          <div style="font-size:13px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
+          <div style="font-size:18px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
         </td>
       </tr>`;
     }
@@ -2254,15 +2254,15 @@ function emailItemRowsFull(order){
         <table cellpadding="0" cellspacing="0"><tr>
           <td style="padding-right:14px;vertical-align:top;">${img}</td>
           <td style="vertical-align:top;">
-            <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">${item.name||''}</div>
-            <div style="font-size:12px;color:#888;margin-bottom:1px;">${item.category||''}</div>
-            <div style="font-size:11px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''} · Qty ${item.qty||1}</div>
+            <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:3px;">${item.name||''}</div>
+            <div style="font-size:14px;color:#888;margin-bottom:1px;">${item.category||''}</div>
+            <div style="font-size:13px;color:#aaa;">${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''} · Qty ${item.qty||1}</div>
           </td>
         </tr></table>
       </td>
       <td style="padding:16px 0 16px 12px;border-bottom:1px solid #f0ede8;text-align:right;vertical-align:top;white-space:nowrap;">
-        <div style="font-size:11px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
-        <div style="font-size:16px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
+        <div style="font-size:13px;color:#bbb;margin-bottom:3px;">৳${unitPrice} × ${item.qty||1}</div>
+        <div style="font-size:18px;font-weight:900;color:#1a1a1a;">৳${lineTotal.toLocaleString()}</div>
       </td>
     </tr>`;
   }).join('');
@@ -2282,10 +2282,10 @@ function emailItemRowsSupplier(order){
             <td style="padding-right:6px;">${imgF}</td>
             <td style="padding-right:16px;">${imgB}</td>
             <td style="vertical-align:middle;">
-              <div style="font-size:13px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">Both Sides — ${item.shirtType||''}</div>
-              <div style="font-size:12px;color:#555;margin-bottom:2px;">Front print: <b>${item.frontName||'—'}</b></div>
-              <div style="font-size:12px;color:#555;margin-bottom:2px;">Back print: <b>${item.backName||'—'}</b></div>
-              <div style="font-size:12px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
+              <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">Both Sides — ${item.shirtType||''}</div>
+              <div style="font-size:13px;color:#555;margin-bottom:2px;">Front print: <b>${item.frontName||'—'}</b></div>
+              <div style="font-size:13px;color:#555;margin-bottom:2px;">Back print: <b>${item.backName||'—'}</b></div>
+              <div style="font-size:13px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
             </td>
           </tr></table>
         </td>
@@ -2300,9 +2300,9 @@ function emailItemRowsSupplier(order){
         <table cellpadding="0" cellspacing="0"><tr>
           <td style="padding-right:16px;vertical-align:top;">${img}</td>
           <td style="vertical-align:middle;">
-            <div style="font-size:14px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">${item.name||''}</div>
-            <div style="font-size:12px;color:#555;margin-bottom:2px;">${item.category||''} ${side?'— '+side:''}</div>
-            <div style="font-size:12px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
+            <div style="font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">${item.name||''}</div>
+            <div style="font-size:13px;color:#555;margin-bottom:2px;">${item.category||''} ${side?'— '+side:''}</div>
+            <div style="font-size:13px;color:#888;">Size: <b>${item.size||'—'}</b> &nbsp;·&nbsp; Color: <b>${item.color||'—'}</b> &nbsp;·&nbsp; Qty: <b>${item.qty||1}</b></div>
           </td>
         </tr></table>
       </td>
@@ -2317,11 +2317,11 @@ function emailTotals(order){
   const disc = parseFloat(order.discount_amt||0);
   const total = parseFloat(order.total||0);
   const rows = [];
-  rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#666;">Subtotal</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#333;">৳${sub.toLocaleString()}</td></tr>`);
-  if(disc>0) rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#2e7d32;">Discount${order.discount_pct?' ('+order.discount_pct+'%)':''}</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#2e7d32;">−৳${disc.toLocaleString()}</td></tr>`);
-  rows.push(`<tr><td style="padding:6px 0;font-size:13px;color:#666;">Delivery</td><td style="padding:6px 0;text-align:right;font-size:13px;color:#333;">${fee===0?'Free':'৳'+fee.toLocaleString()}</td></tr>`);
+  rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Subtotal</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">৳${sub.toLocaleString()}</td></tr>`);
+  if(disc>0) rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#2e7d32;">Discount${order.discount_pct?' ('+order.discount_pct+'%)':''}</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#2e7d32;">−৳${disc.toLocaleString()}</td></tr>`);
+  rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Delivery</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">${fee===0?'Free':'৳'+fee.toLocaleString()}</td></tr>`);
   rows.push(`<tr><td colspan="2" style="padding:0;"><div style="height:1px;background:#1a1a1a;margin:10px 0;"></div></td></tr>`);
-  rows.push(`<tr><td style="padding:4px 0 0;font-size:14px;font-weight:800;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase;">Total Paid</td><td style="padding:4px 0 0;text-align:right;font-size:22px;font-weight:900;color:#6D001A;">৳${total.toLocaleString()}</td></tr>`);
+  rows.push(`<tr><td style="padding:4px 0 0;font-size:15px;font-weight:800;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase;">Total Paid</td><td style="padding:4px 0 0;text-align:right;font-size:24px;font-weight:900;color:#6D001A;">৳${total.toLocaleString()}</td></tr>`);
   return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">${rows.join('')}</table>`;
 }
 
@@ -2329,15 +2329,15 @@ function emailTotals(order){
 function emailInfoRow(pairs){
   return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border:1px solid #e8e4e0;border-radius:4px;overflow:hidden;">
     ${pairs.map(([label,value])=>`<tr style="border-bottom:1px solid #f0ede8;">
-      <td style="padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;background:#faf9f7;width:120px;white-space:nowrap;">${label}</td>
-      <td style="padding:9px 14px;font-size:13px;color:#1a1a1a;font-weight:600;">${value||'—'}</td>
+      <td style="padding:11px 14px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;background:#faf9f7;width:120px;white-space:nowrap;">${label}</td>
+      <td style="padding:11px 14px;font-size:15px;color:#1a1a1a;font-weight:600;">${value||'—'}</td>
     </tr>`).join('')}
   </table>`;
 }
 
 // Section heading
 function emailSection(title){
-  return `<div style="font-size:9px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#aaa;padding-bottom:8px;margin:28px 0 0;border-bottom:1px solid #e8e4e0;">${title}</div>`;
+  return `<div style="font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:#aaa;padding-bottom:8px;margin:28px 0 0;border-bottom:1px solid #e8e4e0;">${title}</div>`;
 }
 
 // ── Trigger functions ────────────────────────────────────
@@ -2488,9 +2488,11 @@ async function notifyOrderDispatched(order){
     ${emailInfoRow([['Order ID',order.id],['Zone',order.zone],['Estimated',order.zone&&order.zone.toLowerCase().includes('campus')?'Today or tomorrow':'1–3 business days']])}
     ${emailSection('What You Ordered')}
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
-    <div style="margin-top:28px;background:#e3f2fd;border-left:3px solid #1565c0;padding:14px 16px;font-size:13px;color:#0d47a1;">
+    ${emailSection('Payment Summary')}
+    ${emailTotals(order)}
+    <div style="margin-top:28px;background:#e3f2fd;border-left:3px solid #1565c0;padding:14px 16px;font-size:15px;color:#0d47a1;">
       📦 Please stay available to receive your order.<br>
-      <span style="font-size:12px;color:#555;margin-top:4px;display:block;">Need help? WhatsApp <b>01515637637</b></span>
+      <span style="font-size:13px;color:#555;margin-top:4px;display:block;">Need help? WhatsApp <b>01515637637</b></span>
     </div>`);
   await sendEmail(order.email, 'Your Order '+order.id+' is On the Way — BUET Tees', html);
 }

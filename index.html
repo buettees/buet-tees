@@ -2553,6 +2553,7 @@ async function admUpdateOrderStatus(orderId,newStatus){
     if(newStatus==='Confirmed')update.confirmed_at=now;
     else if(newStatus==='Dispatched')update.dispatched_at=now;
     else if(newStatus==='Delivered')update.delivered_at=now;
+    else if(newStatus==='Returned')update.notes=(update.notes||'')+'[Returned at '+now+']';
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
@@ -3834,6 +3835,7 @@ function admRenderFinance(){
   <!-- SECTION 2 — PAY SUPPLIER                            -->
   <!-- ════════════════════════════════════════════════════ -->
   <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Step 1 — Pay Supplier First</div>
+  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Wait 24h after delivery before paying — return window may still be open.</div>
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
     ${supRows.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">
@@ -3875,6 +3877,7 @@ function admRenderFinance(){
   <!-- SECTION 3 — PAY AFFILIATES                          -->
   <!-- ════════════════════════════════════════════════════ -->
   <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Step 2 — Pay Affiliates (monthly, after supplier)</div>
+  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Only pay affiliate commission after 24h return window has passed on all their orders.</div>
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
     ${affRows.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">

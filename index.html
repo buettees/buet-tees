@@ -516,6 +516,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .adm-status-dispatch{background:#C9A84C;color:#000;}
 .adm-status-deliver{background:#2980b9;color:#fff;}
 .adm-status-cancel{background:rgba(192,57,43,0.7);color:#fff;}
+.adm-status-revert{background:rgba(80,80,80,0.8);color:#fff;}
 .adm-status-return{background:rgba(150,0,150,0.5);color:#fff;}
 @media(min-width:640px) and (max-width:900px){
   .hero{padding:48px 28px 52px;}.collection{padding:52px 28px 60px;}
@@ -1925,8 +1926,8 @@ function admRenderOrders(){
       // Action buttons based on current status
       let actionBtns='';
       if(o.status==='Pending')actionBtns=`<button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')">✓ Confirm</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕ Cancel</button>`;
-      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" title="Revert to Pending">↩ Revert</button>`;
-      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">Delivered</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
+      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">Dispatch</button><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" title="Revert to Pending">↩ Revert</button>`;
+      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">Delivered</button><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
       else if(o.status==='Delivered'){
         if(within24h){
           actionBtns=`<button class="adm-status-btn adm-status-return" onclick="admUpdateOrderStatus('${o.orderId}','Returned')">↩ Mark Returned</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" style="margin-left:4px" title="Revert to Dispatched">↩ Revert</button><span style="display:block;font-size:8px;color:#C9A84C;margin-top:3px;letter-spacing:1px">Return window open</span>`;

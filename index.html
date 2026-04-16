@@ -916,18 +916,16 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
   </div>
   <div class="adm-nav">
-    <div class="adm-tab on" onclick="admTab('overview')">Overview</div>
-    <div class="adm-tab" onclick="admTab('orders')">Orders P&L</div>
-    <div class="adm-tab" onclick="admTab('affiliates')">Affiliates</div>
-    <div class="adm-tab" onclick="admTab('owners')">Owners</div>
-    <div class="adm-tab" onclick="admTab('monthly')">Monthly</div>
+    <div class="adm-tab on" onclick="admTab('orders')">Orders</div>
     <div class="adm-tab" onclick="admTab('transactions')">Transactions</div>
     <div class="adm-tab" onclick="admTab('costs')">Suppliers</div>
-    <div class="adm-tab" onclick="admTab('products')">🗂 Products</div>
-    <div class="adm-tab" onclick="admTab('offers')">🏷 Offers</div>
-    <div class="adm-tab" onclick="admTab('finance')">💰 Finance</div>
-    <div class="adm-tab" onclick="admTab('crm')">👥 Customers</div>
-    <div class="adm-tab" onclick="admTab('inventory')">📦 Inventory</div>
+    <div class="adm-tab" onclick="admTab('affiliates')">Affiliates</div>
+    <div class="adm-tab" onclick="admTab('crm')">Customers</div>
+    <div class="adm-tab" onclick="admTab('products')">Products</div>
+    <div class="adm-tab" onclick="admTab('offers')">Offers</div>
+    <div class="adm-tab" onclick="admTab('inventory')">Inventory</div>
+    <div class="adm-tab" onclick="admTab('owners')">Owners</div>
+    <div class="adm-tab" onclick="admTab('finance')">Finance</div>
   </div>
   <div class="adm-body">
     <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
@@ -1614,7 +1612,7 @@ function closeAdmin(){
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{
-    const tabs=["overview","orders","affiliates","owners","monthly","transactions","costs","products","offers","finance","crm","inventory"];
+    const tabs=["orders","transactions","costs","affiliates","crm","products","offers","inventory","owners","finance"];
     t.classList.toggle("on",tabs[i]===name);
   });
   document.querySelectorAll(".adm-content").forEach(c=>c.classList.remove("on"));

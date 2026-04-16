@@ -929,8 +929,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="adm-tab" onclick="admTab('finance')">Finance</div>
   </div>
   <div class="adm-body">
-    <div class="adm-content on" id="adm-overview"><div class="adm-loading">Loading data...</div></div>
-    <div class="adm-content" id="adm-orders"><div class="adm-loading">Loading...</div></div>
+  <div class="adm-content" id="adm-overview"></div>
+    <div class="adm-content on" id="adm-orders"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-affiliates"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-owners"><div class="adm-loading">Loading...</div></div>
     <div class="adm-content" id="adm-monthly"><div class="adm-loading">Loading...</div></div>
@@ -1795,7 +1795,7 @@ async function admLoadData(){
 function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
 function admFmtShort(n){if(Math.abs(n)>=1000)return"৳"+(n/1000).toFixed(1)+"k";return"৳"+Math.round(n);}
 
-function admRenderAll(){admRenderOverview();admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();admRenderCRM();admRenderInventory();}
+function admRenderAll(){admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();admRenderCRM();admRenderInventory();}
 
 function admRenderOverview(){
   const s=ADM_DATA.summary;

@@ -516,6 +516,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .adm-status-dispatch{background:#C9A84C;color:#000;}
 .adm-status-deliver{background:#2980b9;color:#fff;}
 .adm-status-cancel{background:rgba(192,57,43,0.7);color:#fff;}
+.adm-status-return{background:rgba(150,0,150,0.5);color:#fff;}
 @media(min-width:640px) and (max-width:900px){
   .hero{padding:48px 28px 52px;}.collection{padding:52px 28px 60px;}
   .pgrid{grid-template-columns:repeat(2,1fr);gap:24px;}
@@ -1889,12 +1890,14 @@ function admRenderOrders(){
   const totComm=rows.reduce((s,o)=>s+o.affCommission,0);
   const totNP=rows.reduce((s,o)=>s+o.netProfit,0);
   const pending=rows.filter(o=>o.status==='Pending').length;
-  const confirmed2=rows.filter(o=>['Confirmed','Dispatched','Delivered'].includes(o.status)).length;
+  const delivered=rows.filter(o=>o.status==='Delivered').length;
+  const returned=rows.filter(o=>o.status==='Returned').length;
   document.getElementById("adm-orders").innerHTML=`
     <div class="adm-kpi-row" style="margin-bottom:20px;">
-      <div class="adm-kpi"><div class="adm-kpi-label">All Orders</div><div class="adm-kpi-val c-white">${rows.length}</div><div class="adm-kpi-sub">${pending} pending · ${confirmed2} confirmed</div></div>
-      <div class="adm-kpi"><div class="adm-kpi-label">Revenue</div><div class="adm-kpi-val c-white">${admFmt(totRev)}</div></div>
-      <div class="adm-kpi"><div class="adm-kpi-label">Gross Profit</div><div class="adm-kpi-val ${totGP>=0?"c-green":"c-red"}">${admFmt(totGP)}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Total Orders</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Delivered</div><div class="adm-kpi-val c-green">${delivered}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Returned</div><div class="adm-kpi-val c-red">${returned}</div></div>
+      <div class="adm-kpi"><div class="adm-kpi-label">Pending</div><div class="adm-kpi-val" style="color:#C9A84C">${pending}</div></div>
       <div class="adm-kpi highlight"><div class="adm-kpi-label">Net Profit</div><div class="adm-kpi-val ${totNP>=0?"c-green":"c-red"}">${admFmt(totNP)}</div><div class="adm-kpi-accent"></div></div>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
@@ -1914,13 +1917,24 @@ function admRenderOrders(){
       }
       const short=o.items.length>32?o.items.substring(0,32)+"…":o.items;
       // Status badge color
-      const statusColor={Pending:"adm-badge-gray",Confirmed:"adm-badge-green",Dispatched:"adm-badge-gold",Delivered:"adm-badge-green",Cancelled:"adm-badge-red"}[o.status]||"adm-badge-gray";
+     const statusColor={Pending:"adm-badge-gray",Confirmed:"adm-badge-green",Dispatched:"adm-badge-gold",Delivered:"adm-badge-green",Cancelled:"adm-badge-red",Returned:"adm-badge-red"}[o.status]||"adm-badge-gray";
+      // 24h return window check
+      const now24=Date.now();
+      const delivTs=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
+      const within24h=delivTs&&(now24-delivTs)<86400000;
       // Action buttons based on current status
       let actionBtns='';
       if(o.status==='Pending')actionBtns=`<button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')">✓ Confirm</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕ Cancel</button>`;
-      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">📦 Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" title="Revert to Pending">↩ Revert</button>`;
-      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">✓ Delivered</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
-      else if(o.status==='Delivered')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" title="Revert to Dispatched" style="margin-left:6px">↩</button>`;
+      else if(o.status==='Confirmed')actionBtns=`<button class="adm-status-btn adm-status-dispatch" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')">Dispatch</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" title="Revert to Pending">↩ Revert</button>`;
+      else if(o.status==='Dispatched')actionBtns=`<button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')">Delivered</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')" title="Revert to Confirmed">↩ Revert</button>`;
+      else if(o.status==='Delivered'){
+        if(within24h){
+          actionBtns=`<button class="adm-status-btn adm-status-return" onclick="admUpdateOrderStatus('${o.orderId}','Returned')">↩ Mark Returned</button><span style="display:block;font-size:8px;color:#C9A84C;margin-top:3px;letter-spacing:1px">Return window open</span>`;
+        } else {
+          actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span>`;
+        }
+      }
+      else if(o.status==='Returned')actionBtns=`<span style="color:rgba(150,0,150,0.7);font-size:9px;letter-spacing:1px">RETURNED</span>`;
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       // Build detail row fields
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';

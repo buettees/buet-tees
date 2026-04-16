@@ -3750,7 +3750,7 @@ function admRenderFinance(){
   const ownerRows=owners.map(o=>({
     name:o.name,
     share:parseFloat(o.share||0),
-    share_of_extract: safeToExtract * parseFloat(o.share||0) / 100,
+    share_of_extract: Math.max(0, (safeToExtract * parseFloat(o.share||0) / 100) - (ownerWithdrawn[o.name]||0)),
     withdrawn: ownerWithdrawn[o.name]||0,
   }));
 
@@ -4071,6 +4071,7 @@ async function admSaveOwnerWithdraw(){
 
 
 let crmSort='spent'; // 'spent'|'orders'|'recent'|'name'
+let crmSearch='';
 
 function admRenderCRM(){
   const orders=ADM_DATA.orders||[];

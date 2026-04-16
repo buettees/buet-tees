@@ -1898,7 +1898,7 @@ function admRenderOrders(){
       <div class="adm-kpi"><div class="adm-kpi-label">Delivered</div><div class="adm-kpi-val c-green">${delivered}</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Returned</div><div class="adm-kpi-val c-red">${returned}</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Pending</div><div class="adm-kpi-val" style="color:#C9A84C">${pending}</div></div>
-      <div class="adm-kpi highlight"><div class="adm-kpi-label">Net Profit</div><div class="adm-kpi-val ${totNP>=0?"c-green":"c-red"}">${admFmt(totNP)}</div><div class="adm-kpi-accent"></div></div>
+      
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
     <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Gross</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead>
@@ -1934,7 +1934,7 @@ function admRenderOrders(){
           actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span>`;
         }
       }
-      else if(o.status==='Returned')actionBtns=`<span style="color:rgba(150,0,150,0.7);font-size:9px;letter-spacing:1px">RETURNED</span>`;
+      else if(o.status==='Returned')actionBtns=`<span style="color:rgba(150,0,150,0.7);font-size:9px;letter-spacing:1px">RETURNED</span><button class="adm-status-btn adm-status-deliver" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')" style="margin-left:6px" title="Revert to Delivered">↩ Revert</button>`;
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       // Build detail row fields
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';

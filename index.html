@@ -524,6 +524,38 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   header{padding:0 28px;}footer{padding:48px 28px 36px;}.ft-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .aff-section{padding:52px 28px 60px;}
 }
+/* ── PAGE SYSTEM ── */
+.page{display:none;}.page.active{display:block;}
+.nav-a.active-page{color:var(--w) !important;}
+/* ── Products Page ── */
+.prodpage{background:var(--w);padding:72px 40px 80px;}
+.prodpage .col-hd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:48px;}
+/* ── About Page ── */
+.aboutpage{background:var(--w);padding:80px 40px;}
+.aboutpage-inner{max-width:800px;margin:0 auto;}
+.about-eyebrow{font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--burg);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.about-eyebrow::before{content:'';width:20px;height:1px;background:var(--burg);}
+.about-h{font-size:clamp(32px,5vw,56px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--black);line-height:1;margin-bottom:32px;}
+.about-body{font-size:14px;line-height:2;color:#444;margin-bottom:24px;}
+.about-vals{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;margin:40px 0;}
+.about-val{background:var(--w2);border-radius:14px;padding:24px;}
+.about-val-icon{font-size:28px;margin-bottom:10px;}
+.about-val-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--black);margin-bottom:6px;}
+.about-val-desc{font-size:12px;color:#666;line-height:1.8;}
+/* ── Contact Page ── */
+.contactpage{background:var(--w2);padding:80px 40px;}
+.contactpage-inner{max-width:760px;margin:0 auto;}
+.contact-h{font-size:clamp(32px,5vw,56px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--black);line-height:1;margin-bottom:12px;}
+.contact-sub{font-size:14px;color:#666;line-height:1.8;margin-bottom:40px;}
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;margin-bottom:40px;}
+.contact-card{background:var(--w);border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.contact-card-icon{font-size:28px;margin-bottom:12px;}
+.contact-card-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g2);margin-bottom:6px;}
+.contact-card-val{font-size:16px;font-weight:800;color:var(--burg);}
+.contact-card-sub{font-size:11px;color:var(--g2);margin-top:4px;}
+.contact-aff-box{background:var(--black);border-radius:14px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.contact-aff-txt{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.8;}
+.contact-aff-title{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--w);margin-bottom:6px;}      
 </style>
 </head>
 <body>
@@ -538,9 +570,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 <header>
   <div class="logo">BUET<div class="logo-sep"></div>TEES</div>
   <nav class="nav-mid">
-    <span class="nav-a" onclick="document.querySelector('.collection').scrollIntoView({behavior:'smooth'})">Collection</span>
-    <span class="nav-a" onclick="document.querySelector('.custom-section').scrollIntoView({behavior:'smooth'})">Custom</span>
-    <span class="nav-a" onclick="document.querySelector('.istrip').scrollIntoView({behavior:'smooth'})">Info</span>
+    <span class="nav-a active-page" id="nav-home" onclick="showPage('home')">Home</span>
+    <span class="nav-a" id="nav-products" onclick="showPage('products')">Products</span>
+    <span class="nav-a" id="nav-about" onclick="showPage('about')">About</span>
+    <span class="nav-a" id="nav-contact" onclick="showPage('contact')">Contact</span>
     <span class="nav-a affiliate-nav" onclick="openAffModal()">Affiliate</span>
     <span class="offer-pill" id="offerHeaderPill">🏷 <span id="offerHeaderPillTxt"></span></span>
   </nav>
@@ -550,6 +583,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </button>
 </header>
 
+<div id="page-home" class="page active">
 <div class="hero">
   <div class="hero-geo"></div><div class="hero-geo2"></div>
   <div class="hero-inner">
@@ -660,6 +694,102 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
+</div><!-- /page-home -->
+
+<!-- ═══════════════════════════════ PRODUCTS PAGE ═══════════════════════════════ -->
+<div id="page-products" class="page">
+  <div class="prodpage">
+    <div class="col-hd">
+      <div><div class="col-eyebrow">Full Catalog</div><div class="col-title">All Products</div></div>
+      <div class="col-count" id="pcount-all"></div>
+    </div>
+    <div class="pgrid" id="pgrid-all">
+      <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
+      <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
+      <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
+      <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ABOUT PAGE ═══════════════════════════════ -->
+<div id="page-about" class="page">
+  <div class="aboutpage">
+    <div class="aboutpage-inner">
+      <div class="about-eyebrow">Our Story</div>
+      <div class="about-h">Made for BUET.<br>Worn with Pride.</div>
+      <p class="about-body">BUET Tees was started by two BUET students — Ashik and Kawsar — who wanted to make quality, well-designed t-shirts specifically for the BUET community. No generic prints. No compromise on fabric. Just clean designs that actually represent what it means to study at Bangladesh University of Engineering and Technology.</p>
+      <p class="about-body">We handle everything — design, sourcing, printing, and delivery — right to your hall room. Campus delivery is always free, and we deliver within 6 days. Every order is printed on-demand, so you're getting a fresh shirt made just for you.</p>
+      <div class="about-vals">
+        <div class="about-val">
+          <div class="about-val-icon">🎓</div>
+          <div class="about-val-title">Student-Run</div>
+          <div class="about-val-desc">Founded and operated by BUET students who understand campus life.</div>
+        </div>
+        <div class="about-val">
+          <div class="about-val-icon">👕</div>
+          <div class="about-val-title">Quality First</div>
+          <div class="about-val-desc">100% cotton, drop shoulder and regular fits. Printed to last.</div>
+        </div>
+        <div class="about-val">
+          <div class="about-val-icon">🚀</div>
+          <div class="about-val-title">Fast Delivery</div>
+          <div class="about-val-desc">Within 6 days. Campus delivery always free of charge.</div>
+        </div>
+        <div class="about-val">
+          <div class="about-val-icon">🤝</div>
+          <div class="about-val-title">Affiliate Program</div>
+          <div class="about-val-desc">Earn commission by sharing your code. Open to all BUET students.</div>
+        </div>
+      </div>
+      <p class="about-body" style="color:#999;font-size:12px;">BUET Campus, Dhaka, Bangladesh · buettees.shop · bKash: 01782761981</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CONTACT PAGE ═══════════════════════════════ -->
+<div id="page-contact" class="page">
+  <div class="contactpage">
+    <div class="contactpage-inner">
+      <div class="about-eyebrow">Get in Touch</div>
+      <div class="contact-h">Contact Us</div>
+      <div class="contact-sub">Have a question about an order, a custom design, or the affiliate program? Reach us through any of the channels below — we're quick to respond.</div>
+      <div class="contact-grid">
+        <div class="contact-card">
+          <div class="contact-card-icon">📱</div>
+          <div class="contact-card-label">bKash / WhatsApp</div>
+          <div class="contact-card-val">01782761981</div>
+          <div class="contact-card-sub">Payments &amp; quick queries</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">📞</div>
+          <div class="contact-card-label">Support</div>
+          <div class="contact-card-val">01515637637</div>
+          <div class="contact-card-sub">Order support</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">📘</div>
+          <div class="contact-card-label">Facebook</div>
+          <div class="contact-card-val" style="font-size:13px"><a href="https://facebook.com/buettees" target="_blank" style="color:var(--burg);text-decoration:none">facebook.com/buettees</a></div>
+          <div class="contact-card-sub">DM for custom orders</div>
+        </div>
+        <div class="contact-card">
+          <div class="contact-card-icon">📍</div>
+          <div class="contact-card-label">Location</div>
+          <div class="contact-card-val" style="font-size:13px">BUET Campus</div>
+          <div class="contact-card-sub">Dhaka, Bangladesh</div>
+        </div>
+      </div>
+      <div class="contact-aff-box">
+        <div>
+          <div class="contact-aff-title">Want to earn with us?</div>
+          <div class="contact-aff-txt">Join the affiliate program and earn ৳20–50 per sale.<br>Share your code, we handle the rest.</div>
+        </div>
+        <button class="aff-register-btn" onclick="openAffModal()">Register Now →</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Affiliate Registration Modal -->
 <div class="aff-modal-bg" id="affModalBg" onclick="if(event.target===this)closeAffModal()">
@@ -1041,27 +1171,54 @@ async function loadProducts(){
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }
 
+function makeCard(p){
+  const cat0=(p.categories&&p.categories.length)?p.categories[0]:p;
+  const dp=cat0.discountedPrice||cat0.price||0;
+  const img=cat0.image||"";const badge=cat0.badge||"";const catName=cat0.category||"";
+  return`<div class="pcard" onclick="openP('${p.id}')">
+    <div class="pimg"><img src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.1'"/>
+      <div class="pov"><div class="pov-lbl">Select</div></div>
+      ${badge?`<div class="pbadge">${badge}</div>`:""}
+    </div>
+    <div class="pinfo">
+      <div class="pname">${p.name}</div><div class="pcat">${catName}</div>
+      <div class="pbot"><div class="ppwrap">
+        <div class="pprice">${C} ${dp.toLocaleString()}</div>
+        ${cat0.discountedPrice?`<div class="porig">${C} ${(cat0.price||0).toLocaleString()}</div>`:""}
+      </div></div>
+    </div>
+  </div>`;
+}
+
 function render(){
+  // Home page — top 12 only
   const g=document.getElementById("pgrid");
   if(!prods.length){g.innerHTML='<div class="lerr">No products yet.</div>';return;}
-  g.innerHTML=prods.map(p=>{
-    const cat0=(p.categories&&p.categories.length)?p.categories[0]:p;
-    const dp=cat0.discountedPrice||cat0.price||0;
-    const img=cat0.image||"";const badge=cat0.badge||"";const catName=cat0.category||"";
-    return`<div class="pcard" onclick="openP('${p.id}')">
-      <div class="pimg"><img src="${img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.1'"/>
-        <div class="pov"><div class="pov-lbl">Select</div></div>
-        ${badge?`<div class="pbadge">${badge}</div>`:""}
-      </div>
-      <div class="pinfo">
-        <div class="pname">${p.name}</div><div class="pcat">${catName}</div>
-        <div class="pbot"><div class="ppwrap">
-          <div class="pprice">${C} ${dp.toLocaleString()}</div>
-          ${cat0.discountedPrice?`<div class="porig">${C} ${(cat0.price||0).toLocaleString()}</div>`:""}
-        </div></div>
-      </div>
-    </div>`;
-  }).join("");
+  const top12=prods.slice(0,12);
+  g.innerHTML=top12.map(makeCard).join("");
+  // Update home count label
+  document.getElementById("pcount").textContent=top12.length+" piece"+(top12.length!==1?"s":"")+(prods.length>12?" · <span style='cursor:pointer;color:var(--burg);text-decoration:underline' onclick=\"showPage('products')\">View all "+prods.length+"</span>":"");
+
+  // Products page — all
+  const g2=document.getElementById("pgrid-all");
+  if(g2){
+    g2.innerHTML=prods.map(makeCard).join("");
+    const pc2=document.getElementById("pcount-all");
+    if(pc2)pc2.textContent=prods.length+" piece"+(prods.length!==1?"s":"");
+  }
+}
+
+function showPage(name){
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  // Show target
+  document.getElementById('page-'+name).classList.add('active');
+  // Update nav highlight
+  document.querySelectorAll('.nav-a[id^="nav-"]').forEach(a=>a.classList.remove('active-page'));
+  const navEl=document.getElementById('nav-'+name);
+  if(navEl)navEl.classList.add('active-page');
+  // Scroll to top
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function renderSzChart(cat,activeSz){

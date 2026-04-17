@@ -1228,13 +1228,29 @@ function allPickCat(cat){
   if(pc2)pc2.textContent=filtered.length+' piece'+(filtered.length!==1?'s':'');
 }
 
-function renderCatFilters(containerId,activeCat,pickFnName){
+function renderCatFilters(containerId, activeCat, pickFnName){
   const el=document.getElementById(containerId);
   if(!el)return;
   const cats=getAvailableCategories();
-  // Only show filter if there are 2+ real categories (beyond "All")
   if(cats.length<=2){el.innerHTML='';return;}
   el.innerHTML=cats.map(c=>`<button class="cat-pill${activeCat===c?' on':''}" onclick="${pickFnName}('${c.replace(/'/g,"\\'")}')"> ${c}</button>`).join('');
+}
+
+function homePickCat(cat){
+  homeActiveCat=cat;
+  document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent.trim()===cat));
+  const filtered=filterProds(prods,cat).slice(0,12);
+  document.getElementById('pgrid').innerHTML=filtered.map(makeCard).join('');
+  updateHomeCount(filtered.length);
+}
+
+function allPickCat(cat){
+  allActiveCat=cat;
+  document.querySelectorAll('#cat-filters-all .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent.trim()===cat));
+  const filtered=filterProds(prods,cat);
+  document.getElementById('pgrid-all').innerHTML=filtered.map(makeCard).join('');
+  const pc2=document.getElementById('pcount-all');
+  if(pc2)pc2.textContent=filtered.length+' piece'+(filtered.length!==1?'s':'');
 }
 
 function render(){

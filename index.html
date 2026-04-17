@@ -2095,8 +2095,7 @@ function admRenderTransactions(){
         <div class="adm-tx-field"><label>Type</label><select class="adm-fi" id="txType"><option>Expense</option><option>Income</option><option>Capital In</option><option>Capital Out</option></select></div>
         <div class="adm-tx-field"><label>Owner</label><select class="adm-fi" id="txOwner"><option value="">BUET Tees</option>${(ADM_DATA.owners||[]).map(o=>`<option value="${o.name}">${o.name}</option>`).join('')}</select></div>
         <div class="adm-tx-field"><label>Amount (BDT)</label><input class="adm-fi" id="txAmount" placeholder="500" type="number"/></div>
-        <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
-        <div class="adm-tx-field"><label>Category</label><input class="adm-fi" id="txCat" placeholder="e.g. Marketing"/></div>
+       <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
       </div>
       <button class="adm-tx-btn" onclick="admAddTx()">+ Add Transaction</button>
     </div>
@@ -2111,7 +2110,7 @@ function admRenderTransactions(){
             <td>${t.owner||"BUET Tees"}</td>
             <td class="${isOut?"adm-red":"adm-green"}">${admFmt(t.amount)}</td>
             <td class="adm-white">${t.description}</td>
-            <td><button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);font-size:8px;padding:5px 10px" onclick="admReverseTx('${t.id}','${t.type}',${t.amount},'${(t.description||'').replace(/'/g,"\\'")}','${t.owner||''}')">↩ Reverse</button></td>
+            <td><button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);font-size:8px;padding:5px 10px" onclick="admReverseTx('${t.id}','${t.type}',${t.amount},'${(t.description||'').replace(/'/g,"\\'")}','${t.owner||''}')">✕ Undo</button></td>
           </tr>`;
         }).join("")}
       </tbody></table></div></div>`;
@@ -2134,13 +2133,11 @@ async function admAddTx(){
 }
 
 async function admReverseTx(id,type,amount,desc,owner){
-  if(!confirm(`Reverse this transaction?\n\nThis will insert an opposite entry to cancel it out.`))return;
-  const reverseType=type.includes("Expense")?"Income":type.includes("Income")?"Expense":type.includes("Capital In")?"Capital Out":"Capital In";
-  const date=new Date().toISOString().split("T")[0];
+  if(!confirm(`Undo this transaction?\n\n"${desc}"\n৳${amount} · ${type}\n\nThis will permanently delete it.`))return;
   try{
-    const {error}=await sbAdmin.from('transactions').insert({date,type:reverseType,owner:owner||null,amount:parseFloat(amount),description:`[REVERSED] ${desc}`,category:null});
+    const {error}=await sbAdmin.from('transactions').delete().eq('id',id);
     if(error)throw error;
-    toast("Reversal entry added ✓");admLoadData();
+    toast("Transaction deleted ✓");admLoadData();
   }catch(e){toast("Failed: "+e.message);}
 }
 

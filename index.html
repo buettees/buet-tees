@@ -2354,7 +2354,7 @@ function admRenderAffiliates(){
   document.getElementById("adm-affiliates").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Affiliates</div>
   <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Monthly, after supplier is paid</div>
-  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Only pay affiliate commission after 24h return window has passed on all their orders.</div>
+  
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
     ${affPayRows.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">
@@ -3157,46 +3157,53 @@ function admRenderCosts(){
   const supPayRows=Object.values(supByName);
   const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
 
-// Build a combined view: summary row per supplier + individual payment rows beneath
-  const allSupNames=[...new Set([...supPayRows.map(r=>r.name),...supplierPayments.map(p=>p.supplier||'T-Shirt Hub')])];
+// Check if ANY confirmed order for this supplier still has return window open
+  const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'1';
+  const nowTs=Date.now();
+  function isWithinReturnWindow(deliveredAt){
+    if(returnWinRaw==='0')return false;
+    if(returnWinRaw==='always')return !!deliveredAt;
+    const days=parseInt(returnWinRaw)||1;
+    const ts=deliveredAt?new Date(deliveredAt).getTime():0;
+    return ts&&(nowTs-ts)<(days*86400000);
+  }
+  // Per-supplier: does any delivered order still have return window open?
+  const supReturnOpen={};
+  orders.filter(o=>o.status==='Delivered').forEach(o=>{
+    const sup=o.supplier||'T-Shirt Hub';
+    if(isWithinReturnWindow(o.deliveredAt)) supReturnOpen[sup]=true;
+  });
+
+  // All payments flat list, newest last
+  const allSupPayments=supplierPayments.slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
 
   document.getElementById("adm-costs").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
-  <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Pay weekly in batches every Friday</div>
-  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Wait 24h after delivery before paying — return window may still be open.</div>
-  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
-    ${supPayRows.length?`
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:12px;">
+    ${allSupPayments.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Date</th><th>Supplier</th><th>Orders</th><th>Amount</th><th>Method</th><th>Note</th><th style="color:#e74c3c">Still Owe</th><th>Action</th></tr></thead>
-      <tbody>${allSupNames.map(name=>{
-        const summary=supByName[name]||{orders:0,totalCost:0,totalPaid:0};
-        const owed=summary.totalCost-summary.totalPaid;
-        const payments=supplierPayments.filter(p=>(p.supplier||'T-Shirt Hub')===name).slice().reverse();
-        const summaryRow=`<tr style="background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.08)">
-          <td style="color:rgba(255,255,255,0.15);font-size:9px;letter-spacing:1px;text-transform:uppercase">TOTAL</td>
-          <td class="adm-white" style="font-weight:700">${name}</td>
-          <td style="color:rgba(255,255,255,0.35)">${summary.orders}</td>
-          <td style="color:#e67e22;font-weight:700">${admFmt(summary.totalCost)}</td>
-          <td>—</td><td>—</td>
-          <td style="font-size:14px;font-weight:800;color:${owed>0?'#e74c3c':'#27ae60'}">${owed>0?admFmt(owed):'✓ Paid'}</td>
-          <td>${owed>0?`<button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admOpenSupPayModal('${name.replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
-        </tr>`;
-        const paymentRows=payments.map(p=>`<tr>
-          <td style="font-size:10px;color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</td>
-          <td style="color:rgba(255,255,255,0.35);font-size:10px;padding-left:16px">↳ ${p.supplier||'—'}</td>
-          <td>—</td>
-          <td class="adm-green">${admFmt(p.amount)}</td>
-          <td style="color:rgba(255,255,255,0.35)">${p.method||'—'}</td>
-          <td class="adm-white">${p.note||'—'}</td>
-          <td>—</td>
-          <td><button onclick="admRevertSupPay('${p.id}','${p.supplier||''}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button></td>
-        </tr>`).join('');
-        return paymentRows+summaryRow;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
-      💡 Pay weekly in batches every Friday. Note the order range (e.g. BT-045 to BT-052) in the note field.
-    </div>`:'<div class="adm-empty">No confirmed orders yet — supplier cost will appear here once orders are confirmed</div>'}
+      <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Method</th><th>Note</th><th></th></tr></thead>
+      <tbody>${allSupPayments.map(p=>`<tr>
+        <td style="color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+        <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
+        <td class="adm-green">${admFmt(p.amount)}</td>
+        <td style="color:rgba(255,255,255,0.3)">${p.method||'—'}</td>
+        <td style="color:rgba(255,255,255,0.3)">${p.note||'—'}</td>
+        <td><button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
+  </div>
+
+  <!-- Pay button area — one per supplier with return window awareness -->
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+    ${supPayRows.map(r=>{
+      const owed=r.totalCost-r.totalPaid;
+      if(owed<=0) return '';
+      const blocked=supReturnOpen[r.name];
+      return blocked
+        ? `<button style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:6px;padding:8px 16px;font-size:10px;font-weight:700;cursor:not-allowed;letter-spacing:1px" disabled>⏳ Return window open — ${r.name}</button>`
+        : `<button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admOpenSupPayModal('${r.name.replace(/'/g,"\\'")}',${owed})">Pay ${r.name} · ${admFmt(owed)}</button>`;
+    }).join('')}
   </div>
 
   <!-- Supplier payment form (inline) -->
@@ -3210,7 +3217,7 @@ function admRenderCosts(){
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. BT-045 to BT-052 batch"/></div>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Save Payment</button>
+      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Confirm Payment</button>
       <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finSupPayModal').style.display='none'">Cancel</button>
     </div>
   </div>`;

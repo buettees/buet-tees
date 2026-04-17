@@ -2093,7 +2093,7 @@ function admRenderTransactions(){
       <div class="adm-tx-grid">
         <div class="adm-tx-field"><label>Date</label><input class="adm-fi" id="txDate" type="date"/></div>
         <div class="adm-tx-field"><label>Type</label><select class="adm-fi" id="txType"><option>Expense</option><option>Income</option><option>Capital In</option><option>Capital Out</option></select></div>
-        <div class="adm-tx-field"><label>Owner</label><input class="adm-fi" id="txOwner" placeholder="e.g. Ashik"/></div>
+        <div class="adm-tx-field"><label>Owner</label><select class="adm-fi" id="txOwner"><option value="">BUET Tees</option>${(ADM_DATA.owners||[]).map(o=>`<option value="${o.name}">${o.name}</option>`).join('')}</select></div>
         <div class="adm-tx-field"><label>Amount (BDT)</label><input class="adm-fi" id="txAmount" placeholder="500" type="number"/></div>
         <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
         <div class="adm-tx-field"><label>Category</label><input class="adm-fi" id="txCat" placeholder="e.g. Marketing"/></div>
@@ -2101,17 +2101,17 @@ function admRenderTransactions(){
       <button class="adm-tx-btn" onclick="admAddTx()">+ Add Transaction</button>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Date</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th>Category</th></tr></thead>
+      <thead><tr><th>Date</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th></th></tr></thead>
       <tbody>${!rows.length?`<tr><td colspan="6" style="text-align:center;padding:32px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:2px">No transactions yet</td></tr>`:
         rows.map(t=>{
           const isOut=t.type.includes("Expense")||t.type.includes("Out");
           return`<tr>
             <td style="font-size:10px;white-space:nowrap">${t.date}</td>
             <td><span class="adm-badge ${isOut?"adm-badge-red":"adm-badge-green"}">${t.type}</span></td>
-            <td>${t.owner||"—"}</td>
+            <td>${t.owner||"BUET Tees"}</td>
             <td class="${isOut?"adm-red":"adm-green"}">${admFmt(t.amount)}</td>
             <td class="adm-white">${t.description}</td>
-            <td style="font-size:10px;color:rgba(255,255,255,0.2)">${t.category}</td>
+            <td><button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);font-size:8px;padding:5px 10px" onclick="admReverseTx('${t.id}','${t.type}',${t.amount},'${(t.description||'').replace(/'/g,"\\'")}','${t.owner||''}')">↩ Reverse</button></td>
           </tr>`;
         }).join("")}
       </tbody></table></div></div>`;
@@ -2124,13 +2124,23 @@ async function admAddTx(){
   const owner=document.getElementById("txOwner").value.trim();
   const amount=document.getElementById("txAmount").value;
   const desc=document.getElementById("txDesc").value.trim();
-  const cat=document.getElementById("txCat").value.trim();
   if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
-    const {error}=await sbAdmin.from('transactions').insert({date,type,owner,amount:parseFloat(amount),description:desc,category:cat});
+    const {error}=await sbAdmin.from('transactions').insert({date,type,owner:owner||null,amount:parseFloat(amount),description:desc,category:null});
     if(error)throw error;
     document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";
     toast("Transaction added ✓");admLoadData();
+  }catch(e){toast("Failed: "+e.message);}
+}
+
+async function admReverseTx(id,type,amount,desc,owner){
+  if(!confirm(`Reverse this transaction?\n\nThis will insert an opposite entry to cancel it out.`))return;
+  const reverseType=type.includes("Expense")?"Income":type.includes("Income")?"Expense":type.includes("Capital In")?"Capital Out":"Capital In";
+  const date=new Date().toISOString().split("T")[0];
+  try{
+    const {error}=await sbAdmin.from('transactions').insert({date,type:reverseType,owner:owner||null,amount:parseFloat(amount),description:`[REVERSED] ${desc}`,category:null});
+    if(error)throw error;
+    toast("Reversal entry added ✓");admLoadData();
   }catch(e){toast("Failed: "+e.message);}
 }
 

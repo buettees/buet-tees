@@ -20,11 +20,11 @@
 @keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.04);}}
 /* ── Search bar ── */
 .srch-wrap{position:relative;display:flex;align-items:center;}
-.srch-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:var(--w);padding:7px 36px 7px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;outline:none;width:0;opacity:0;transition:width 0.3s ease,opacity 0.3s ease;cursor:pointer;}
-.srch-input.open{width:180px;opacity:1;cursor:text;}
-.srch-input::placeholder{color:rgba(255,255,255,0.25);}
-.srch-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:0;}
-.srch-icon:hover{color:var(--w);}
+.srch-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--w);padding:8px 38px 8px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;outline:none;width:0;opacity:0;transition:width 0.3s ease,opacity 0.3s ease;cursor:pointer;}
+.srch-input.open{width:200px;opacity:1;cursor:text;}
+.srch-input::placeholder{color:rgba(255,255,255,0.3);}
+.srch-icon{position:absolute;right:0;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;width:34px;height:34px;padding:0;transition:all 0.15s;flex-shrink:0;}
+.srch-icon:hover{background:var(--burg);border-color:var(--burg);color:var(--w);}
 .srch-drop{display:none;position:absolute;top:calc(100% + 10px);right:0;width:280px;background:var(--black2);border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
 .srch-drop.on{display:block;}
 .srch-result{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid rgba(255,255,255,0.05);}
@@ -39,11 +39,11 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--w);color:var(--black);font-family:'Montserrat',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
-header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2px solid var(--burg);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2px solid var(--burg);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .logo{font-weight:900;font-size:16px;letter-spacing:8px;text-transform:uppercase;color:var(--w);display:flex;align-items:center;gap:10px;}
 .logo-sep{width:4px;height:4px;background:var(--burg);border-radius:50%;}
-.nav-mid{position:absolute;left:50%;transform:translateX(-50%);display:none;gap:36px;align-items:center;}
-@media(min-width:640px){.nav-mid{display:flex;}}
+.nav-mid{position:absolute;left:50%;transform:translateX(-50%);display:none;gap:24px;align-items:center;}
+@media(min-width:900px){.nav-mid{display:flex;}}
 .nav-a{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;transition:color 0.15s;}
 .nav-a:hover{color:var(--w);}
 .nav-a.affiliate-nav{color:var(--w);border:1px solid rgba(255,255,255,0.4);padding:5px 12px;border-radius:4px;}
@@ -469,7 +469,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .aff-code-status.ok{color:#2e7d32;}
 .aff-code-status.err{color:var(--burg);}
 @media(max-width:639px){
-  header{padding:0 16px;height:52px;}.logo{font-size:13px;letter-spacing:5px;}.cart-btn{padding:7px 14px;font-size:10px;}
+  header{padding:0 14px;height:52px;gap:8px;}.logo{font-size:13px;letter-spacing:5px;}.cart-btn{padding:7px 12px;font-size:10px;}.offer-pill{display:none!important;}
   .hero{min-height:auto;padding:40px 20px 44px;}.hero-geo,.hero-geo2{display:none;}
   .hero-h1{font-size:clamp(48px,14vw,80px);margin-bottom:28px;}
   .hero-stats{flex-wrap:wrap;padding-top:20px;}.hstat{padding:0 16px 0 0;margin-right:16px;margin-bottom:12px;}
@@ -596,19 +596,21 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <span class="nav-a" id="nav-about" onclick="showPage('about')">About</span>
     <span class="nav-a" id="nav-contact" onclick="showPage('contact')">Contact</span>
     <span class="nav-a affiliate-nav" onclick="openAffModal()">Affiliate</span>
-    <span class="offer-pill" id="offerHeaderPill">🏷 <span id="offerHeaderPillTxt"></span></span>
   </nav>
-  <div class="srch-wrap" id="srchWrap">
-    <input class="srch-input" id="srchInput" type="text" placeholder="Search tees..." oninput="srchQuery(this.value)" onblur="setTimeout(()=>srchClose(),200)"/>
-    <button class="srch-icon" onclick="srchToggle()" title="Search">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <span class="offer-pill" id="offerHeaderPill">🏷 <span id="offerHeaderPillTxt"></span></span>
+    <div class="srch-wrap" id="srchWrap">
+      <input class="srch-input" id="srchInput" type="text" placeholder="Search tees..." oninput="srchQuery(this.value)" onblur="setTimeout(()=>srchClose(),200)"/>
+      <button class="srch-icon" onclick="srchToggle()" title="Search">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="srch-drop" id="srchDrop"></div>
+    </div>
+    <button class="cart-btn" onclick="openCart()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Cart <span class="cbadge" id="cbadge">0</span>
     </button>
-    <div class="srch-drop" id="srchDrop"></div>
   </div>
-  <button class="cart-btn" onclick="openCart()">
-    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-    Cart <span class="cbadge" id="cbadge">0</span>
-  </button>
 </header>
 
 <div id="page-home" class="page active">

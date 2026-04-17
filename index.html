@@ -608,7 +608,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 <div class="collection">
   <div class="col-hd">
-    <div><div class="col-eyebrow">Current Drop</div><div class="col-title">All Pieces</div></div>
+    <div><div class="col-eyebrow">FEATURED</div>
+<div class="col-title">BEST SELLERS</div></div>
     <div class="col-count" id="pcount"></div>
   </div>
   <div class="pgrid" id="pgrid">
@@ -1191,13 +1192,18 @@ function makeCard(p){
 }
 
 function render(){
-  // Home page — top 12 only
+  // Home page — best sellers first (badge="Hot" prioritised), then cap at 8
   const g=document.getElementById("pgrid");
   if(!prods.length){g.innerHTML='<div class="lerr">No products yet.</div>';return;}
-  const top12=prods.slice(0,12);
+  const sorted=[...prods].sort((a,b)=>{
+    const aHot=(a.categories&&a.categories[0]&&a.categories[0].badge||'').toLowerCase()==='hot'?0:1;
+    const bHot=(b.categories&&b.categories[0]&&b.categories[0].badge||'').toLowerCase()==='hot'?0:1;
+    return aHot-bHot;
+  });
+  const top12=sorted.slice(0,8);
   g.innerHTML=top12.map(makeCard).join("");
   // Update home count label
-  document.getElementById("pcount").textContent=top12.length+" piece"+(top12.length!==1?"s":"")+(prods.length>12?" · <span style='cursor:pointer;color:var(--burg);text-decoration:underline' onclick=\"showPage('products')\">View all "+prods.length+"</span>":"");
+  document.getElementById("pcount").innerHTML=top12.length+" piece"+(top12.length!==1?"s":"")+(prods.length>12?" · <span style='cursor:pointer;color:var(--burg);text-decoration:underline' onclick=\"showPage('products')\">View all "+prods.length+"</span>":"");
 
   // Products page — all
   const g2=document.getElementById("pgrid-all");

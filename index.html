@@ -1176,10 +1176,9 @@ async function loadProducts(){
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }
 
-function makeCard(p){
+function makeCard(p,forceCat){
   // Pick the category matching the active filter, or fall back to first
-  const activeCat=typeof homeActiveCat!=='undefined'&&homeActiveCat!=='All'?homeActiveCat
-    :(typeof allActiveCat!=='undefined'&&allActiveCat!=='All'?allActiveCat:null);
+  const activeCat=forceCat||null;
   const cat0=(p.categories&&p.categories.length)
     ?(activeCat?p.categories.find(c=>c.category===activeCat)||p.categories[0]:p.categories[0])
     :p;
@@ -1220,7 +1219,7 @@ function homePickCat(cat){
   homeActiveCat=cat;
   document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent===cat));
   const filtered=filterProds(prods,cat).slice(0,12);
-  document.getElementById('pgrid').innerHTML=filtered.map(makeCard).join('');
+  document.getElementById('pgrid').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   updateHomeCount(filtered.length);
 }
 
@@ -1228,7 +1227,7 @@ function allPickCat(cat){
   allActiveCat=cat;
   document.querySelectorAll('#cat-filters-all .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent===cat));
   const filtered=filterProds(prods,cat);
-  document.getElementById('pgrid-all').innerHTML=filtered.map(makeCard).join('');
+  document.getElementById('pgrid-all').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   const pc2=document.getElementById('pcount-all');
   if(pc2)pc2.textContent=filtered.length+' piece'+(filtered.length!==1?'s':'');
 }
@@ -1245,7 +1244,7 @@ function homePickCat(cat){
   homeActiveCat=cat;
   document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent.trim()===cat));
   const filtered=filterProds(prods,cat).slice(0,12);
-  document.getElementById('pgrid').innerHTML=filtered.map(makeCard).join('');
+  document.getElementById('pgrid').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   updateHomeCount(filtered.length);
 }
 
@@ -1253,7 +1252,7 @@ function allPickCat(cat){
   allActiveCat=cat;
   document.querySelectorAll('#cat-filters-all .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent.trim()===cat));
   const filtered=filterProds(prods,cat);
-  document.getElementById('pgrid-all').innerHTML=filtered.map(makeCard).join('');
+  document.getElementById('pgrid-all').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   const pc2=document.getElementById('pcount-all');
   if(pc2)pc2.textContent=filtered.length+' piece'+(filtered.length!==1?'s':'');
 }
@@ -1265,7 +1264,7 @@ function render(){
 
   renderCatFilters('cat-filters-home',homeActiveCat,'homePickCat');
   const homeFiltered=filterProds(prods,homeActiveCat).slice(0,12);
-  g.innerHTML=homeFiltered.map(makeCard).join('');
+  g.innerHTML=homeFiltered.map(p=>makeCard(p,homeActiveCat==='All'?null:homeActiveCat)).join('');
   updateHomeCount(homeFiltered.length);
 
   // ── Products page ──────────────────────────────────────
@@ -1273,7 +1272,7 @@ function render(){
   if(g2){
     renderCatFilters('cat-filters-all',allActiveCat,'allPickCat');
     const allFiltered=filterProds(prods,allActiveCat);
-    g2.innerHTML=allFiltered.map(makeCard).join('');
+    g2.innerHTML=allFiltered.map(p=>makeCard(p,allActiveCat==='All'?null:allActiveCat)).join('');
     const pc2=document.getElementById('pcount-all');
     if(pc2)pc2.textContent=allFiltered.length+' piece'+(allFiltered.length!==1?'s':'');
   }

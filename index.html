@@ -3165,22 +3165,16 @@ function admRenderCosts(){
     const n=p.supplier||'T-Shirt Hub';
     if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0};
     supByName[n].totalPaid+=parseFloat(p.amount||0);
-// Supplier fault orders — deduct from cost accrued BEFORE computing supPayRows
+  });
   const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
   faultOrders.forEach(o=>{
     const sup=o.supplier||'T-Shirt Hub';
     if(!supByName[sup])supByName[sup]={name:sup,orders:0,totalCost:0,totalPaid:0};
     supByName[sup].totalCost-=o.supplierCost;
   });
-
   const supPayRows=Object.values(supByName);
   const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
-
-const returnWinRaw=
-  const supPayRows=Object.values(supByName);
-  const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
-
-const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+  const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
   const returnWinChangedAt=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
   const settingChangedTs2=returnWinChangedAt?new Date(returnWinChangedAt).getTime():0;
   const nowTs=Date.now();

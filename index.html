@@ -4357,12 +4357,13 @@ function admRenderFinance(){
       <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);">🏭 Supplier Payment Log</div>
       ${recentSupPayments.length?`
       <div class="adm-tbl-scroll"><table class="adm-tbl" style="font-size:10px">
-        <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Note</th></tr></thead>
+        <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Note</th><th></th></tr></thead>
         <tbody>${recentSupPayments.map(p=>`<tr>
           <td style="color:rgba(255,255,255,0.2)">${p.paid_at?new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'—'}</td>
           <td style="color:rgba(255,255,255,0.5)">${p.supplier||'—'}</td>
           <td style="color:#27ae60;font-weight:700">${admFmt(p.amount)}</td>
           <td style="color:rgba(255,255,255,0.25)">${p.note||'—'}</td>
+          <td><button onclick="admRevertSupPay('${p.id}','${p.supplier||''}',${p.amount})" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">REVERT</button></td>
         </tr>`).join('')}</tbody>
       </table></div>`:'<div class="adm-empty" style="padding:20px">No payments yet</div>'}
     </div>
@@ -4372,12 +4373,13 @@ function admRenderFinance(){
       <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);">🤝 Affiliate Payout Log</div>
       ${recentPayouts.length?`
       <div class="adm-tbl-scroll"><table class="adm-tbl" style="font-size:10px">
-        <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Note</th></tr></thead>
+        <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Note</th><th></th></tr></thead>
         <tbody>${recentPayouts.map(p=>`<tr>
           <td style="color:rgba(255,255,255,0.2)">${p.paid_at?new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}):'—'}</td>
           <td class="adm-id" style="font-size:10px">${p.affiliate_code}</td>
           <td style="color:#C9A84C;font-weight:700">${admFmt(p.amount)}</td>
           <td style="color:rgba(255,255,255,0.25)">${p.note||'—'}</td>
+          <td><button onclick="admRevertAffiliatePayout('${p.id}','${p.affiliate_code}',${p.amount})" style="background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">REVERT</button></td>
         </tr>`).join('')}</tbody>
       </table></div>`:'<div class="adm-empty" style="padding:20px">No payouts yet</div>'}
     </div>
@@ -4436,6 +4438,29 @@ async function admSavePayout(){
   }catch(e){toast('Failed: '+e.message);}
 }
 
+async function admRevertSupPay(id, supplier, amount){
+  if(!confirm(`Revert supplier payment of ৳${amount} to ${supplier}? This will delete the record.`)) return;
+  try{
+    const{error}=await sbAdmin.from('supplier_payments').delete().eq('id',id);
+    if(error) throw error;
+    toast('Supplier payment reverted ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admRevertAffiliatePayout(id, code, amount){
+  if(!confirm(`Revert payout of ৳${amount} to ${code}? This will delete the record and reduce their total_paid.`)) return;
+  try{
+    const{error}=await sbAdmin.from('affiliate_payouts').delete().eq('id',id);
+    if(error) throw error;
+    // Subtract the amount from total_paid
+    const{data:aff}=await sbAdmin.from('affiliates').select('total_paid').eq('code',code).single();
+    const newPaid=Math.max(0,parseFloat(aff?.total_paid||0)-amount);
+    await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
+    toast('Affiliate payout reverted ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
 
 // ══════════════════════════════════════════════════════════
 // CUSTOMERS TAB — CRM (Step 4)

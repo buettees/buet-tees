@@ -1361,13 +1361,17 @@ function pickCat(i){document.querySelectorAll("#catOpts .vb").forEach((b,idx)=>b
 
 function openP(id){
   const p=prods.find(x=>x.id===id);if(!p)return;
-  cur=p;qty=1;selSide="front";selCatIdx=0;
+  cur=p;qty=1;selSide="front";
+  // Start on the category matching the active filter, not always index 0
+  const activeCat=(homeActiveCat!=='All'?homeActiveCat:null)||(allActiveCat!=='All'?allActiveCat:null);
+  const startIdx=activeCat?(p.categories||[]).findIndex(c=>c.category===activeCat):0;
+  selCatIdx=startIdx<0?0:startIdx;
   const catRow=document.getElementById("catRow");
   if(p.categories&&p.categories.length>1){
     catRow.style.display="";
-    document.getElementById("catOpts").innerHTML=p.categories.map((c,i)=>`<button class="vb ${i===0?"on":""}" onclick="pickCat(${i})">${c.category}</button>`).join("");
+    document.getElementById("catOpts").innerHTML=p.categories.map((c,i)=>`<button class="vb ${i===selCatIdx?"on":""}" onclick="pickCat(${i})">${c.category}</button>`).join("");
   }else{catRow.style.display="none";}
-  loadCatData(p,0);
+  loadCatData(p,selCatIdx);
   document.getElementById("pmbg").classList.add("on");document.body.style.overflow="hidden";
 }
 

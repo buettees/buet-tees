@@ -18,6 +18,24 @@
 .offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite;}
 .offer-pill.on{display:flex;align-items:center;gap:6px;}
 @keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.04);}}
+/* ── Search bar ── */
+.srch-wrap{position:relative;display:flex;align-items:center;}
+.srch-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:var(--w);padding:7px 36px 7px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;outline:none;width:0;opacity:0;transition:width 0.3s ease,opacity 0.3s ease;cursor:pointer;}
+.srch-input.open{width:180px;opacity:1;cursor:text;}
+.srch-input::placeholder{color:rgba(255,255,255,0.25);}
+.srch-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center;background:none;border:none;padding:0;}
+.srch-icon:hover{color:var(--w);}
+.srch-drop{display:none;position:absolute;top:calc(100% + 10px);right:0;width:280px;background:var(--black2);border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.srch-drop.on{display:block;}
+.srch-result{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;transition:background 0.12s;border-bottom:1px solid rgba(255,255,255,0.05);}
+.srch-result:last-child{border:none;}
+.srch-result:hover{background:rgba(255,255,255,0.06);}
+.srch-result img{width:40px;height:40px;object-fit:cover;border-radius:6px;background:var(--black3);}
+.srch-result-info{flex:1;}
+.srch-result-name{font-size:11px;font-weight:700;color:var(--w);text-transform:uppercase;letter-spacing:0.5px;}
+.srch-result-cat{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.srch-result-price{font-size:12px;font-weight:800;color:var(--burg);}
+.srch-empty{padding:18px;text-align:center;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--w);color:var(--black);font-family:'Montserrat',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
@@ -580,6 +598,13 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <span class="nav-a affiliate-nav" onclick="openAffModal()">Affiliate</span>
     <span class="offer-pill" id="offerHeaderPill">🏷 <span id="offerHeaderPillTxt"></span></span>
   </nav>
+  <div class="srch-wrap" id="srchWrap">
+    <input class="srch-input" id="srchInput" type="text" placeholder="Search tees..." oninput="srchQuery(this.value)" onblur="setTimeout(()=>srchClose(),200)"/>
+    <button class="srch-icon" onclick="srchToggle()" title="Search">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <div class="srch-drop" id="srchDrop"></div>
+  </div>
   <button class="cart-btn" onclick="openCart()">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
     Cart <span class="cbadge" id="cbadge">0</span>
@@ -4747,6 +4772,51 @@ async function invSaveEdits(){
   }catch(e){toast('Failed: '+e.message);}
 }
 
+function srchToggle(){
+  const inp=document.getElementById('srchInput');
+  inp.classList.toggle('open');
+  if(inp.classList.contains('open')){inp.focus();}
+  else{inp.value='';srchClose();}
+}
+function srchClose(){
+  document.getElementById('srchDrop').classList.remove('on');
+}
+function srchQuery(q){
+  const drop=document.getElementById('srchDrop');
+  q=q.trim().toLowerCase();
+  if(!q){drop.classList.remove('on');drop.innerHTML='';return;}
+  const results=[];
+  prods.forEach(p=>{
+    p.categories.forEach(c=>{
+      if(p.name.toLowerCase().includes(q)||c.category.toLowerCase().includes(q)||(p.id||'').toLowerCase().includes(q)){
+        if(!results.find(r=>r.id===p.id&&r.cat===c.category)){
+          results.push({id:p.id,name:p.name,cat:c.category,img:c.image||'',price:c.discountedPrice||c.price||0});
+        }
+      }
+    });
+  });
+  if(!results.length){drop.innerHTML='<div class="srch-empty">No results found</div>';}
+  else{
+    drop.innerHTML=results.slice(0,6).map(r=>`
+      <div class="srch-result" onclick="srchPick('${r.id}','${r.cat.replace(/'/g,"\\'")}')">
+        <img src="${r.img}" onerror="this.style.opacity='0.1'" alt="${r.name}"/>
+        <div class="srch-result-info">
+          <div class="srch-result-name">${r.name}</div>
+          <div class="srch-result-cat">${r.cat}</div>
+        </div>
+        <div class="srch-result-price">৳${r.price.toLocaleString()}</div>
+      </div>`).join('');
+  }
+  drop.classList.add('on');
+}
+function srchPick(id,cat){
+  srchClose();
+  document.getElementById('srchInput').value='';
+  document.getElementById('srchInput').classList.remove('open');
+  // Set the right filter then open product
+  homeActiveCat=cat;allActiveCat=cat;
+  openP(id);
+}
 loadProducts();upd();
 </script>
 </body>

@@ -1177,7 +1177,12 @@ async function loadProducts(){
 }
 
 function makeCard(p){
-  const cat0=(p.categories&&p.categories.length)?p.categories[0]:p;
+  // Pick the category matching the active filter, or fall back to first
+  const activeCat=typeof homeActiveCat!=='undefined'&&homeActiveCat!=='All'?homeActiveCat
+    :(typeof allActiveCat!=='undefined'&&allActiveCat!=='All'?allActiveCat:null);
+  const cat0=(p.categories&&p.categories.length)
+    ?(activeCat?p.categories.find(c=>c.category===activeCat)||p.categories[0]:p.categories[0])
+    :p;
   const dp=cat0.discountedPrice||cat0.price||0;
   const img=cat0.image||"";const badge=cat0.badge||"";const catName=cat0.category||"";
   return`<div class="pcard" onclick="openP('${p.id}')">

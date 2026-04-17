@@ -1995,6 +1995,8 @@ async function admLoadData(){
         supplier:o.supplier||'T-Shirt Hub',
         total,supplierCost,grossProfit,affCommission:affComm,netProfit,
         status:o.status,affiliateCode:o.affiliate_code||'',
+        supplierFault:o.supplier_fault||false,
+        faultNote:o.fault_note||'',
         isConfirmed
       };
     });
@@ -2227,17 +2229,21 @@ function admRenderOrders(){
       const short=o.items.length>32?o.items.substring(0,32)+"…":o.items;
       // Status badge color
      const statusColor={Pending:"adm-badge-gray",Confirmed:"adm-badge-green",Dispatched:"adm-badge-gold",Delivered:"adm-badge-green",Cancelled:"adm-badge-red",Returned:"adm-badge-red"}[o.status]||"adm-badge-gray";
-     // Dynamic return window check (from settings)
+    // Dynamic return window check — only applies to orders delivered AFTER the setting was last changed
       const now24=Date.now();
       const delivTs=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
-      const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'1';
+      const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+      const returnWinChangedAt=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+      const settingChangedTs=returnWinChangedAt?new Date(returnWinChangedAt).getTime():0;
       const withinReturnWindow=(()=>{
-        if(returnWinRaw==='0')return false;           // No return
-        if(returnWinRaw==='always')return !!delivTs;  // Always show
+        if(returnWinRaw==='0')return false;
+        // Only applies if this order was delivered AFTER the setting was last changed
+        if(settingChangedTs&&delivTs&&delivTs<settingChangedTs)return false;
+        if(returnWinRaw==='always')return !!delivTs;
         const days=parseInt(returnWinRaw)||1;
         return delivTs&&(now24-delivTs)<(days*86400000);
       })();
-      const within24h=withinReturnWindow; // keep variable name so rest of code works
+      const within24h=withinReturnWindow;
       // Action buttons based on current status
       let actionBtns='';
       if(o.status==='Pending')actionBtns=`<button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Confirmed')">✓ Confirm</button><button class="adm-status-btn adm-status-cancel" onclick="admUpdateOrderStatus('${o.orderId}','Cancelled')">✕ Cancel</button>`;
@@ -2250,7 +2256,13 @@ function admRenderOrders(){
           actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" style="margin-left:6px" title="Revert to Dispatched">↩ Revert</button>`;
         }
       }
-      else if(o.status==='Returned')actionBtns=`<span style="color:rgba(150,0,150,0.7);font-size:9px;letter-spacing:1px">RETURNED</span><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')" style="margin-left:6px" title="Revert to Delivered">↩ Revert</button>`;
+      else if(o.status==='Returned'){
+        if(o.supplierFault){
+          actionBtns=`<span style="color:#e74c3c;font-size:9px;letter-spacing:1px;font-weight:700">⚠ SUPPLIER FAULT</span><span style="display:block;font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">${o.faultNote||''}</span><button class="adm-status-btn adm-status-revert" onclick="admClearSupplierFault('${o.orderId}')" style="margin-left:6px;font-size:9px">✕ Clear Fault</button>`;
+        } else {
+          actionBtns=`<span style="color:rgba(150,0,150,0.7);font-size:9px;letter-spacing:1px">RETURNED</span><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Delivered')" style="margin-left:6px" title="Revert to Delivered">↩ Revert</button><button class="adm-status-btn" style="margin-left:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border-color:rgba(231,76,60,0.3);font-size:9px" onclick="admMarkSupplierFault('${o.orderId}')">⚠ Supplier Fault</button>`;
+        }
+      }
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       // Build detail row fields
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
@@ -3157,25 +3169,50 @@ function admRenderCosts(){
   const supPayRows=Object.values(supByName);
   const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
 
-// Check if ANY confirmed order for this supplier still has return window open
-  const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'1';
+const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+  const returnWinChangedAt=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+  const settingChangedTs2=returnWinChangedAt?new Date(returnWinChangedAt).getTime():0;
   const nowTs=Date.now();
   function isWithinReturnWindow(deliveredAt){
     if(returnWinRaw==='0')return false;
-    if(returnWinRaw==='always')return !!deliveredAt;
-    const days=parseInt(returnWinRaw)||1;
     const ts=deliveredAt?new Date(deliveredAt).getTime():0;
+    if(settingChangedTs2&&ts&&ts<settingChangedTs2)return false; // delivered before setting changed — no window
+    if(returnWinRaw==='always')return !!ts;
+    const days=parseInt(returnWinRaw)||1;
     return ts&&(nowTs-ts)<(days*86400000);
   }
-  // Per-supplier: does any delivered order still have return window open?
+  // Per-supplier: block payment if any delivered order is within return window OR has supplier fault
   const supReturnOpen={};
+  const supBlockReasons={};
   orders.filter(o=>o.status==='Delivered').forEach(o=>{
     const sup=o.supplier||'T-Shirt Hub';
-    if(isWithinReturnWindow(o.deliveredAt)) supReturnOpen[sup]=true;
+    if(isWithinReturnWindow(o.deliveredAt)){
+      supReturnOpen[sup]=true;
+      supBlockReasons[sup]='Return window open on '+o.orderId;
+    }
+  });
+  // Supplier fault orders — these are NOT paid, shown as penalty rows
+  const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
+  faultOrders.forEach(o=>{
+    const sup=o.supplier||'T-Shirt Hub';
+    if(!supByName[sup])supByName[sup]={name:sup,orders:0,totalCost:0,totalPaid:0};
+    // Fault orders reduce what's owed (supplier owes us back)
+    supByName[sup].totalPaid+=o.supplierCost; // counts as "paid" via penalty, so owed drops
   });
 
   // All payments flat list, newest last
   const allSupPayments=supplierPayments.slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
+  // Build fault rows to show in table alongside payments
+  const faultRows=faultOrders.map(o=>({
+    _isFault:true,
+    orderId:o.orderId,
+    supplier:o.supplier||'T-Shirt Hub',
+    amount:o.supplierCost,
+    faultNote:o.faultNote||'',
+    date:o.timestamp
+  }));
+  const allRows=[...allSupPayments.map(p=>({...p,_isFault:false})),...faultRows]
+    .sort((a,b)=>new Date(a.paid_at||a.date)-new Date(b.paid_at||b.date));
 
   document.getElementById("adm-costs").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
@@ -3183,7 +3220,14 @@ function admRenderCosts(){
     ${allSupPayments.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">
       <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Method</th><th>Note</th><th></th></tr></thead>
-      <tbody>${allSupPayments.map(p=>`<tr>
+      <tbody>${allRows.map(p=>p._isFault?`<tr style="background:rgba(231,76,60,0.05)">
+        <td style="color:rgba(255,255,255,0.3)">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+        <td style="color:#e74c3c;font-weight:600">⚠ ${p.supplier}</td>
+        <td style="color:#e74c3c;font-weight:700">-${admFmt(p.amount)}</td>
+        <td style="color:rgba(255,255,255,0.2);font-size:9px">PENALTY</td>
+        <td style="color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</td>
+        <td><span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</span></td>
+      </tr>`:`<tr>
         <td style="color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
         <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
         <td class="adm-green">${admFmt(p.amount)}</td>
@@ -4108,13 +4152,17 @@ function admOfferPreview(){
 
 async function admSaveReturnWindow(val){
   try{
+    const changedAt=new Date().toISOString();
     await sbAdmin.from('settings').upsert({key:'return_window',value:val},{onConflict:'key'});
+    await sbAdmin.from('settings').upsert({key:'return_window_changed_at',value:changedAt},{onConflict:'key'});
     if(ADM_DATA.rawSettings){
       const s=ADM_DATA.rawSettings.find(r=>r.key==='return_window');
       if(s)s.value=val;else ADM_DATA.rawSettings.push({key:'return_window',value:val});
+      const sc=ADM_DATA.rawSettings.find(r=>r.key==='return_window_changed_at');
+      if(sc)sc.value=changedAt;else ADM_DATA.rawSettings.push({key:'return_window_changed_at',value:changedAt});
     }
     const label={'0':'No Return','1':'1 Day','3':'3 Days','7':'7 Days','14':'14 Days','30':'30 Days','always':'Anytime'}[val]||val;
-    toast(`Return window set to: ${label}`);
+    toast(`Return window set to: ${label} — applies to next deliveries`);
     admRenderOrders();
   }catch(e){toast('Failed: '+e.message);}
 }
@@ -4469,6 +4517,27 @@ async function admRevertAffiliatePayout(id, code, amount){
     const newPaid=Math.max(0,parseFloat(aff?.total_paid||0)-amount);
     await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
     toast('Affiliate payout reverted ✓');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admMarkSupplierFault(orderId){
+  const note=prompt('Briefly describe the fault (e.g. wrong size, defective print):');
+  if(note===null)return; // cancelled
+  try{
+    const{error}=await sbAdmin.from('orders').update({supplier_fault:true,fault_note:note}).eq('id',orderId);
+    if(error)throw error;
+    toast(orderId+' marked as supplier fault — cost deducted from balance');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+async function admClearSupplierFault(orderId){
+  if(!confirm('Clear supplier fault on '+orderId+'? The deduction will be reversed.'))return;
+  try{
+    const{error}=await sbAdmin.from('orders').update({supplier_fault:false,fault_note:null}).eq('id',orderId);
+    if(error)throw error;
+    toast('Supplier fault cleared on '+orderId);
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }

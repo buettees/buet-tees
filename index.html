@@ -4540,7 +4540,7 @@ function admToggleSupPayDetail(id){
   const el=document.getElementById(id);
   if(!el)return;
   const isTr=el.tagName==="TR";
-  const visible=el.style.display!=="none"00260026el.style.display!=="";
+  const visible=el.style.display!=="none"&&el.style.display!=="";
   el.style.display=visible?"none":(isTr?"table-row":"block");
   const btns=document.querySelectorAll(`[onclick*="${id}"]`);
   btns.forEach(b=>{ if(b.textContent.includes("▶")||b.textContent.includes("▼")) b.textContent=b.textContent.replace(visible?"▼":"▶",visible?"▶":"▼"); });

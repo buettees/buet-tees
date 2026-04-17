@@ -2335,7 +2335,58 @@ function admRenderAffiliates(){
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Joined</div>${a.created_at?new Date(a.created_at).toLocaleDateString('en-GB'):'—'}</div>
         </div>
       </td>
-    </tr>`).join("")}</tbody></table></div></div>`;
+    </tr>`).join("")}</tbody></table></div></div>
+
+    <div style="margin-top:24px;margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Pay Affiliates</div>
+    <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Only pay after the 24h return window has passed on all their orders.</div>
+    <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      ${(()=>{
+        const payouts=ADM_DATA.affiliatePayouts||[];
+        const affByCode={};
+        ADM_DATA.affiliates.forEach(a=>{
+          affByCode[a.code]={name:a.name,code:a.code,payment_method:a.payment_method,payment_details:a.payment_details,earned:a.totalCommission,paid:0,orders:a.orderCount};
+        });
+        payouts.forEach(p=>{
+          if(affByCode[p.affiliate_code])affByCode[p.affiliate_code].paid+=parseFloat(p.amount||0);
+          else affByCode[p.affiliate_code]={name:p.affiliate_code,code:p.affiliate_code,earned:0,paid:parseFloat(p.amount||0),orders:0};
+        });
+        const affRows=Object.values(affByCode).filter(a=>a.earned>0||a.paid>0);
+        affRows.sort((a,b)=>(b.earned-b.paid)-(a.earned-a.paid));
+        if(!affRows.length)return '<div class="adm-empty">No affiliate commissions yet</div>';
+        return \`<div class="adm-tbl-scroll"><table class="adm-tbl">
+          <thead><tr><th>Affiliate</th><th>Orders</th><th>Earned</th><th>Paid Out</th><th style="color:#C9A84C">Owed</th><th>Action</th></tr></thead>
+          <tbody>\${affRows.map(a=>{
+            const owed=a.earned-a.paid;
+            return\`<tr>
+              <td><div class="adm-id">\${a.code}</div><div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px">\${a.name||''}</div>\${a.payment_details?\`<div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:1px">\${a.payment_method||''}: \${a.payment_details}</div>\`:''}</td>
+              <td style="color:rgba(255,255,255,0.35)">\${a.orders}</td>
+              <td class="adm-gold">\${admFmt(a.earned)}</td>
+              <td class="\${a.paid>0?'adm-green':''}">\${a.paid>0?admFmt(a.paid):'<span style="color:rgba(255,255,255,0.1)">—</span>'}</td>
+              <td style="font-size:15px;font-weight:800;color:\${owed>0?'#C9A84C':'#27ae60'}">\${owed>0?admFmt(owed):'✓ Settled'}</td>
+              <td>\${owed>0?\`<button class="adm-tx-btn" onclick="admOpenPayoutModal('\${a.code}','\${(a.name||a.code).replace(/'/g,"\\\\'")}',\${owed})">Pay ৳\${Math.round(owed)}</button>\`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
+            </tr>\`;
+          }).join('')}</tbody>
+        </table></div>
+        <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
+          💡 Only pay for orders in Delivered status. Do this at month-end after clearing the supplier first.
+        </div>\`;
+      })()}
+    </div>
+    <div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
+      <input type="hidden" id="finPayoutCode"/>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
+          <select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="adm-tx-btn" onclick="admSavePayout()">✓ Save Payout</button>
+        <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
+      </div>
+    </div>`;
 }
 
 function admRenderOwners(){
@@ -3061,10 +3112,65 @@ function admRenderCosts(){
           </div>
         </div>`).join('')}
 
-        <div style="display:flex;gap:8px;margin-top:14px">
+       <div style="display:flex;gap:8px;margin-top:14px">
           <button class="adm-tx-btn" onclick="admSaveSupplierNew()">Save Supplier</button>
           <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05)" onclick="admCancelSupplierEditNew()">Clear</button>
         </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Pay Supplier</div>
+    <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Wait 24h after delivery before paying — return window may still be open.</div>
+    <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      ${(()=>{
+        const orders=ADM_DATA.orders||[];
+        const confirmed=orders.filter(o=>o.isConfirmed);
+        const supplierPayments=ADM_DATA.supplierPayments||[];
+        const supByName={};
+        confirmed.forEach(o=>{
+          const n=o.supplier||'T-Shirt Hub';
+          if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0};
+          supByName[n].orders++;
+          supByName[n].totalCost+=o.supplierCost;
+        });
+        supplierPayments.forEach(p=>{
+          const n=p.supplier||'T-Shirt Hub';
+          if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0};
+          supByName[n].totalPaid+=parseFloat(p.amount||0);
+        });
+        const supRows=Object.values(supByName);
+        if(!supRows.length)return '<div class="adm-empty">No confirmed orders yet — supplier cost will appear here once orders are confirmed</div>';
+        return \`<div class="adm-tbl-scroll"><table class="adm-tbl">
+          <thead><tr><th>Supplier</th><th>Orders</th><th>Cost Accrued</th><th>Paid</th><th style="color:#e74c3c">Still Owe</th><th>Action</th></tr></thead>
+          <tbody>\${supRows.map(r=>{
+            const owed=r.totalCost-r.totalPaid;
+            return\`<tr>
+              <td class="adm-white" style="font-weight:700">\${r.name}</td>
+              <td style="color:rgba(255,255,255,0.35)">\${r.orders}</td>
+              <td style="color:#e67e22">\${admFmt(r.totalCost)}</td>
+              <td class="\${r.totalPaid>0?'adm-green':''}">\${r.totalPaid>0?admFmt(r.totalPaid):'<span style="color:rgba(255,255,255,0.1)">—</span>'}</td>
+              <td style="font-size:15px;font-weight:800;color:\${owed>0?'#e74c3c':'#27ae60'}">\${owed>0?admFmt(owed):'✓ Paid'}</td>
+              <td>\${owed>0?\`<button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admOpenSupPayModal('\${r.name.replace(/'/g,"\\\\'")}',\${owed})">Pay ৳\${Math.round(owed)}</button>\`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
+            </tr>\`;
+          }).join('')}</tbody>
+        </table></div>
+        <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
+          💡 Pay weekly in batches every Friday. Note the order range in the note field.
+        </div>\`;
+      })()}
+    </div>
+    <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Supplier Payment</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 3500"/></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
+          <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+        <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. BT-045 to BT-052 batch"/></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Save Payment</button>
+        <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finSupPayModal').style.display='none'">Cancel</button>
       </div>
     </div>`;
 }
@@ -4191,92 +4297,6 @@ function admRenderFinance(){
       − Reserve &nbsp;<strong style="color:#C9A84C">${admFmt(RESERVE)}</strong><br>
       − Supplier owed &nbsp;<strong style="color:#e74c3c">${admFmt(Math.max(0,supplierOwed))}</strong><br>
       − Affiliates owed &nbsp;<strong style="color:#C9A84C">${admFmt(Math.max(0,totalAffOwed))}</strong>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════ -->
-  <!-- SECTION 2 — PAY SUPPLIER                            -->
-  <!-- ════════════════════════════════════════════════════ -->
-  <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Step 1 — Pay Supplier First</div>
-  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Wait 24h after delivery before paying — return window may still be open.</div>
-  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
-    ${supRows.length?`
-    <div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Supplier</th><th>Orders</th><th>Cost Accrued</th><th>Paid</th><th style="color:#e74c3c">Still Owe</th><th>Action</th></tr></thead>
-      <tbody>${supRows.map(r=>{
-        const owed=r.totalCost-r.totalPaid;
-        return`<tr>
-          <td class="adm-white" style="font-weight:700">${r.name}</td>
-          <td style="color:rgba(255,255,255,0.35)">${r.orders}</td>
-          <td style="color:#e67e22">${admFmt(r.totalCost)}</td>
-          <td class="${r.totalPaid>0?'adm-green':''}">${r.totalPaid>0?admFmt(r.totalPaid):'<span style="color:rgba(255,255,255,0.1)">—</span>'}</td>
-          <td style="font-size:15px;font-weight:800;color:${owed>0?'#e74c3c':'#27ae60'}">${owed>0?admFmt(owed):'✓ Paid'}</td>
-          <td>${owed>0?`<button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admOpenSupPayModal('${r.name.replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
-      💡 Pay weekly in batches every Friday. Note the order range (e.g. BT-045 to BT-052) in the note field.
-    </div>`:'<div class="adm-empty">No confirmed orders yet — supplier cost will appear here once orders are confirmed</div>'}
-  </div>
-
-  <!-- Supplier payment form (inline) -->
-  <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
-    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Supplier Payment</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 3500"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
-        <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. BT-045 to BT-052 batch"/></div>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Save Payment</button>
-      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finSupPayModal').style.display='none'">Cancel</button>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════════════ -->
-  <!-- SECTION 3 — PAY AFFILIATES                          -->
-  <!-- ════════════════════════════════════════════════════ -->
-  <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Step 2 — Pay Affiliates (monthly, after supplier)</div>
-  <div style="margin-bottom:12px;font-size:9px;font-weight:600;letter-spacing:1px;color:#C9A84C;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;">⚠ Only pay affiliate commission after 24h return window has passed on all their orders.</div>
-  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
-    ${affRows.length?`
-    <div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Affiliate</th><th>Orders</th><th>Earned</th><th>Paid Out</th><th style="color:#C9A84C">Owed</th><th>Action</th></tr></thead>
-      <tbody>${affRows.map(a=>{
-        const owed=a.earned-a.paid;
-        return`<tr>
-          <td><div class="adm-id">${a.code}</div><div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px">${a.name||''}</div>${a.payment_details?`<div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:1px">${a.payment_method||''}: ${a.payment_details}</div>`:''}
-          </td>
-          <td style="color:rgba(255,255,255,0.35)">${a.orders}</td>
-          <td class="adm-gold">${admFmt(a.earned)}</td>
-          <td class="${a.paid>0?'adm-green':''}">${a.paid>0?admFmt(a.paid):'<span style="color:rgba(255,255,255,0.1)">—</span>'}</td>
-          <td style="font-size:15px;font-weight:800;color:${owed>0?'#C9A84C':'#27ae60'}">${owed>0?admFmt(owed):'✓ Settled'}</td>
-          <td>${owed>0?`<button class="adm-tx-btn" onclick="admOpenPayoutModal('${a.code}','${(a.name||a.code).replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
-      💡 Only pay for orders in Delivered status. Do this at month-end after clearing the supplier first.
-    </div>`:'<div class="adm-empty">No affiliate commissions yet</div>'}
-  </div>
-
-  <!-- Affiliate payout form (inline) -->
-  <div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
-    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
-    <input type="hidden" id="finPayoutCode"/>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
-        <select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="adm-tx-btn" onclick="admSavePayout()">✓ Save Payout</button>
-      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
     </div>
   </div>
 

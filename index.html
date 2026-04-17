@@ -8,16 +8,7 @@
 <link rel="icon" type="image/png" href="/favicon.png"/>
    <style>
 :root{--burg:#6D001A;--burg2:#850020;--w:#FFFFFF;--w2:#F7F5F2;--w3:#EEEBE6;--black:#000000;--black2:#0d0d0d;--black3:#1a1a1a;--g2:#999;}
-/* ── Offer announcement bar ── */
-.offer-topbar{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a,#C9A84C);color:#000;text-align:center;padding:10px 16px;font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;position:relative;z-index:101;}
-.offer-topbar.on{display:block;}
-.offer-topbar-inner{display:flex;align-items:center;justify-content:center;gap:12px;}
-.offer-topbar-icon{font-size:16px;}
-.offer-topbar-txt{letter-spacing:4px;}
-/* ── Offer pill in header ── */
-.offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite;}
-.offer-pill.on{display:flex;align-items:center;gap:6px;}
-@keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.04);}}
+
 /* ── Search bar ── */
 .srch-wrap{position:relative;display:flex;align-items:center;}
 .srch-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--w);padding:8px 38px 8px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;outline:none;width:0;opacity:0;transition:width 0.3s ease,opacity 0.3s ease;cursor:pointer;}
@@ -580,14 +571,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 </style>
 </head>
 <body>
-<!-- Offer Announcement Bar -->
-<div class="offer-topbar" id="offerTopbar">
-  <div class="offer-topbar-inner">
-    <span class="offer-topbar-icon">🔥</span>
-    <span class="offer-topbar-txt" id="offerTopbarTxt"></span>
-    <span class="offer-topbar-icon">🔥</span>
-  </div>
-</div>
+
 <header>
   <div class="logo">BUET<div class="logo-sep"></div>TEES</div>
   <nav class="nav-mid">
@@ -598,7 +582,6 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <span class="nav-a affiliate-nav" onclick="openAffModal()">Affiliate</span>
   </nav>
   <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-    <span class="offer-pill" id="offerHeaderPill">🏷 <span id="offerHeaderPillTxt"></span></span>
     <div class="srch-wrap" id="srchWrap">
       <input class="srch-input" id="srchInput" type="text" placeholder="Search tees..." oninput="srchQuery(this.value)" onblur="setTimeout(()=>srchClose(),200)"/>
       <button class="srch-icon" onclick="srchToggle()" title="Search">

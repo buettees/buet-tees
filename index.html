@@ -3191,13 +3191,12 @@ const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.
       supBlockReasons[sup]='Return window open on '+o.orderId;
     }
   });
-  // Supplier fault orders — these are NOT paid, shown as penalty rows
+  // Supplier fault orders — deduct from cost accrued (not from paid), so owed reduces correctly
   const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
   faultOrders.forEach(o=>{
     const sup=o.supplier||'T-Shirt Hub';
     if(!supByName[sup])supByName[sup]={name:sup,orders:0,totalCost:0,totalPaid:0};
-    // Fault orders reduce what's owed (supplier owes us back)
-    supByName[sup].totalPaid+=o.supplierCost; // counts as "paid" via penalty, so owed drops
+    supByName[sup].totalCost-=o.supplierCost; // penalty reduces what we owe, not what we paid
   });
 
   // All payments flat list, newest last

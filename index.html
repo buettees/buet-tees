@@ -379,7 +379,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .cobody{padding:22px 22px 44px;}
 .cosec{font-size:12px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin:24px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--w3);}
 .cosec:first-child{margin-top:0;}
-.sitem{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--w3);gap:12px;}
+.sitem{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--w3);gap:12px;}
 .sname{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--black);}
 .svar{font-size:12px;color:var(--g2);margin-top:2px;}
 .sprice{font-size:15px;font-weight:800;color:var(--black);white-space:nowrap;}
@@ -1549,7 +1549,7 @@ function openCO(){
             <span style="font-size:13px;font-weight:700;min-width:16px;text-align:center;">${i.qty}</span>
             <button onclick="coChQty(${cart.indexOf(i)},1)" style="width:26px;height:26px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">+</button>
           </div>
-          <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border:1px solid #c0392b;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
+          <button onclick="coRmItem(${cart.indexOf(i)})"style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border:1px solid #c0392b;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
         </div>
       </div>`;
     }
@@ -1564,7 +1564,7 @@ function openCO(){
           <span style="font-size:13px;font-weight:700;min-width:16px;text-align:center;">${i.qty}</span>
           <button onclick="coChQty(${cart.indexOf(i)},1)" style="width:26px;height:26px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">+</button>
         </div>
-        <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
+        <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border:1px solid #c0392b;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
       </div>
     </div>`;
   }).join("");

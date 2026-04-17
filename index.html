@@ -1697,7 +1697,8 @@ function updateCMSizeColor() {
   const refName = cmSelFront || (prods.length ? prods[0].name : null);
   const refProd = prods.find(p => p.name === refName) || prods[0];
   const cat = refProd ? (refProd.categories.find(c => c.category === cmShirtType) || refProd.categories[0]) : null;
-  const sizes  = (cat && cat.sizes  && cat.sizes.length)  ? cat.sizes  : ['S', 'M', 'L', 'XL', 'XXL'];
+  const supSizeKeys = Object.keys((cat && cat.supplierSizes) || {}).sort((a,b)=>{const o=SIZE_ORDER.indexOf(a),p=SIZE_ORDER.indexOf(b);return(o<0?99:o)-(p<0?99:p);});
+  const sizes  = supSizeKeys.length ? supSizeKeys : ((cat && cat.sizes && cat.sizes.length) ? cat.sizes : ['S', 'M', 'L', 'XL', 'XXL']);
   const colors = (cat && cat.colors && cat.colors.length) ? cat.colors : ['Black', 'White'];
   const chart  = (cat && cat.sizeChart) ? cat.sizeChart : "";
 

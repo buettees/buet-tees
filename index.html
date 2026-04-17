@@ -62,7 +62,10 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 .col-eyebrow{font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
 .col-eyebrow::before{content:'';width:20px;height:1px;background:var(--burg);}
 .col-title{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--black);line-height:1;}
-.col-count{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--g2);padding-bottom:4px;}
+.cat-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px;}
+.cat-pill{padding:7px 18px;border:1.5px solid var(--w3);border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;background:var(--w);color:var(--g2);transition:all 0.15s;}
+.cat-pill:hover{border-color:var(--black);color:var(--black);}
+.cat-pill.on{background:var(--black);color:var(--w);border-color:var(--black);}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(256px,1fr));gap:40px;}
 .sk{background:var(--w2);border-radius:16px;}
 .sk-img{aspect-ratio:1;background:linear-gradient(90deg,var(--w2) 25%,var(--w3) 50%,var(--w2) 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:16px 16px 0 0;}
@@ -608,10 +611,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 <div class="collection">
   <div class="col-hd">
-    <div><div class="col-eyebrow">FEATURED</div>
-<div class="col-title">BEST SELLERS</div></div>
+    <div><div class="col-eyebrow">Current Drop</div><div class="col-title">All Pieces</div></div>
     <div class="col-count" id="pcount"></div>
   </div>
+  <div class="cat-filters" id="cat-filters-home"></div>
   <div class="pgrid" id="pgrid">
     <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
     <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
@@ -699,11 +702,12 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 
 <!-- ═══════════════════════════════ PRODUCTS PAGE ═══════════════════════════════ -->
 <div id="page-products" class="page">
-  <div class="prodpage">
+<div class="prodpage">
     <div class="col-hd">
       <div><div class="col-eyebrow">Full Catalog</div><div class="col-title">All Products</div></div>
       <div class="col-count" id="pcount-all"></div>
     </div>
+    <div class="cat-filters" id="cat-filters-all"></div>
     <div class="pgrid" id="pgrid-all">
       <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
       <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
@@ -1191,27 +1195,70 @@ function makeCard(p){
   </div>`;
 }
 
+// ── Category filter state ──────────────────────────────────
+let homeActiveCat='All';
+let allActiveCat='All';
+
+function getAvailableCategories(){
+  const cats=new Set();
+  prods.forEach(p=>(p.categories||[]).forEach(c=>{if(c.category)cats.add(c.category);}));
+  return['All',...cats];
+}
+
+function renderCatFilters(containerId, activeCat, onSelect){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  const cats=getAvailableCategories();
+  if(cats.length<=2){el.innerHTML='';return;} // only "All" + 1 cat → no need for filter
+  el.innerHTML=cats.map(c=>`<button class="cat-pill${activeCat===c?' on':''}" onclick="(${onSelect.toString()})('${c}')">${c}</button>`).join('');
+}
+
+function filterProds(list, cat){
+  if(cat==='All')return list;
+  return list.filter(p=>(p.categories||[]).some(c=>c.category===cat));
+}
+
 function render(){
-  // Home page — best sellers first (badge="Hot" prioritised), then cap at 8
+  const cats=getAvailableCategories();
+
+  // ── Home page ──────────────────────────────────────────
   const g=document.getElementById("pgrid");
   if(!prods.length){g.innerHTML='<div class="lerr">No products yet.</div>';return;}
-  const sorted=[...prods].sort((a,b)=>{
-    const aHot=(a.categories&&a.categories[0]&&a.categories[0].badge||'').toLowerCase()==='hot'?0:1;
-    const bHot=(b.categories&&b.categories[0]&&b.categories[0].badge||'').toLowerCase()==='hot'?0:1;
-    return aHot-bHot;
-  });
-  const top12=sorted.slice(0,8);
-  g.innerHTML=top12.map(makeCard).join("");
-  // Update home count label
-  document.getElementById("pcount").innerHTML=top12.length+" piece"+(top12.length!==1?"s":"")+(prods.length>12?" · <span style='cursor:pointer;color:var(--burg);text-decoration:underline' onclick=\"showPage('products')\">View all "+prods.length+"</span>":"");
 
-  // Products page — all
+  // Render filter pills for home
+  renderCatFilters('cat-filters-home', homeActiveCat, function(cat){
+    homeActiveCat=cat;
+    document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent===cat));
+    const filtered=filterProds(prods,cat).slice(0,12);
+    document.getElementById("pgrid").innerHTML=filtered.map(makeCard).join("");
+    updateHomeCount(filtered.length);
+  });
+
+  const homeFiltered=filterProds(prods,homeActiveCat).slice(0,12);
+  g.innerHTML=homeFiltered.map(makeCard).join("");
+  updateHomeCount(homeFiltered.length);
+
+  // ── Products page ──────────────────────────────────────
   const g2=document.getElementById("pgrid-all");
   if(g2){
-    g2.innerHTML=prods.map(makeCard).join("");
+    renderCatFilters('cat-filters-all', allActiveCat, function(cat){
+      allActiveCat=cat;
+      document.querySelectorAll('#cat-filters-all .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent===cat));
+      const filtered=filterProds(prods,cat);
+      document.getElementById("pgrid-all").innerHTML=filtered.map(makeCard).join("");
+      const pc2=document.getElementById("pcount-all");
+      if(pc2)pc2.textContent=filtered.length+" piece"+(filtered.length!==1?"s":"");
+    });
+
+    const allFiltered=filterProds(prods,allActiveCat);
+    g2.innerHTML=allFiltered.map(makeCard).join("");
     const pc2=document.getElementById("pcount-all");
-    if(pc2)pc2.textContent=prods.length+" piece"+(prods.length!==1?"s":"");
+    if(pc2)pc2.textContent=allFiltered.length+" piece"+(allFiltered.length!==1?"s":"");
   }
+}
+
+function updateHomeCount(count){
+  document.getElementById("pcount").innerHTML=count+" piece"+(count!==1?"s":"")+(prods.length>count&&homeActiveCat==='All'?" · <span style='cursor:pointer;color:var(--burg);text-decoration:underline' onclick=\"showPage('products')\">View all "+prods.length+"</span>":"");
 }
 
 function showPage(name){

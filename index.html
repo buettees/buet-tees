@@ -2092,10 +2092,30 @@ function admRenderTransactions(){
       <div class="adm-tx-title">Add Transaction</div>
       <div class="adm-tx-grid">
         <div class="adm-tx-field"><label>Date</label><input class="adm-fi" id="txDate" type="date"/></div>
-        <div class="adm-tx-field"><label>Type</label><select class="adm-fi" id="txType"><option>Expense</option><option>Income</option><option>Capital In</option><option>Capital Out</option></select></div>
+       <div class="adm-tx-field"><label>Category</label><select class="adm-fi" id="txCategory" onchange="admTxAutoFillType()">
+          <option value="">— select —</option>
+          <optgroup label="Money In">
+            <option value="Customer Payment">Customer Payment</option>
+            <option value="Owner Invests">Owner Invests</option>
+            <option value="Foreign Invests">Foreign Invests</option>
+            <option value="Supplier Refunds">Supplier Refunds</option>
+            <option value="Courier Refunds">Courier Refunds</option>
+            <option value="Other Income">Other Income</option>
+          </optgroup>
+          <optgroup label="Money Out">
+            <option value="Supplier Payment">Supplier Payment</option>
+            <option value="Affiliate Payment">Affiliate Payment</option>
+            <option value="Courier Payment">Courier Payment</option>
+            <option value="Operational Payment">Operational Payment</option>
+            <option value="Owner Withdraws">Owner Withdraws</option>
+            <option value="Foreign Withdraws">Foreign Withdraws</option>
+            <option value="Other Expense">Other Expense</option>
+          </optgroup>
+        </select></div>
+        <div class="adm-tx-field"><label>Type</label><input class="adm-fi" id="txType" readonly placeholder="Auto-filled" style="color:#C9A84C;font-weight:700"/></div>
         <div class="adm-tx-field"><label>Owner</label><select class="adm-fi" id="txOwner"><option value="">BUET Tees</option>${(ADM_DATA.owners||[]).map(o=>`<option value="${o.name}">${o.name}</option>`).join('')}</select></div>
         <div class="adm-tx-field"><label>Amount (BDT)</label><input class="adm-fi" id="txAmount" placeholder="500" type="number"/></div>
-       <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
+        <div class="adm-tx-field"><label>Description</label><input class="adm-fi" id="txDesc" placeholder="e.g. Facebook Ads"/></div>
       </div>
       <button class="adm-tx-btn" onclick="admAddTx()">+ Add Transaction</button>
     </div>
@@ -2116,16 +2136,24 @@ function admRenderTransactions(){
       </tbody></table></div></div>`;
   document.getElementById("txDate").value=new Date().toISOString().split("T")[0];
 }
-
+function admTxAutoFillType(){
+  const moneyIn=['Customer Payment','Owner Invests','Foreign Invests','Supplier Refunds','Courier Refunds','Other Income'];
+  const cat=document.getElementById('txCategory').value;
+  const typeEl=document.getElementById('txType');
+  if(!cat){typeEl.value='';return;}
+  typeEl.value=moneyIn.includes(cat)?'Money In':'Money Out';
+  typeEl.style.color=moneyIn.includes(cat)?'#27ae60':'#e74c3c';
+}
 async function admAddTx(){
   const date=document.getElementById("txDate").value;
-  const type=document.getElementById("txType").value;
+  const category=document.getElementById("txCategory").value;
+   const type=document.getElementById("txType").value;
   const owner=document.getElementById("txOwner").value.trim();
   const amount=document.getElementById("txAmount").value;
   const desc=document.getElementById("txDesc").value.trim();
   if(!date||!amount||!desc){toast("Please fill Date, Amount and Description");return;}
   try{
-    const {error}=await sbAdmin.from('transactions').insert({date,type,owner:owner||null,amount:parseFloat(amount),description:desc,category:null});
+    const {error}=await sbAdmin.from('transactions').insert({date,type,owner:owner||null,amount:parseFloat(amount),description:desc,category:category||null});
     if(error)throw error;
     document.getElementById("txAmount").value="";document.getElementById("txDesc").value="";
     toast("Transaction added ✓");admLoadData();

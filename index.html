@@ -3166,14 +3166,6 @@ function admRenderCosts(){
     if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0};
     supByName[n].totalPaid+=parseFloat(p.amount||0);
   });
- // Supplier fault orders — deduct from cost accrued BEFORE computing supPayRows
-  const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
-  faultOrders.forEach(o=>{
-    const sup=o.supplier||'T-Shirt Hub';
-    if(!supByName[sup])supByName[sup]={name:sup,orders:0,totalCost:0,totalPaid:0};
-    supByName[sup].totalCost-=o.supplierCost;
-  });
-
   const supPayRows=Object.values(supByName);
   const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
 

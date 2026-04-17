@@ -1534,13 +1534,23 @@ function openCO(){
   // Build order summary — handle both item types
   document.getElementById("coitems").innerHTML=cart.map(i=>{
     if(i.type==='bothsides'){
-      return`<div class="sitem">
-        <div>
-          <div class="sname">Both Sides — ${i.shirtType}</div>
-          <div class="svar">Front: ${i.frontName} · Back: ${i.backName}</div>
-          <div class="svar">${[i.size,i.color].filter(Boolean).join(" · ")} · +৳100 × ${i.qty}</div>
+      return`<div class="sitem" style="flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;">
+          <div>
+            <div class="sname">Both Sides — ${i.shirtType}</div>
+            <div class="svar">Front: ${i.frontName} · Back: ${i.backName}</div>
+            <div class="svar">${[i.size,i.color].filter(Boolean).join(" · ")} · +৳100</div>
+          </div>
+          <div class="sprice">${C} ${(i.price*i.qty).toLocaleString()}</div>
         </div>
-        <div class="sprice">${C} ${(i.price*i.qty).toLocaleString()}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="coChQty(${cart.indexOf(i)},-1)" style="width:26px;height:26px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">−</button>
+            <span style="font-size:13px;font-weight:700;min-width:16px;text-align:center;">${i.qty}</span>
+            <button onclick="coChQty(${cart.indexOf(i)},1)" style="width:26px;height:26px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">+</button>
+          </div>
+          <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border:1px solid #c0392b;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
+        </div>
       </div>`;
     }
     return`<div class="sitem" style="flex-direction:column;gap:6px;">
@@ -1554,7 +1564,7 @@ function openCO(){
           <span style="font-size:13px;font-weight:700;min-width:16px;text-align:center;">${i.qty}</span>
           <button onclick="coChQty(${cart.indexOf(i)},1)" style="width:26px;height:26px;border:1px solid #ddd;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">+</button>
         </div>
-        <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border:none;cursor:pointer;text-transform:uppercase;">Remove</button>
+        <button onclick="coRmItem(${cart.indexOf(i)})" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#c0392b;background:none;border-radius:4px;padding:4px 10px;cursor:pointer;text-transform:uppercase;">Remove</button>
       </div>
     </div>`;
   }).join("");

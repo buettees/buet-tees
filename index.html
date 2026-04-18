@@ -3613,25 +3613,119 @@ function admRenderCosts(){
   <!-- ── Payment history ── -->
   <div class="adm-sec" style="margin-top:24px;margin-bottom:10px;">Payment History</div>
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:12px;">
-    ${allHistoryRows.length?`
-    <div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Method</th><th>Note</th><th style="min-width:90px"></th></tr></thead>
-      <tbody>${allHistoryRows.map((p,pi)=>p._isFault?`<tr style="background:rgba(231,76,60,0.05)">
-        <td style="color:rgba(255,255,255,0.3)">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
-        <td style="color:#e74c3c;font-weight:600">⚠ ${p.supplier}</td>
-        <td style="color:#e74c3c;font-weight:700">-${admFmt(p.amount)}</td>
-        <td style="color:rgba(255,255,255,0.2);font-size:9px">PENALTY</td>
-        <td style="color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</td>
-        <td><span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</span></td>
-      </tr>`:`<tr>
-        <td style="color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
-        <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
-        <td class="adm-green">${admFmt(parseFloat(p.amount||0))}</td>
-        <td style="color:rgba(255,255,255,0.3)">${p.method||'—'}</td>
-        <td style="color:rgba(255,255,255,0.3)">${p.note||'—'}</td>
-        <td><button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button></td>
-      </tr>`).join('')}</tbody>
-    </table></div>`:'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
+    ${allHistoryRows.length?(()=>{
+      // Build FIFO breakdown per payment: for each payment, which orders did it cover and how much?
+      // We simulate the same FIFO logic but track which payment covers which orders
+      function buildPaymentBreakdown(supName, paymentId){
+        const supOrders=(payableOrdersBySup[supName]||[]).slice()
+          .sort((a,b)=>new Date(a.deliveredAt||a.confirmedAt)-new Date(b.deliveredAt||b.confirmedAt));
+        const supPays=supplierPayments
+          .filter(p=>(p.supplier||'T-Shirt Hub')===supName)
+          .slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
+        // Run FIFO up to and including this payment, tracking per-payment coverage
+        const rem=supOrders.map(o=>({
+          orderId:o.orderId,
+          items:fmtOrderItems(o),
+          deliveredAt:o.deliveredAt,
+          cost:o.supplierCost>0?o.supplierCost:0,
+          remaining:o.supplierCost>0?o.supplierCost:0,
+          unconfigured:!(o.supplierCost>0)
+        }));
+        const coverageByPay={};
+        supPays.forEach(pay=>{
+          const payTs=new Date(pay.paid_at).getTime();
+          let budget=parseFloat(pay.amount||0);
+          coverageByPay[pay.id]=[];
+          for(const r of rem){
+            if(budget<=0)break;
+            if(r.unconfigured)continue;
+            const delivTs=r.deliveredAt?new Date(r.deliveredAt).getTime():0;
+            if(delivTs&&delivTs>payTs)continue;
+            const take=Math.min(r.remaining,budget);
+            if(take>0.01){
+              coverageByPay[pay.id].push({orderId:r.orderId,items:r.items,amount:take,full:take>=r.remaining-0.01});
+              r.remaining-=take;
+              budget-=take;
+            }
+          }
+          // Track any leftover (overpayment / advance)
+          if(budget>0.01) coverageByPay[pay.id].push({orderId:null,items:'Advance / overpayment',amount:budget,full:false,isAdvance:true});
+        });
+        return coverageByPay[paymentId]||[];
+      }
+
+      // Pre-compute breakdowns for all payment rows
+      const breakdownCache={};
+      allHistoryRows.forEach((p,pi)=>{
+        if(!p._isFault&&p.id){
+          const supName=p.supplier||'T-Shirt Hub';
+          breakdownCache[p.id]=buildPaymentBreakdown(supName,p.id);
+        }
+      });
+
+      return `<div class="adm-tbl-scroll"><table class="adm-tbl">
+        <thead><tr><th></th><th>Date</th><th>Supplier</th><th>Amount</th><th>Method</th><th>Note</th><th style="min-width:90px"></th></tr></thead>
+        <tbody>${allHistoryRows.map((p,pi)=>{
+          if(p._isFault){
+            return `<tr style="background:rgba(231,76,60,0.05)">
+              <td></td>
+              <td style="color:rgba(255,255,255,0.3)">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+              <td style="color:#e74c3c;font-weight:600">⚠ ${p.supplier}</td>
+              <td style="color:#e74c3c;font-weight:700">-${admFmt(p.amount)}</td>
+              <td style="color:rgba(255,255,255,0.2);font-size:9px">PENALTY</td>
+              <td style="color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</td>
+              <td><span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</span></td>
+            </tr>`;
+          }
+          const breakdown=breakdownCache[p.id]||[];
+          const detailId='sup-pay-detail-'+pi;
+          const hasBreakdown=breakdown.length>0;
+          const breakdownRows=breakdown.map(b=>
+            `<tr style="background:rgba(255,255,255,0.015);border-bottom:1px solid rgba(255,255,255,0.03)">
+              <td colspan="2" style="padding:7px 14px 7px 32px">
+                ${b.isAdvance
+                  ? `<span style="font-size:10px;color:#C9A84C;font-style:italic">${b.items}</span>`
+                  : `<span style="font-size:10px;font-weight:800;color:#a0253d;letter-spacing:0.5px">${b.orderId}</span>
+                     <span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:8px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom">${b.items}</span>`
+                }
+              </td>
+              <td colspan="2" style="padding:7px 14px;font-size:10px;color:rgba(255,255,255,0.3)">
+                ${b.full
+                  ? `<span style="color:#2ecc71;font-size:9px;font-weight:700;letter-spacing:1px">FULLY COVERED</span>`
+                  : `<span style="color:#C9A84C;font-size:9px;font-weight:700;letter-spacing:1px">PARTIAL</span>`
+                }
+              </td>
+              <td colspan="3" style="padding:7px 14px;text-align:right;font-size:11px;font-weight:800;color:${b.isAdvance?'#C9A84C':'#2ecc71'}">৳${Math.round(b.amount)}</td>
+            </tr>`
+          ).join('');
+          return `<tr style="cursor:${hasBreakdown?'pointer':'default'}" onclick="${hasBreakdown?`admToggleSupPayDetail('${detailId}')`:''}" title="${hasBreakdown?'Click to see order breakdown':''}">
+            <td style="width:28px;text-align:center;color:rgba(39,174,96,0.5);font-size:10px;font-weight:700">${hasBreakdown?'▶':''}</td>
+            <td style="color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
+            <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
+            <td class="adm-green">${admFmt(parseFloat(p.amount||0))}</td>
+            <td style="color:rgba(255,255,255,0.3)">${p.method||'—'}</td>
+            <td style="color:rgba(255,255,255,0.3)">${p.note||'—'}</td>
+            <td onclick="event.stopPropagation()"><button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button></td>
+          </tr>
+          ${hasBreakdown?`<tr id="${detailId}" style="display:none">
+            <td colspan="7" style="padding:0;background:rgba(39,174,96,0.03);border-bottom:1px solid rgba(39,174,96,0.08)">
+              <table class="adm-tbl" style="margin:0">
+                <thead><tr>
+                  <th colspan="2" style="padding:7px 14px 7px 32px;color:rgba(255,255,255,0.15)">Order Covered</th>
+                  <th colspan="2" style="color:rgba(255,255,255,0.15)">Coverage</th>
+                  <th colspan="3" style="text-align:right;color:rgba(255,255,255,0.15)">Applied</th>
+                </tr></thead>
+                <tbody>${breakdownRows}</tbody>
+                <tfoot><tr style="background:rgba(39,174,96,0.04);border-top:1px solid rgba(39,174,96,0.15)">
+                  <td colspan="4" style="padding:8px 14px 8px 32px;font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.2);text-transform:uppercase">${breakdown.filter(b=>!b.isAdvance).length} order${breakdown.filter(b=>!b.isAdvance).length!==1?'s':''} covered by this payment</td>
+                  <td colspan="3" style="padding:8px 14px;text-align:right;font-size:12px;font-weight:900;color:#2ecc71">৳${Math.round(parseFloat(p.amount||0))}</td>
+                </tr></tfoot>
+              </table>
+            </td>
+          </tr>`:''}`;
+        }).join('')}</tbody>
+      </table></div>`;
+    })():'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
   </div>
 
   <!-- Supplier payment form (inline) -->

@@ -1924,14 +1924,15 @@ async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
     // Fetch all data in parallel
-    const [ordRes,affRes,txRes,settRes,supRes,payoutRes,supPayRes]=await Promise.all([
+    const [ordRes,affRes,txRes,settRes,supRes,payoutRes,supPayRes,prodCatRes]=await Promise.all([
       sbAdmin.from('orders').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
       sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
       sbAdmin.from('settings').select('*'),
       sbAdmin.from('suppliers').select('*').order('created_at',{ascending:true}),
       sbAdmin.from('affiliate_payouts').select('*').order('paid_at',{ascending:false}),
-      sbAdmin.from('supplier_payments').select('*').order('paid_at',{ascending:false})
+      sbAdmin.from('supplier_payments').select('*').order('paid_at',{ascending:false}),
+      sbAdmin.from('product_categories').select('product_id,category,design_w,design_h')
     ]);
     const orders=ordRes.data||[];
     const affiliates=affRes.data||[];
@@ -1940,8 +1941,18 @@ async function admLoadData(){
     const cfg={};settingsArr.forEach(s=>cfg[s.key]=s.value);
     const suppliersTableData=supRes.data||[];
     const supplierPaymentsData=supPayRes.data||[];
+    const prodCatData=prodCatRes.data||[];
+    // Build map: "product_id|Category" -> {design_w, design_h}
+    // Keyed by product_id (e.g. "BT0025") AND by display name if available
+    const designSizeMap={};
+    prodCatData.forEach(pc=>{
+      if(pc.design_w||pc.design_h){
+        const ds={w:parseFloat(pc.design_w||0),h:parseFloat(pc.design_h||0)};
+        designSizeMap[pc.product_id+'|'+pc.category]=ds;
+      }
+    });
 
-    // Cost constants
+    // Cost constants (legacy fallback — supplier config takes priority)
     const costRegular=parseFloat(cfg.cost_blank_regular||150);
     const costDrop=parseFloat(cfg.cost_blank_drop||170);
     const costHoodie=parseFloat(cfg.cost_blank_hoodie||400);
@@ -1949,18 +1960,78 @@ async function admLoadData(){
     const ashikShare=parseFloat(cfg.owner_ashik_share||50);
     const kawsarShare=parseFloat(cfg.owner_kawsar_share||50);
 
+    // Build supplier cost config map: supplierName -> { Regular/Drop/Hoodie -> costConfig }
+    const supplierCostMap={};
+    suppliersTableData.forEach(s=>{
+      const cats=s.categories||{};
+      supplierCostMap[s.name]={};
+      ['Regular','Drop','Hoodie'].forEach(cat=>{
+        const cd=cats[cat]||{};
+        if(cd.active!==false){
+          supplierCostMap[s.name][cat]={
+            blank:parseFloat(cd.blank_cost||0),
+            printRate:parseFloat(cd.print_rate||0),   // ৳ per sq inch
+            heatPress:cd.heat_press!==false,           // true/false
+            heatPressCost:parseFloat(cd.heat_press_cost||0), // per side
+            poly:cd.poly!==false,
+            polyCost:parseFloat(cd.poly_cost||0)
+          };
+        }
+      });
+    });
+
+    // Helper: compute supplier cost for one order using supplier config + design size
+    function calcSupplierCost(supplierName, category, items_json){
+      const catMap=supplierCostMap[supplierName];
+      const cfg2=catMap&&catMap[category];
+      if(!cfg2||!cfg2.blank){
+        // Fallback to legacy settings-based cost
+        const cat2=(category||'').toLowerCase();
+        if(cat2.includes('hoodie'))return costHoodie+costPolybag;
+        if(cat2.includes('drop'))return costDrop+costPolybag;
+        return costRegular+costPolybag;
+      }
+      let cost=cfg2.blank;
+      // Print cost: sum design sizes from items_json
+      if(cfg2.printRate>0&&items_json&&items_json.length){
+        items_json.forEach(item=>{
+          // item.id = product_id (e.g. "BT0025"), item.category = "Regular"/"Drop Shoulder"/"Hoodie"
+          const key=(item.id||item.product_id||'')+'|'+(item.category||category);
+          const ds=designSizeMap[key]||{};
+          const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
+          if(sqIn>0) cost+=sqIn*cfg2.printRate*(item.qty||1);
+          // Heat press cost per side per item
+          if(cfg2.heatPress&&cfg2.heatPressCost>0){
+            const sides=item.type==='bothsides'?2:1;
+            cost+=cfg2.heatPressCost*sides*(item.qty||1);
+          }
+        });
+      } else {
+        // No items_json — heat press fallback: 1 item, 1 side
+        if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost;
+      }
+      if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost;
+      return cost;
+    }
+
     // Compute per-order profit
     const confirmedStatuses=['Confirmed','Dispatched','Delivered'];
     const affiliatePayouts=payoutRes.data||[];
     const enrichedOrders=orders.map(o=>{
       const isConfirmed=confirmedStatuses.includes(o.status);
-      // Determine supplier cost from items string
+      // Determine supplier cost — use stored value if set, else compute from config
       let supplierCost=parseFloat(o.supplier_cost||0);
       if(!supplierCost){
-        const itemsStr=(o.items||'').toLowerCase();
-        if(itemsStr.includes('hoodie'))supplierCost=costHoodie+costPolybag;
-        else if(itemsStr.includes('drop'))supplierCost=costDrop+costPolybag;
-        else supplierCost=costRegular+costPolybag;
+        const items_json=o.items_json||[];
+        // Detect category from items_json or legacy items string
+        let detectedCat='Regular';
+        if(items_json.length) detectedCat=items_json[0].category||'Regular';
+        else{
+          const s=(o.items||'').toLowerCase();
+          if(s.includes('hoodie'))detectedCat='Hoodie';
+          else if(s.includes('drop'))detectedCat='Drop Shoulder';
+        }
+        supplierCost=calcSupplierCost(o.supplier||'T-Shirt Hub',detectedCat,items_json);
       }
       // Affiliate commission
       let affComm=0;
@@ -3048,6 +3119,22 @@ function admRenderCosts(){
       const colorsStr=(cd.colors||[]).join(', ')||'—';
       const sizeKeys=sortSizes(Object.keys(cd.sizes||{}));
       const chartRows=sizeKeys.map(sz=>`<tr><td style="padding:2px 6px">${sz}</td><td style="text-align:center;padding:2px 6px">${(cd.sizes[sz]||{}).chest||'—'}</td><td style="text-align:center;padding:2px 6px">${(cd.sizes[sz]||{}).length||'—'}</td></tr>`).join('');
+      // Cost summary
+      const blankCost=parseFloat(cd.blank_cost||0);
+      const printRate=parseFloat(cd.print_rate||0);
+      const heatPress=cd.heat_press!==false&&(cd.heat_press||false);
+      const heatCost=parseFloat(cd.heat_press_cost||0);
+      const poly=cd.poly!==false&&(cd.poly||false);
+      const polyCost=parseFloat(cd.poly_cost||0);
+      const hasCostConfig=blankCost>0;
+      const costHtml=hasCostConfig?`
+        <div style="margin-top:6px;padding:6px 8px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:6px;font-size:10px;color:rgba(255,255,255,0.5)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(201,168,76,0.7);margin-bottom:4px;text-transform:uppercase">Cost Config</div>
+          <div>Blank: <span style="color:#C9A84C;font-weight:700">৳${blankCost}</span></div>
+          ${printRate>0?`<div>Print: <span style="color:#C9A84C;font-weight:700">৳${printRate}/sq in</span> (design size × rate)</div>`:'<div style="color:rgba(255,255,255,0.25)">Print: not configured</div>'}
+          ${heatPress?`<div>Heat press: <span style="color:#C9A84C;font-weight:700">৳${heatCost}/side</span></div>`:'<div style="color:rgba(255,255,255,0.25)">Heat press: none</div>'}
+          ${poly?`<div>Polybag: <span style="color:#C9A84C;font-weight:700">৳${polyCost}/item</span></div>`:'<div style="color:rgba(255,255,255,0.25)">Polybag: none</div>'}
+        </div>`:'<div style="margin-top:4px;font-size:10px;color:rgba(255,100,100,0.5);font-style:italic">⚠ No cost config — edit to set</div>';
       return`<div style="margin-top:8px;opacity:${isActive?1:0.4}">
         <div style="display:flex;align-items:center;gap:6px">
           <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px">${cat}</div>
@@ -3056,7 +3143,8 @@ function admRenderCosts(){
         ${isActive?`<div style="font-size:10px;color:rgba(255,255,255,0.45);margin:2px 0">Colors: ${colorsStr}</div>
         ${sizeKeys.length?`<table style="font-size:10px;color:rgba(255,255,255,0.5);border-collapse:collapse;width:100%;margin-top:2px">
           <tr style="color:rgba(255,255,255,0.3)"><th style="text-align:left;padding:2px 6px">Size</th><th style="padding:2px 6px">Chest</th><th style="padding:2px 6px">Length</th></tr>
-          ${chartRows}</table>`:'<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">No sizes set</div>'}`:
+          ${chartRows}</table>`:'<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">No sizes set</div>'}
+        ${costHtml}`:
         '<div style="font-size:10px;color:rgba(255,255,255,0.25);font-style:italic">Not offered by this supplier</div>'}
       </div>`;
     }).join('');
@@ -3140,6 +3228,44 @@ function admRenderCosts(){
             </div>
             <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:6px">Size Chart (Chest &amp; Length in inches)</div>
             ${sizeCols(cat,[])}
+            <!-- ── Cost Config ── -->
+            <div style="margin-top:12px;padding:10px 12px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:8px">
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.7);margin-bottom:10px">Cost Configuration</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+                <div>
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Blank Cost (৳) *</div>
+                  <input class="adm-tx-input" id="sc-${cat}-blank_cost" type="number" min="0" step="1" placeholder="e.g. 150"/>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Print Rate (৳/sq in)</div>
+                  <input class="adm-tx-input" id="sc-${cat}-print_rate" type="number" min="0" step="0.1" placeholder="e.g. 0.5"/>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px">
+                <div>
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Heat Press?</div>
+                  <select class="adm-tx-input" id="sc-${cat}-heat_press" onchange="admToggleHeatCost('${cat}')">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div id="sc-${cat}-heat_press_cost_wrap" style="display:none">
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Heat Press Cost (৳/side)</div>
+                  <input class="adm-tx-input" id="sc-${cat}-heat_press_cost" type="number" min="0" step="0.5" placeholder="e.g. 5"/>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Polybag?</div>
+                  <select class="adm-tx-input" id="sc-${cat}-poly" onchange="admTogglePolyCost('${cat}')">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                </div>
+                <div id="sc-${cat}-poly_cost_wrap" style="display:none">
+                  <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Polybag Cost (৳/item)</div>
+                  <input class="adm-tx-input" id="sc-${cat}-poly_cost" type="number" min="0" step="0.5" placeholder="e.g. 3.5"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>`).join('')}
 
@@ -3364,6 +3490,18 @@ function admToggleCatBlock(cat){
   fields.style.display=cb.checked?'block':'none';
 }
 
+function admToggleHeatCost(cat){
+  const sel=document.getElementById('sc-'+cat+'-heat_press');
+  const wrap=document.getElementById('sc-'+cat+'-heat_press_cost_wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value==='true')?'block':'none';
+}
+
+function admTogglePolyCost(cat){
+  const sel=document.getElementById('sc-'+cat+'-poly');
+  const wrap=document.getElementById('sc-'+cat+'-poly_cost_wrap');
+  if(wrap)wrap.style.display=(sel&&sel.value==='true')?'block':'none';
+}
+
 function admAddSizeRow(cat){
   const container=document.getElementById('sc-extra-container-'+cat);
   if(!container)return;
@@ -3445,6 +3583,12 @@ function admCancelSupplierEditNew(){
     // Remove any extra size rows
     const container=document.getElementById('sc-extra-container-'+cat);
     if(container)container.innerHTML='';
+    // Reset cost fields
+    ['blank_cost','print_rate','heat_press_cost','poly_cost'].forEach(f=>{
+      const el=document.getElementById('sc-'+cat+'-'+f);if(el)el.value='';
+    });
+    const hpEl=document.getElementById('sc-'+cat+'-heat_press');if(hpEl){hpEl.value='false';admToggleHeatCost(cat);}
+    const pyEl=document.getElementById('sc-'+cat+'-poly');if(pyEl){pyEl.value='false';admTogglePolyCost(cat);}
   });
 }
 
@@ -3475,7 +3619,23 @@ async function admSaveSupplierNew(){
         if(szName.trim()&&(ch||ln)) sizes[szName.trim()]={chest:ch,length:ln};
       });
     }
-    categories[cat]={active,colors,sizes};
+    const blankCostEl=document.getElementById('sc-'+cat+'-blank_cost');
+    const printRateEl=document.getElementById('sc-'+cat+'-print_rate');
+    const heatPressEl=document.getElementById('sc-'+cat+'-heat_press');
+    const heatPressCostEl=document.getElementById('sc-'+cat+'-heat_press_cost');
+    const polyEl=document.getElementById('sc-'+cat+'-poly');
+    const polyCostEl=document.getElementById('sc-'+cat+'-poly_cost');
+    const heatPressOn=heatPressEl&&heatPressEl.value==='true';
+    const polyOn=polyEl&&polyEl.value==='true';
+    categories[cat]={
+      active,colors,sizes,
+      blank_cost:blankCostEl?parseFloat(blankCostEl.value)||0:0,
+      print_rate:printRateEl?parseFloat(printRateEl.value)||0:0,
+      heat_press:heatPressOn,
+      heat_press_cost:heatPressOn&&heatPressCostEl?parseFloat(heatPressCostEl.value)||0:0,
+      poly:polyOn,
+      poly_cost:polyOn&&polyCostEl?parseFloat(polyCostEl.value)||0:0
+    };
   });
   const entry={
     name,
@@ -3546,6 +3706,15 @@ async function admEditSupplierNew(id){
         container.appendChild(div);
       });
     }
+    // Load cost config fields
+    const bcEl=document.getElementById('sc-'+cat+'-blank_cost');if(bcEl)bcEl.value=cd.blank_cost||'';
+    const prEl=document.getElementById('sc-'+cat+'-print_rate');if(prEl)prEl.value=cd.print_rate||'';
+    const hpEl=document.getElementById('sc-'+cat+'-heat_press');
+    if(hpEl){hpEl.value=cd.heat_press?'true':'false';admToggleHeatCost(cat);}
+    const hpcEl=document.getElementById('sc-'+cat+'-heat_press_cost');if(hpcEl)hpcEl.value=cd.heat_press_cost||'';
+    const pyEl=document.getElementById('sc-'+cat+'-poly');
+    if(pyEl){pyEl.value=cd.poly?'true':'false';admTogglePolyCost(cat);}
+    const pycEl=document.getElementById('sc-'+cat+'-poly_cost');if(pycEl)pycEl.value=cd.poly_cost||'';
   });
   // Scroll to form
   document.getElementById('supFormTitle').scrollIntoView({behavior:'smooth',block:'center'});
@@ -3583,7 +3752,7 @@ let admAllProdData=[];
 async function admLoadProducts(){
   document.getElementById('adm-products').innerHTML='<div class="adm-loading">Loading products...</div>';
   try{
-    const{data:cats,error}=await sbAdmin.from('product_categories').select('*, products(id,name,active)').order('product_id').order('sort_order');
+    const{data:cats,error}=await sbAdmin.from('product_categories').select('*, products(id,name,active), design_w, design_h').order('product_id').order('sort_order');
     if(error)throw error;
     admAllProdData=cats||[];
     admRenderProducts();
@@ -3615,6 +3784,8 @@ function admRenderProducts(){
     const pid=r.product_id;
     const catId=r.id;
     const labelEsc=(r.products?.name||pid)+' '+r.category;
+    const dw=parseFloat(r.design_w||0);const dh=parseFloat(r.design_h||0);
+    const designLabel=dw&&dh?`${dw}"×${dh}" = ${(dw*dh).toFixed(1)} sq in`:'<span style="color:rgba(255,100,100,0.5)">No print size set</span>';
     return`<div class="adm-prod-card ${active?'':'inactive'}">
       <div style="position:relative">
         ${imgHtml}
@@ -3627,6 +3798,7 @@ function admRenderProducts(){
         <div class="adm-prod-name">${r.products?.name||pid}${badge}</div>
         <div class="adm-prod-cat">${sizes} · ${colors}</div>
         <div class="adm-prod-row"><div>${priceHtml}</div></div>
+        <div style="font-size:10px;color:rgba(201,168,76,0.7);margin-top:4px">🖨 ${designLabel}</div>
         <div class="adm-prod-actions">
           <button class="adm-prod-btn adm-prod-btn-edit" onclick="admProdOpenEdit('${catId}')">✏ Edit</button>
           <button class="adm-prod-btn adm-prod-btn-toggle ${active?'':'off'}" onclick="admProdToggleActive('${pid}',${active})">${active?'Hide':'Show'}</button>
@@ -3653,6 +3825,21 @@ function admRenderProducts(){
           <div class="adm-prod-modal-sec">Design Identity</div>
           <div class="adm-prod-form-grid">
             <div class="adm-prod-form-field"><label>Design ID *</label><input class="adm-prod-fi" id="pf-pid" placeholder="e.g. BT26" oninput="this.value=this.value.toUpperCase()"/></div>
+          </div>
+          <div class="adm-prod-modal-sec">Design Print Size <span style="font-size:9px;color:rgba(255,255,255,0.25);font-weight:400;letter-spacing:1px">(used to calculate print cost)</span></div>
+          <div class="adm-prod-form-grid">
+            <div class="adm-prod-form-field">
+              <label>Width (inches)</label>
+              <input class="adm-prod-fi" id="pf-design-w" type="number" min="0" step="0.1" placeholder="e.g. 10" oninput="admProdUpdateSqIn()"/>
+            </div>
+            <div class="adm-prod-form-field">
+              <label>Height (inches)</label>
+              <input class="adm-prod-fi" id="pf-design-h" type="number" min="0" step="0.1" placeholder="e.g. 12" oninput="admProdUpdateSqIn()"/>
+            </div>
+            <div class="adm-prod-form-field">
+              <label>Area (sq inches)</label>
+              <div id="pf-design-sqin" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:9px 12px;font-size:12px;color:rgba(201,168,76,0.8);min-height:38px;font-weight:700">—</div>
+            </div>
           </div>
           <div class="adm-prod-modal-sec">Supplier &amp; Category</div>
           <div class="adm-prod-form-grid">
@@ -3718,6 +3905,15 @@ function admRenderProducts(){
 }
 
 function admSetProdFilter(f){admProdFilter=f;admRenderProducts();}
+
+function admProdUpdateSqIn(){
+  const w=parseFloat(document.getElementById('pf-design-w')?.value)||0;
+  const h=parseFloat(document.getElementById('pf-design-h')?.value)||0;
+  const el=document.getElementById('pf-design-sqin');
+  if(!el)return;
+  if(w>0&&h>0){el.textContent=(w*h).toFixed(2)+' sq in';}
+  else el.textContent='—';
+}
 
 function admProdPreviewImg(url){
   const el=document.getElementById('pf-img-preview');if(!el)return;
@@ -3803,6 +3999,9 @@ function admProdOpenModal(){
   document.getElementById('pf-img').value='';
   document.getElementById('pf-badge').value='10% OFF';
   document.getElementById('pf-active').value='true';
+  const dwEl=document.getElementById('pf-design-w');if(dwEl)dwEl.value='';
+  const dhEl=document.getElementById('pf-design-h');if(dhEl)dhEl.value='';
+  admProdUpdateSqIn();
   // Supplier first — fills category dropdown automatically
   admProdFillSupplierDropdown('T-Shirt Hub');
   admProdPreviewImg('');
@@ -3837,6 +4036,9 @@ function admProdOpenEdit(categoryId){
     if(cd)cd.textContent=(r.colors||[]).join(', ')||'—';
   }
   admProdPreviewImg(r.image||'');
+  const dwEl=document.getElementById('pf-design-w');if(dwEl)dwEl.value=r.design_w||'';
+  const dhEl=document.getElementById('pf-design-h');if(dhEl)dhEl.value=r.design_h||'';
+  admProdUpdateSqIn();
   document.getElementById('admProdModalBg').classList.add('on');
 }
 
@@ -3854,6 +4056,8 @@ async function admProdSave(){
   const badge=document.getElementById('pf-badge').value.trim();
   const active=document.getElementById('pf-active').value==='true';
   const supplier=document.getElementById('pf-supplier').value||'T-Shirt Hub';
+  const designW=parseFloat(document.getElementById('pf-design-w').value)||null;
+  const designH=parseFloat(document.getElementById('pf-design-h').value)||null;
   if(!pid){toast('Please enter a Design ID');return;}
   if(!price||isNaN(price)){toast('Please enter a valid price');return;}
   if(!sizes.length){toast('Please enter at least one size');return;}
@@ -3862,13 +4066,13 @@ async function admProdSave(){
   btn.disabled=true;btn.textContent='Saving...';
   try{
     if(admProdEditTarget){
-      const{error}=await sbAdmin.from('product_categories').update({category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null,supplier}).eq('id',admProdEditTarget.categoryId);
+      const{error}=await sbAdmin.from('product_categories').update({category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null,supplier,design_w:designW,design_h:designH}).eq('id',admProdEditTarget.categoryId);
       if(error)throw error;
       await sbAdmin.from('products').update({active}).eq('id',pid);
       toast('Product updated ✓');
     }else{
       await sbAdmin.from('products').upsert({id:pid,name:pid,active},{onConflict:'id'});
-      const{error}=await sbAdmin.from('product_categories').insert({product_id:pid,category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null,supplier,sort_order:0});
+      const{error}=await sbAdmin.from('product_categories').insert({product_id:pid,category:cat,price,discounted_price:disc,sizes,colors,image:img||null,badge:badge||null,supplier,sort_order:0,design_w:designW,design_h:designH});
       if(error)throw error;
       toast('Product added ✓');
     }

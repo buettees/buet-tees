@@ -1960,6 +1960,14 @@ async function admLoadData(){
     const ashikShare=parseFloat(cfg.owner_ashik_share||50);
     const kawsarShare=parseFloat(cfg.owner_kawsar_share||50);
 
+    // Normalize category names from items_json to supplier map keys
+    function normalizeCat(c){
+      if(!c)return'Regular';
+      if(c==='Drop Shoulder'||c==='Drop')return'Drop';
+      if(c.toLowerCase().includes('hoodie'))return'Hoodie';
+      return'Regular';
+    }
+
     // Build supplier cost config map: supplierName -> { Regular/Drop/Hoodie -> costConfig }
     const supplierCostMap={};
     suppliersTableData.forEach(s=>{
@@ -1970,9 +1978,9 @@ async function admLoadData(){
         if(cd.active!==false){
           supplierCostMap[s.name][cat]={
             blank:parseFloat(cd.blank_cost||0),
-            printRate:parseFloat(cd.print_rate||0),   // ৳ per sq inch
-            heatPress:cd.heat_press!==false,           // true/false
-            heatPressCost:parseFloat(cd.heat_press_cost||0), // per side
+            printRate:parseFloat(cd.print_rate||0),
+            heatPress:cd.heat_press!==false,
+            heatPressCost:parseFloat(cd.heat_press_cost||0),
             poly:cd.poly!==false,
             polyCost:parseFloat(cd.poly_cost||0)
           };
@@ -2000,7 +2008,7 @@ async function admLoadData(){
           catGroups[c]=(catGroups[c]||0)+(item.qty||1);
         });
         Object.entries(catGroups).forEach(([cat,qty])=>{
-          const cfg3=catMap[cat]||catMap[category]||{};
+          const cfg3=catMap[normalizeCat(cat)]||{};
           if(cfg3.blank) cost+=cfg3.blank*qty;
           else{
             const c2=cat.toLowerCase();
@@ -2013,7 +2021,7 @@ async function admLoadData(){
         // Print + heat press per item
         items_json.forEach(item=>{
           const icat=item.category||category;
-          const cfg3=catMap[icat]||catMap[category]||{};
+          const cfg3=catMap[normalizeCat(icat)]||{};
           const key=(item.id||item.product_id||'')+'|'+icat;
           const ds=designSizeMap[key]||{};
           const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
@@ -2024,13 +2032,13 @@ async function admLoadData(){
           }
         });
       } else {
-        const cfg2=catMap[category]||{};
+        const cfg2=catMap[normalizeCat(category)]||{};
         cost+=(cfg2.blank||costRegular);
         if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost;
       }
       // Polybag: one per item qty total
       const firstCat=items_json&&items_json.length?(items_json[0].category||category):category;
-      const cfg2=catMap[firstCat]||catMap[category]||{};
+      const cfg2=catMap[normalizeCat(firstCat)]||{};
       if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost*totalQty;
       return cost;
     }
@@ -2042,7 +2050,7 @@ async function admLoadData(){
       const fmtA=n=>n%1===0?String(n):n.toFixed(1);
       if(!items_json||!items_json.length){
         // Single item fallback
-        const cfg2=catMap&&(catMap[category]||{});
+        const cfg2=catMap&&(catMap[normalizeCat(category)]||{});
         const blankUnit=cfg2&&cfg2.blank||(()=>{const c=(category||'').toLowerCase();return c.includes('hoodie')?costHoodie:c.includes('drop')?costDrop:costRegular;})();
         const lines=[];let sub=0;
         lines.push({label:'Blank ('+category+')',amount:blankUnit});sub+=blankUnit;
@@ -2064,7 +2072,7 @@ async function admLoadData(){
       catOrder.forEach(cat=>{
         const items=catMap2[cat];
         const qty=items.reduce((s,i)=>s+(i.qty||1),0);
-        const cfg3=(catMap&&(catMap[cat]||catMap[category]))||{};
+        const cfg3=(catMap&&catMap[normalizeCat(cat)])||{};
         const blankUnit=cfg3.blank||(()=>{const c=cat.toLowerCase();return c.includes('hoodie')?costHoodie:c.includes('drop')?costDrop:costRegular;})();
         const polyUnit=cfg3.poly&&cfg3.polyCost>0?cfg3.polyCost:costPolybag;
         const lines=[];let sub=0;

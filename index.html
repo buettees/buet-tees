@@ -3548,65 +3548,43 @@ function admRenderCosts(){
   const allHistoryRows=[...allSupPayments.map(p=>({...p,_isFault:false})),...faultRows]
     .sort((a,b)=>new Date(b.paid_at||b.date)-new Date(a.paid_at||a.date));
 
+  // Build payable supplier cards as a plain string (avoids complex nesting inside template literal)
+  let _supPayHtml='';
+  if(suppliersWithDue.length){
+    suppliersWithDue.forEach(function(supName){
+      var dueOrders=calcPerOrderDue(supName);
+      var allOrdersForSup=payableOrdersBySup[supName]||[];
+      if(!dueOrders.length){
+        var totalPaidForSup=supplierPayments.filter(function(p){return(p.supplier||'T-Shirt Hub')===supName;}).reduce(function(s,p){return s+parseFloat(p.amount||0);},0);
+        var totalCostForSup=allOrdersForSup.reduce(function(s,o){return s+o.supplierCost;},0);
+        _supPayHtml+='<div style="margin-bottom:16px;background:#111;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;"><div><span style="font-size:13px;font-weight:800;color:#fff">'+supName+'</span><span style="font-size:10px;color:#2ecc71;margin-left:10px">\u2713 Fully paid up</span><div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px">'+allOrdersForSup.length+' delivered order'+(allOrdersForSup.length!==1?'s':'')+' \u00b7 Total cost \u09f3'+Math.round(totalCostForSup)+' \u00b7 Paid \u09f3'+Math.round(totalPaidForSup)+'</div></div><span style="font-size:22px;color:#2ecc71">\u2713</span></div>';
+        return;
+      }
+      var totalDue=dueOrders.filter(function(r){return!r.unconfigured;}).reduce(function(s,r){return s+r.remaining;},0);
+      var unconfiguredCount=dueOrders.filter(function(r){return r.unconfigured;}).length;
+      var bdId='spbd-'+supName.replace(/\s+/g,'_');
+      var orderRows='';
+      dueOrders.forEach(function(row){
+        var o=row.o,remaining=row.remaining,unconfigured=row.unconfigured;
+        var dueCell=unconfigured?'<span style="color:#C9A84C;font-weight:700;font-size:12px">\u26a0 No cost set</span>':'<span style="color:#2ecc71;font-weight:700;font-size:12px">\u09f3'+Math.round(remaining)+'</span>';
+        var actionCell=unconfigured?'<span style="font-size:9px;color:#C9A84C">Set cost in Suppliers tab</span>':'<button onclick="admOpenSupPayModal(\''+supName.replace(/'/g,"\\'")+'\','+Math.round(remaining)+',null,\''+o.orderId+'\')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:4px;padding:4px 12px;font-size:9px;font-weight:700;cursor:pointer">\u09f3'+Math.round(remaining)+'</button>';
+        var dlv=o.deliveredAt?new Date(o.deliveredAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'&mdash;';
+        orderRows+='<tr style="border-bottom:1px solid rgba(255,255,255,0.04)'+(unconfigured?';background:rgba(201,168,76,0.04)':'')+'"><td style="padding:9px 12px;font-weight:800;color:#fff;font-size:11px">'+o.orderId+'</td><td style="padding:9px 12px;color:rgba(255,255,255,0.35);font-size:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+fmtOrderItems(o)+'</td><td style="padding:9px 12px;color:rgba(255,255,255,0.3);font-size:10px">'+dlv+'</td><td style="padding:9px 12px;text-align:right">'+dueCell+'</td><td style="padding:9px 12px;text-align:right">'+actionCell+'</td></tr>';
+      });
+      var payAllBtn=totalDue>0?'<button onclick="admOpenSupPayModal(\''+supName.replace(/'/g,"\\'")+'\','+Math.round(totalDue)+',null,null)" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer">Pay All \u00b7 \u09f3'+Math.round(totalDue)+'</button>':'';
+      var payableLabel=dueOrders.filter(function(r){return!r.unconfigured;}).length+' order'+(dueOrders.filter(function(r){return!r.unconfigured;}).length!==1?'s':'')+' payable'+(unconfiguredCount?' \u00b7 '+unconfiguredCount+' need cost config':'');
+      var dueLabel=dueOrders.filter(function(r){return!r.unconfigured;}).length+' ORDER'+(dueOrders.filter(function(r){return!r.unconfigured;}).length!==1?'S':'')+' DUE'+(unconfiguredCount?' \u00b7 '+unconfiguredCount+' UNCONFIGURED':'');
+      var dueTotal=totalDue>0?'\u09f3'+Math.round(totalDue):'&mdash;';
+      _supPayHtml+='<div style="margin-bottom:16px;background:#111;border:1px solid rgba(39,174,96,0.15);border-radius:12px;overflow:hidden;"><div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#0c160c;border-bottom:1px solid rgba(39,174,96,0.12);"><div><span style="font-size:13px;font-weight:800;color:#fff">'+supName+'</span><span style="font-size:10px;color:rgba(39,174,96,0.6);margin-left:10px">'+payableLabel+'</span></div><div style="display:flex;gap:8px;align-items:center"><button onclick="admToggleSupPayDetail(\''+bdId+'\')" style="background:rgba(39,174,96,0.08);color:rgba(39,174,96,0.6);border:1px solid rgba(39,174,96,0.2);border-radius:6px;padding:6px 12px;font-size:9px;font-weight:700;cursor:pointer">\u25b6 Details</button>'+payAllBtn+'</div></div><div id="'+bdId+'" style="display:none;"><div class="adm-tbl-scroll"><table class="adm-tbl" style="margin:0"><thead><tr><th>Order</th><th>Items</th><th>Delivered</th><th style="text-align:right">Due</th><th style="text-align:right">Action</th></tr></thead><tbody>'+orderRows+'</tbody><tfoot><tr style="background:rgba(39,174,96,0.05);border-top:1px solid rgba(39,174,96,0.2)"><td colspan="3" style="padding:10px 12px;font-size:10px;color:rgba(255,255,255,0.3)">'+dueLabel+'</td><td style="padding:10px 12px;text-align:right;font-weight:900;color:#2ecc71;font-size:13px">'+dueTotal+'</td><td></td></tr></tfoot></table></div></div></div>';
+    });
+  }
+  if(!_supPayHtml) _supPayHtml='<div class="adm-empty" style="padding:16px;font-size:11px">No payable orders \u2014 payments are due only after delivery with return window closed</div>';
+
   document.getElementById("adm-costs").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
 
   <!-- ── Payable orders per supplier ── -->
-  ${suppliersWithDue.length?suppliersWithDue.map(supName=>{
-    const dueOrders=calcPerOrderDue(supName);
-    const allOrdersForSup=(payableOrdersBySup[supName]||[]);
-    if(!dueOrders.length){
-      const totalPaidForSup=(supplierPayments.filter(p=>(p.supplier||'T-Shirt Hub')===supName).reduce((s,p)=>s+parseFloat(p.amount||0),0));
-      const totalCostForSup=allOrdersForSup.reduce((s,o)=>s+o.supplierCost,0);
-      return`<div style="margin-bottom:16px;background:#111;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-        <div>
-          <span style="font-size:13px;font-weight:800;color:#fff">${supName}</span>
-          <span style="font-size:10px;color:#2ecc71;margin-left:10px">✓ Fully paid up</span>
-          <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px">${allOrdersForSup.length} delivered order${allOrdersForSup.length!==1?'s':''} · Total cost ৳${Math.round(totalCostForSup)} · Paid ৳${Math.round(totalPaidForSup)}</div>
-        </div>
-        <span style="font-size:22px;color:#2ecc71">✓</span>
-      </div>`;
-    }
-    const totalDue=dueOrders.filter(r=>!r.unconfigured).reduce((s,r)=>s+r.remaining,0);
-    const unconfiguredCount=dueOrders.filter(r=>r.unconfigured).length;
-    const bdId='spbd-'+supName.replace(/\s+/g,'_');
-    const orderRows=dueOrders.map(({o,remaining,unconfigured})=>`
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.04)${unconfigured?';background:rgba(201,168,76,0.04)':''}">
-        <td style="padding:9px 12px;font-weight:800;color:#fff;font-size:11px;white-space:nowrap">${o.orderId}</td>
-        <td style="padding:9px 12px;color:rgba(255,255,255,0.35);font-size:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fmtOrderItems(o)}</td>
-        <td style="padding:9px 12px;color:rgba(255,255,255,0.3);font-size:10px;white-space:nowrap">${o.deliveredAt?new Date(o.deliveredAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'}</td>
-        <td style="padding:9px 12px;text-align:right;font-weight:700;color:${unconfigured?'#C9A84C':'#2ecc71'};font-size:12px;white-space:nowrap">${unconfigured?'⚠ No cost set':'৳'+Math.round(remaining)}</td>
-        <td style="padding:9px 12px;text-align:right">
-          ${unconfigured
-            ?`<span style="font-size:9px;color:#C9A84C;letter-spacing:0.5px">Set cost in Suppliers tab</span>`
-            :`<button onclick="admOpenSupPayModal('${supName.replace(/'/g,"\\'")}',${Math.round(remaining)},null,'${o.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:4px;padding:4px 12px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;white-space:nowrap">Pay ৳${Math.round(remaining)}</button>`
-          }
-        </td>
-      </tr>`).join('');
-    return`<div style="margin-bottom:16px;background:#111;border:1px solid rgba(39,174,96,0.15);border-radius:12px;overflow:hidden;">
-      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#0c160c;border-bottom:1px solid rgba(39,174,96,0.12);">
-        <div>
-          <span style="font-size:13px;font-weight:800;color:#fff">${supName}</span>
-          <span style="font-size:10px;color:rgba(39,174,96,0.6);margin-left:10px">${dueOrders.filter(r=>!r.unconfigured).length} order${dueOrders.filter(r=>!r.unconfigured).length!==1?'s':''} payable${unconfiguredCount?` · <span style="color:#C9A84C">${unconfiguredCount} need cost config</span>`:''}</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button onclick="admToggleSupPayDetail('${bdId}')" style="background:rgba(39,174,96,0.08);color:rgba(39,174,96,0.6);border:1px solid rgba(39,174,96,0.2);border-radius:6px;padding:6px 12px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">▶ Details</button>
-          ${totalDue>0?`<button onclick="admOpenSupPayModal('${supName.replace(/'/g,"\\'")}',${Math.round(totalDue)},null,null)" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.5px">Pay All · ৳${Math.round(totalDue)}</button>`:''}
-        </div>
-      </div>
-      <div id="${bdId}" style="display:none;">
-        <div class="adm-tbl-scroll"><table class="adm-tbl" style="margin:0">
-          <thead><tr><th>Order</th><th>Items</th><th>Delivered</th><th style="text-align:right">Due</th><th style="text-align:right">Action</th></tr></thead>
-          <tbody>${orderRows}</tbody>
-          <tfoot><tr style="background:rgba(39,174,96,0.05);border-top:1px solid rgba(39,174,96,0.2)">
-            <td colspan="3" style="padding:10px 12px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px">${dueOrders.filter(r=>!r.unconfigured).length} ORDER${dueOrders.filter(r=>!r.unconfigured).length!==1?'S':''} DUE${unconfiguredCount?` · ${unconfiguredCount} UNCONFIGURED`:''}</td>
-            <td style="padding:10px 12px;text-align:right;font-weight:900;color:#2ecc71;font-size:13px">${totalDue>0?'৳'+Math.round(totalDue):'—'}</td>
-            <td></td>
-          </tfoot>
-        </table></div>
-      </div>
-    </div>`;
-  }).join('')||'<div class="adm-empty" style="padding:16px;font-size:11px">No payable orders — payments are due only after delivery with return window closed</div>'}
+  ${_supPayHtml}
 
   <!-- ── Payment history ── -->
   <div class="adm-sec" style="margin-top:24px;margin-bottom:10px;">Payment History</div>

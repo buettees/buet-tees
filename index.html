@@ -3236,7 +3236,7 @@ function admRenderCosts(){
       for(let i=0;i<remaining.length&&budget>0;i++){
         if(remaining[i]._remaining<=0)continue;
         const take=Math.min(remaining[i]._remaining,budget);
-        covered.push({orderId:remaining[i].orderId,date:remaining[i].confirmedAt||remaining[i].timestamp,items:remaining[i].items,status:remaining[i].status,cost:take,partial:take<remaining[i].supplierCost});
+        covered.push({orderId:remaining[i].orderId,date:remaining[i].confirmedAt||remaining[i].timestamp,items:remaining[i].items,items_json:remaining[i].items_json||[],status:remaining[i].status,cost:take,partial:take<remaining[i].supplierCost});
         remaining[i]._remaining-=take;
         budget-=take;
       }
@@ -3288,7 +3288,7 @@ function admRenderCosts(){
               const rows=bd.covered.map(c=>`
                 <div style="display:grid;grid-template-columns:90px 1fr 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
                   <div style="font-weight:700;color:#fff;font-size:11px">${c.orderId}${c.partial?'<span style="font-size:8px;color:rgba(255,165,0,0.7);margin-left:4px">partial</span>':''}</div>
-                  <div style="color:rgba(255,255,255,0.35);font-size:10px">${new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} · ${(c.items||'').split(',')[0]||'—'}</div>
+                  <div style="color:rgba(255,255,255,0.35);font-size:10px">${new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} · ${(()=>{const ij=c.items_json||[];if(ij.length){return ij.map(it=>it.type==='bothsides'?`Both Sides (${it.size||''}/${it.color||''}) x${it.qty||1}`:`${it.name||''} [${it.category||''}] (${it.size||''}/${it.color||''}${it.side?' '+it.side+' print':''} x${it.qty||1})`).join(', ');}return(c.items||'—');})()}</div>
                   <div style="text-align:right;font-weight:700;color:#6495ED;font-size:11px">৳${Math.round(c.cost)}</div>
                 </div>`).join('');
               const total=bd.covered.reduce((s,c)=>s+c.cost,0);

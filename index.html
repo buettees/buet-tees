@@ -2066,70 +2066,62 @@ async function admLoadData(){
         lines.push({label:'Polybag',amount:pc});sub+=pc;
         return{suborders:[{cat:category,qty:1,lines,subtotal:sub}],total:sub};
       }
-      // Group items by category
-      const catOrder=[];
-      const catMap2={};
-      items_json.forEach(item=>{
-        const c=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
-        if(!catMap2[c]){catMap2[c]=[];catOrder.push(c);}
-        catMap2[c].push(item);
-      });
+      // One sub-order per cart item (preserves original order)
       const suborders=[];
       let grandTotal=0;
-      catOrder.forEach(cat=>{
-        const items=catMap2[cat];
-        const qty=items.reduce((s,i)=>s+(i.qty||1),0);
+      items_json.forEach(item=>{
+        const cat=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
+        const qty=item.qty||1;
         const cfg3=(catMap&&catMap[normalizeCat(cat)])||{};
         const blankUnit=cfg3.blank||(()=>{const c=cat.toLowerCase();return c.includes('hoodie')?costHoodie:c.includes('drop')?costDrop:costRegular;})();
         const polyUnit=cfg3.poly&&cfg3.polyCost>0?cfg3.polyCost:costPolybag;
         const lines=[];let sub=0;
         // Blank
         lines.push({label:'Blank ('+cat+')'+(qty>1?' × '+qty:''),amount:blankUnit*qty});sub+=blankUnit*qty;
-        // Print + heat press per item
-        items.forEach(item=>{
-          const iq=item.qty||1;
-          if(item.type==='bothsides'){
-            // Both-sides: look up front + back designs separately
-            const frontDs=designSizeMap[(item.frontId||item.frontName||'')+'|'+cat]||{};
-            const backDs=designSizeMap[(item.backId||item.backName||'')+'|'+cat]||{};
-            const frontSqIn=(parseFloat(frontDs.w||0))*(parseFloat(frontDs.h||0));
-            const backSqIn=(parseFloat(backDs.w||0))*(parseFloat(backDs.h||0));
-            if(frontSqIn>0&&cfg3.printRate>0){
-              const pc=frontSqIn*cfg3.printRate*iq;
-              lines.push({label:'Print (front) — '+item.frontName+' ('+fmtA(frontSqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
-              sub+=pc;
-            }
-            if(backSqIn>0&&cfg3.printRate>0){
-              const pc=backSqIn*cfg3.printRate*iq;
-              lines.push({label:'Print (back) — '+item.backName+' ('+fmtA(backSqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
-              sub+=pc;
-            }
-            if(cfg3.heatPress&&cfg3.heatPressCost>0){
-              const hc=cfg3.heatPressCost*2*iq;
-              lines.push({label:'Heat press (2 sides'+(iq>1?' × '+iq:'')+')',amount:hc});
-              sub+=hc;
-            }
-          } else {
-            const key=(item.id||item.product_id||'')+'|'+cat;
-            const ds=designSizeMap[key]||{};
-            const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
-            const iname=item.name||(item.id||'item');
-            if(sqIn>0&&cfg3.printRate>0){
-              const pc=sqIn*cfg3.printRate*iq;
-              lines.push({label:'Print — '+iname+' ('+fmtA(sqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
-              sub+=pc;
-            }
-            if(cfg3.heatPress&&cfg3.heatPressCost>0){
-              const sides=1;
-              const hc=cfg3.heatPressCost*sides*iq;
-              lines.push({label:'Heat press (1 side'+(iq>1?' × '+iq:'')+')',amount:hc});
-              sub+=hc;
-            }
+        // Print + heat press
+        if(item.type==='bothsides'){
+          const frontDs=designSizeMap[(item.frontId||item.frontName||'')+'|'+cat]||{};
+          const backDs=designSizeMap[(item.backId||item.backName||'')+'|'+cat]||{};
+          const frontSqIn=(parseFloat(frontDs.w||0))*(parseFloat(frontDs.h||0));
+          const backSqIn=(parseFloat(backDs.w||0))*(parseFloat(backDs.h||0));
+          if(frontSqIn>0&&cfg3.printRate>0){
+            const pc=frontSqIn*cfg3.printRate*qty;
+            lines.push({label:'Print (front) — '+item.frontName+' ('+fmtA(frontSqIn)+' sq in × ৳'+cfg3.printRate+(qty>1?' × '+qty:'')+')',amount:pc});
+            sub+=pc;
           }
-        });
-        // Polybag per qty in this suborder
+          if(backSqIn>0&&cfg3.printRate>0){
+            const pc=backSqIn*cfg3.printRate*qty;
+            lines.push({label:'Print (back) — '+item.backName+' ('+fmtA(backSqIn)+' sq in × ৳'+cfg3.printRate+(qty>1?' × '+qty:'')+')',amount:pc});
+            sub+=pc;
+          }
+          if(cfg3.heatPress&&cfg3.heatPressCost>0){
+            const hc=cfg3.heatPressCost*2*qty;
+            lines.push({label:'Heat press (2 sides'+(qty>1?' × '+qty:'')+')',amount:hc});
+            sub+=hc;
+          }
+        } else {
+          const key=(item.id||item.product_id||'')+'|'+cat;
+          const ds=designSizeMap[key]||{};
+          const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
+          const iname=item.name||(item.id||'item');
+          if(sqIn>0&&cfg3.printRate>0){
+            const pc=sqIn*cfg3.printRate*qty;
+            lines.push({label:'Print — '+iname+' ('+fmtA(sqIn)+' sq in × ৳'+cfg3.printRate+(qty>1?' × '+qty:'')+')',amount:pc});
+            sub+=pc;
+          }
+          if(cfg3.heatPress&&cfg3.heatPressCost>0){
+            const hc=cfg3.heatPressCost*qty;
+            lines.push({label:'Heat press (1 side'+(qty>1?' × '+qty:'')+')',amount:hc});
+            sub+=hc;
+          }
+        }
+        // Polybag
         lines.push({label:'Polybag'+(qty>1?' × '+qty:''),amount:polyUnit*qty});sub+=polyUnit*qty;
-        suborders.push({cat,qty,lines,subtotal:sub});
+        // Sub-order label
+        const soLabel=item.type==='bothsides'
+          ? 'Both Sides ('+item.frontName+'/'+item.backName+') × '+qty
+          : (item.name||item.id||cat)+' × '+qty;
+        suborders.push({cat,qty,label:soLabel,lines,subtotal:sub});
         grandTotal+=sub;
       });
       return{suborders,total:grandTotal};
@@ -2460,7 +2452,7 @@ function admRenderOrders(){
       const _fmtN=n=>n%1===0?String(n):n.toFixed(1);
       const _suborderHtml=(_breakdown.suborders||[]).map((sub,si)=>`
         <div style="margin-bottom:${si<(_breakdown.suborders.length-1)?'14px':'0'};${si>0?'padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);':''}">
-          <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);display:inline-block;padding:3px 10px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.cat} × ${sub.qty}</div>
+          <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);display:inline-block;padding:3px 10px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.label||sub.cat+' × '+sub.qty}</div>
           ${sub.lines.map(l=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
             <span style="color:rgba(255,255,255,0.4);font-size:10px">${l.label}</span>
             <span style="color:#e74c3c;font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${_fmtN(l.amount)}</span>

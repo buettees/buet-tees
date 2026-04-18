@@ -3612,9 +3612,8 @@ function admRenderCosts(){
 
   <!-- ── Payment history ── -->
   <div class="adm-sec" style="margin-top:24px;margin-bottom:10px;">Payment History</div>
-  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:12px;">
+  <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;margin-bottom:12px;">
     ${allHistoryRows.length?(()=>{
-      // FIFO: for each payment, compute which orders it covered and by how much
       function buildPaymentBreakdown(supName, paymentId){
         const supOrders=(payableOrdersBySup[supName]||[]).slice()
           .sort((a,b)=>new Date(a.deliveredAt||a.confirmedAt)-new Date(b.deliveredAt||b.confirmedAt));
@@ -3654,74 +3653,65 @@ function admRenderCosts(){
         if(!p._isFault&&p.id) breakdownCache[p.id]=buildPaymentBreakdown(p.supplier||'T-Shirt Hub',p.id);
       });
 
-      return `<div class="adm-tbl-scroll"><table class="adm-tbl">
-        <thead><tr>
-          <th style="width:32px"></th>
-          <th>Date</th>
-          <th>Supplier</th>
-          <th>Amount</th>
-          <th>Method</th>
-          <th>Note</th>
-          <th style="min-width:90px"></th>
-        </tr></thead>
-        <tbody>${allHistoryRows.map((p,pi)=>{
-          if(p._isFault) return `
-            <tr style="background:rgba(231,76,60,0.05)">
-              <td></td>
-              <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
-              <td style="color:#e74c3c;font-weight:600">⚠ ${p.supplier}</td>
-              <td style="color:#e74c3c;font-weight:700">-${admFmt(p.amount)}</td>
-              <td style="color:rgba(255,255,255,0.2);font-size:9px">PENALTY</td>
-              <td style="color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</td>
-              <td><span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</span></td>
-            </tr>`;
-          const breakdown=breakdownCache[p.id]||[];
-          const hasBreakdown=breakdown.length>0;
-          const detailId='sph-detail-'+pi;
-          const orderCount=breakdown.filter(b=>!b.isAdvance).length;
-          return `
-            <tr style="cursor:${hasBreakdown?'pointer':'default'};border-bottom:${hasBreakdown?'none':'1px solid rgba(255,255,255,0.03)'}" onclick="${hasBreakdown?`admToggleSupPayDetail('${detailId}')`:``}">
-              <td style="text-align:center;padding:11px 6px">
-                ${hasBreakdown?`<span id="${detailId}-arrow" style="font-size:9px;color:rgba(39,174,96,0.6);font-weight:700;transition:transform 0.15s;display:inline-block">▶</span>`:''}
-              </td>
-              <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
-              <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
-              <td class="adm-green" style="font-weight:700">${admFmt(parseFloat(p.amount||0))}</td>
-              <td style="color:rgba(255,255,255,0.3)">${p.method||'—'}</td>
-              <td style="color:rgba(255,255,255,0.3)">${p.note||'—'}</td>
-              <td onclick="event.stopPropagation()">
-                <button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button>
-              </td>
-            </tr>
-            ${hasBreakdown?`<tr id="${detailId}" style="display:none">
-              <td colspan="7" style="padding:0;border-bottom:2px solid rgba(39,174,96,0.12)">
-                <div style="background:rgba(39,174,96,0.03);padding:10px 14px 10px 40px">
-                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:8px">
-                    Orders covered by this payment · ${orderCount} order${orderCount!==1?'s':''}
+      return `
+      <div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;border-bottom:1px solid rgba(255,255,255,0.07);">
+        <div></div>
+        ${['Date','Supplier','Amount','Method','Note',''].map(h=>`<div style="padding:8px 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)">${h}</div>`).join('')}
+      </div>
+      ${allHistoryRows.map((p,pi)=>{
+        if(p._isFault){
+          return `<div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;align-items:center;background:rgba(231,76,60,0.06);border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div></div>
+            <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3);white-space:nowrap">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
+            <div style="padding:11px 10px;font-size:11px;color:#e74c3c;font-weight:600;display:flex;align-items:center;gap:6px"><span style="font-size:13px">⚠</span>${p.supplier}</div>
+            <div style="padding:11px 10px;font-size:12px;color:#e74c3c;font-weight:700">−${admFmt(p.amount)}</div>
+            <div style="padding:11px 10px"><span style="background:rgba(231,76,60,0.15);color:#e74c3c;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:1px">PENALTY</span></div>
+            <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</div>
+            <div style="padding:11px 10px;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</div>
+          </div>`;
+        }
+        const breakdown=breakdownCache[p.id]||[];
+        const hasBreakdown=breakdown.length>0;
+        const detailId='sph-detail-'+pi;
+        const orderCount=breakdown.filter(b=>!b.isAdvance).length;
+        return `
+          <div style="border-bottom:1px solid rgba(255,255,255,0.04);">
+            <div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;align-items:center;cursor:${hasBreakdown?'pointer':'default'};" onclick="${hasBreakdown?`admToggleSupPayDetail('${detailId}')`:``}">
+              <div style="display:flex;align-items:center;justify-content:center;padding:11px 6px">
+                ${hasBreakdown?`<span id="${detailId}-arrow" style="font-size:10px;color:rgba(39,174,96,0.5);display:inline-block;transition:transform 0.18s;">▶</span>`:''}
+              </div>
+              <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.35);white-space:nowrap">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
+              <div style="padding:11px 10px;font-size:12px;font-weight:600;color:#fff">${p.supplier||'—'}</div>
+              <div style="padding:11px 10px;font-size:13px;font-weight:700;color:#2ecc71">${admFmt(parseFloat(p.amount||0))}</div>
+              <div style="padding:11px 10px"><span style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);border-radius:4px;padding:2px 8px;font-size:10px">${p.method||'—'}</span></div>
+              <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3)">${p.note||'—'}</div>
+              <div style="padding:11px 10px;" onclick="event.stopPropagation()">
+                <button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:transparent;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.12s" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.5)';this.style.background='rgba(231,76,60,0.1)'" onmouseout="this.style.color='rgba(255,255,255,0.3)';this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">↩ Revert</button>
+              </div>
+            </div>
+            ${hasBreakdown?`<div id="${detailId}" style="display:none;background:rgba(39,174,96,0.03);border-top:1px solid rgba(39,174,96,0.1);padding:12px 16px 14px 40px;">
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px;">Orders covered · ${orderCount} order${orderCount!==1?'s':''}</div>
+              ${breakdown.map(b=>`
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin-bottom:5px;background:rgba(255,255,255,0.03);border-radius:7px;border:1px solid ${b.isAdvance?'rgba(201,168,76,0.2)':'rgba(255,255,255,0.06)'};border-left:3px solid ${b.isAdvance?'rgba(201,168,76,0.5)':'rgba(39,174,96,0.4)'}">
+                  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+                    ${b.isAdvance
+                      ? `<span style="font-size:11px;color:#C9A84C;font-style:italic">↻ Advance / overpayment</span>`
+                      : `<span style="font-size:12px;font-weight:700;color:#c0394b;flex-shrink:0">${b.orderId}</span>
+                         <span style="font-size:11px;color:rgba(255,255,255,0.3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.items}</span>`
+                    }
                   </div>
-                  ${breakdown.map(b=>`
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;margin-bottom:4px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid ${b.isAdvance?'rgba(201,168,76,0.4)':'rgba(39,174,96,0.3)'}">
-                      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-                        ${b.isAdvance
-                          ? `<span style="font-size:10px;color:#C9A84C;font-style:italic;font-weight:600">⟳ ${b.items}</span>`
-                          : `<span style="font-size:11px;font-weight:800;color:#a0253d;flex-shrink:0">${b.orderId}</span>
-                             <span style="font-size:10px;color:rgba(255,255,255,0.3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.items}</span>`
-                        }
-                      </div>
-                      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:12px">
-                        <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:${b.isAdvance?'#C9A84C':b.full?'#2ecc71':'#f39c12'}">${b.isAdvance?'ADVANCE':b.full?'FULLY PAID':'PARTIAL'}</span>
-                        <span style="font-size:12px;font-weight:800;color:${b.isAdvance?'#C9A84C':'#2ecc71'}">৳${Math.round(b.amount)}</span>
-                      </div>
-                    </div>`).join('')}
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
-                    <span style="font-size:9px;color:rgba(255,255,255,0.15);letter-spacing:1px;text-transform:uppercase">Total payment</span>
-                    <span style="font-size:13px;font-weight:900;color:#2ecc71">৳${Math.round(parseFloat(p.amount||0))}</span>
+                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px">
+                    <span style="font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:4px;background:${b.isAdvance?'rgba(201,168,76,0.12)':b.full?'rgba(39,174,96,0.12)':'rgba(243,156,18,0.12)'};color:${b.isAdvance?'#C9A84C':b.full?'#2ecc71':'#f39c12'}">${b.isAdvance?'ADVANCE':b.full?'FULLY PAID':'PARTIAL'}</span>
+                    <span style="font-size:13px;font-weight:700;color:${b.isAdvance?'#C9A84C':'#2ecc71'}">৳${Math.round(b.amount)}</span>
                   </div>
-                </div>
-              </td>
-            </tr>`:''}`;
-        }).join('')}</tbody>
-      </table></div>`;
+                </div>`).join('')}
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+                <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase">Total payment</span>
+                <span style="font-size:14px;font-weight:800;color:#2ecc71">৳${Math.round(parseFloat(p.amount||0))}</span>
+              </div>
+            </div>`:''}
+          </div>`;
+      }).join('')}`;
     })():'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
   </div>
 
@@ -5007,8 +4997,8 @@ function admToggleSupPayDetail(id){
   const isTr=el.tagName==="TR";
   const visible=el.style.display!=="none"&&el.style.display!=="";
   el.style.display=visible?"none":(isTr?"table-row":"block");
-  const btns=document.querySelectorAll(`[onclick*="${id}"]`);
-  btns.forEach(b=>{ if(b.textContent.includes("▶")||b.textContent.includes("▼")) b.textContent=b.textContent.replace(visible?"▼":"▶",visible?"▶":"▼"); });
+  const arrow=document.getElementById(id+'-arrow');
+  if(arrow) arrow.style.transform=visible?'rotate(0deg)':'rotate(90deg)';
 }
 
 function admOpenSupPayModal(supplier, owed, method, orderId){

@@ -1983,90 +1983,118 @@ async function admLoadData(){
     // Helper: compute supplier cost for one order using supplier config + design size
     function calcSupplierCost(supplierName, category, items_json){
       const catMap=supplierCostMap[supplierName];
-      const cfg2=catMap&&catMap[category];
       const totalQty=items_json&&items_json.length?items_json.reduce((s,i)=>s+(i.qty||1),0):1;
-      if(!cfg2||!cfg2.blank){
-        // Fallback to legacy settings-based cost
+      if(!catMap){
         const cat2=(category||'').toLowerCase();
         let blankUnit=costRegular;
         if(cat2.includes('hoodie'))blankUnit=costHoodie;
         else if(cat2.includes('drop'))blankUnit=costDrop;
         return blankUnit*totalQty+costPolybag*totalQty;
       }
-      let cost=cfg2.blank*totalQty;
-      // Print cost: sum design sizes from items_json
-      if(cfg2.printRate>0&&items_json&&items_json.length){
+      let cost=0;
+      // Group items by their category and compute blank cost per group
+      if(items_json&&items_json.length){
+        const catGroups={};
         items_json.forEach(item=>{
-          const key=(item.id||item.product_id||'')+'|'+(item.category||category);
+          const c=item.category||category;
+          catGroups[c]=(catGroups[c]||0)+(item.qty||1);
+        });
+        Object.entries(catGroups).forEach(([cat,qty])=>{
+          const cfg3=catMap[cat]||catMap[category]||{};
+          if(cfg3.blank) cost+=cfg3.blank*qty;
+          else{
+            const c2=cat.toLowerCase();
+            let bu=costRegular;
+            if(c2.includes('hoodie'))bu=costHoodie;
+            else if(c2.includes('drop'))bu=costDrop;
+            cost+=bu*qty;
+          }
+        });
+        // Print + heat press per item
+        items_json.forEach(item=>{
+          const icat=item.category||category;
+          const cfg3=catMap[icat]||catMap[category]||{};
+          const key=(item.id||item.product_id||'')+'|'+icat;
           const ds=designSizeMap[key]||{};
           const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
-          if(sqIn>0) cost+=sqIn*cfg2.printRate*(item.qty||1);
-          if(cfg2.heatPress&&cfg2.heatPressCost>0){
+          if(sqIn>0&&cfg3.printRate>0) cost+=sqIn*cfg3.printRate*(item.qty||1);
+          if(cfg3.heatPress&&cfg3.heatPressCost>0){
             const sides=item.type==='bothsides'?2:1;
-            cost+=cfg2.heatPressCost*sides*(item.qty||1);
+            cost+=cfg3.heatPressCost*sides*(item.qty||1);
           }
         });
       } else {
-        if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost*totalQty;
+        const cfg2=catMap[category]||{};
+        cost+=(cfg2.blank||costRegular);
+        if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost;
       }
+      // Polybag: one per item qty total
+      const firstCat=items_json&&items_json.length?(items_json[0].category||category):category;
+      const cfg2=catMap[firstCat]||catMap[category]||{};
       if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost*totalQty;
       return cost;
     }
 
     // Returns itemised cost breakdown for display
     function calcSupplierCostDetailed(supplierName, category, items_json){
+      // Returns { suborders: [{cat, qty, lines, subtotal}], total }
       const catMap=supplierCostMap[supplierName];
-      const cfg2=catMap&&catMap[category];
-      const totalQty=items_json&&items_json.length?items_json.reduce((s,i)=>s+(i.qty||1),0):1;
-      const lines=[];
-      let total=0;
-      if(!cfg2||!cfg2.blank){
-        // Legacy fallback
-        const cat2=(category||'').toLowerCase();
-        let blankUnit=costRegular;
-        if(cat2.includes('hoodie'))blankUnit=costHoodie;
-        else if(cat2.includes('drop'))blankUnit=costDrop;
-        const blankTotal=blankUnit*totalQty;
-        const polyTotal=costPolybag*totalQty;
-        lines.push({label:'Blank ('+category+')'+(totalQty>1?' × '+totalQty:''),amount:blankTotal});
-        lines.push({label:'Polybag'+(totalQty>1?' × '+totalQty:''),amount:polyTotal});
-        total=blankTotal+polyTotal;
-        return{lines,total};
+      const fmtA=n=>n%1===0?String(n):n.toFixed(1);
+      if(!items_json||!items_json.length){
+        // Single item fallback
+        const cfg2=catMap&&(catMap[category]||{});
+        const blankUnit=cfg2&&cfg2.blank||(()=>{const c=(category||'').toLowerCase();return c.includes('hoodie')?costHoodie:c.includes('drop')?costDrop:costRegular;})();
+        const lines=[];let sub=0;
+        lines.push({label:'Blank ('+category+')',amount:blankUnit});sub+=blankUnit;
+        if(cfg2&&cfg2.heatPress&&cfg2.heatPressCost>0){lines.push({label:'Heat press (1 side)',amount:cfg2.heatPressCost});sub+=cfg2.heatPressCost;}
+        const pc=cfg2&&cfg2.poly&&cfg2.polyCost>0?cfg2.polyCost:costPolybag;
+        lines.push({label:'Polybag',amount:pc});sub+=pc;
+        return{suborders:[{cat:category,qty:1,lines,subtotal:sub}],total:sub};
       }
-      const blankTotal=cfg2.blank*totalQty;
-      lines.push({label:'Blank ('+category+')'+(totalQty>1?' × '+totalQty:''),amount:blankTotal});
-      total+=blankTotal;
-      if(cfg2.printRate>0&&items_json&&items_json.length){
-        items_json.forEach(item=>{
-          const key=(item.id||item.product_id||'')+'|'+(item.category||category);
+      // Group items by category
+      const catOrder=[];
+      const catMap2={};
+      items_json.forEach(item=>{
+        const c=item.category||category;
+        if(!catMap2[c]){catMap2[c]=[];catOrder.push(c);}
+        catMap2[c].push(item);
+      });
+      const suborders=[];
+      let grandTotal=0;
+      catOrder.forEach(cat=>{
+        const items=catMap2[cat];
+        const qty=items.reduce((s,i)=>s+(i.qty||1),0);
+        const cfg3=(catMap&&(catMap[cat]||catMap[category]))||{};
+        const blankUnit=cfg3.blank||(()=>{const c=cat.toLowerCase();return c.includes('hoodie')?costHoodie:c.includes('drop')?costDrop:costRegular;})();
+        const polyUnit=cfg3.poly&&cfg3.polyCost>0?cfg3.polyCost:costPolybag;
+        const lines=[];let sub=0;
+        // Blank
+        lines.push({label:'Blank ('+cat+')'+(qty>1?' × '+qty:''),amount:blankUnit*qty});sub+=blankUnit*qty;
+        // Print + heat press per item
+        items.forEach(item=>{
+          const key=(item.id||item.product_id||'')+'|'+cat;
           const ds=designSizeMap[key]||{};
           const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
-          const itemName=item.name||(item.id||'item');
-          if(sqIn>0){
-            const printCost=sqIn*cfg2.printRate*(item.qty||1);
-            lines.push({label:'Print — '+itemName+' ('+sqIn.toFixed(1)+' sq in × ৳'+cfg2.printRate+(item.qty>1?' × '+item.qty:'')+')',amount:printCost});
-            total+=printCost;
+          const iname=item.name||(item.id||'item');
+          const iq=item.qty||1;
+          if(sqIn>0&&cfg3.printRate>0){
+            const pc=sqIn*cfg3.printRate*iq;
+            lines.push({label:'Print — '+iname+' ('+fmtA(sqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
+            sub+=pc;
           }
-          if(cfg2.heatPress&&cfg2.heatPressCost>0){
+          if(cfg3.heatPress&&cfg3.heatPressCost>0){
             const sides=item.type==='bothsides'?2:1;
-            const hpCost=cfg2.heatPressCost*sides*(item.qty||1);
-            lines.push({label:'Heat press ('+sides+' side'+(sides>1?'s':'')+(item.qty>1?' × '+item.qty:'')+')',amount:hpCost});
-            total+=hpCost;
+            const hc=cfg3.heatPressCost*sides*iq;
+            lines.push({label:'Heat press ('+sides+' side'+(sides>1?'s':'')+(iq>1?' × '+iq:'')+')',amount:hc});
+            sub+=hc;
           }
         });
-      } else {
-        if(cfg2.heatPress&&cfg2.heatPressCost>0){
-          const hpTotal=cfg2.heatPressCost*totalQty;
-          lines.push({label:'Heat press (1 side'+(totalQty>1?' × '+totalQty:'')+')',amount:hpTotal});
-          total+=hpTotal;
-        }
-      }
-      if(cfg2.poly&&cfg2.polyCost>0){
-        const polyTotal=cfg2.polyCost*totalQty;
-        lines.push({label:'Polybag'+(totalQty>1?' × '+totalQty:''),amount:polyTotal});
-        total+=polyTotal;
-      }
-      return{lines,total};
+        // Polybag per qty in this suborder
+        lines.push({label:'Polybag'+(qty>1?' × '+qty:''),amount:polyUnit*qty});sub+=polyUnit*qty;
+        suborders.push({cat,qty,lines,subtotal:sub});
+        grandTotal+=sub;
+      });
+      return{suborders,total:grandTotal};
     }
 
     // Compute per-order profit
@@ -2389,21 +2417,29 @@ function admRenderOrders(){
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
       // P&L breakdown panel with itemised cost
       const _rev=o.total||0,_aff=o.affCommission||0,_gross=o.grossProfit||0,_net=o.netProfit||0;
-      const _calcFn=ADM_DATA&&ADM_DATA.calcCostDetailed;const _breakdown=_calcFn?_calcFn(o.supplier||'T-Shirt Hub',o.detectedCat||'Regular',o.items_json||[]):{lines:[],total:o.supplierCost||0};
-      const _costLines=_breakdown.lines.map(l=>`
-        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-          <span style="color:rgba(255,255,255,0.45);font-size:10px">${l.label}</span>
-          <span style="color:#e74c3c;font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${l.amount%1===0?l.amount:l.amount.toFixed(1)}</span>
+      const _calcFn=ADM_DATA&&ADM_DATA.calcCostDetailed;
+      const _breakdown=_calcFn?_calcFn(o.supplier||'T-Shirt Hub',o.detectedCat||'Regular',o.items_json||[]):{suborders:[],total:o.supplierCost||0};
+      const _fmtN=n=>n%1===0?String(n):n.toFixed(1);
+      const _suborderHtml=(_breakdown.suborders||[]).map((sub,si)=>`
+        <div style="margin-bottom:${si<(_breakdown.suborders.length-1)?'14px':'0'};${si>0?'padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);':''}">
+          <div style="font-size:8px;letter-spacing:1.5px;color:rgba(109,0,26,0.9);background:rgba(109,0,26,0.15);border:1px solid rgba(109,0,26,0.3);display:inline-block;padding:2px 8px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.cat} × ${sub.qty}</div>
+          ${sub.lines.map(l=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+            <span style="color:rgba(255,255,255,0.4);font-size:10px">${l.label}</span>
+            <span style="color:#e74c3c;font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${_fmtN(l.amount)}</span>
+          </div>`).join('')}
+          <div style="display:flex;justify-content:space-between;padding:4px 0 0;margin-top:2px;">
+            <span style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:1px">SUBTOTAL</span>
+            <span style="font-size:11px;font-weight:800;color:#e74c3c">৳${_fmtN(sub.subtotal)}</span>
+          </div>
         </div>`).join('');
       const pnlBar=`<div style="grid-column:1/-1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;margin-bottom:6px;">
         <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px;font-weight:700">📊 Cost &amp; Profit Breakdown</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
           <div>
-            <div style="font-size:8px;letter-spacing:1.5px;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:8px">Cost Breakdown</div>
-            ${_costLines}
-            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 0;margin-top:2px;border-top:1px solid rgba(255,255,255,0.12);">
-              <span style="color:rgba(255,255,255,0.6);font-size:10px;font-weight:700;letter-spacing:1px">TOTAL SUPPLIER COST</span>
-              <span style="color:#e74c3c;font-weight:900;font-size:12px">৳${_breakdown.total%1===0?_breakdown.total:_breakdown.total.toFixed(1)}</span>
+            ${_suborderHtml}
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 0;margin-top:4px;border-top:2px solid rgba(255,255,255,0.1);">
+              <span style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Total Supplier Cost</span>
+              <span style="color:#e74c3c;font-weight:900;font-size:13px">৳${_fmtN(_breakdown.total)}</span>
             </div>
           </div>
           <div style="border-left:1px solid rgba(255,255,255,0.07);padding-left:20px;display:flex;flex-direction:column;gap:10px;justify-content:center;">
@@ -2413,7 +2449,7 @@ function admRenderOrders(){
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;">
               <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>
-              <span style="color:#e74c3c;font-weight:700;font-size:12px">− ${admFmt(_breakdown.total)}</span>
+              <span style="color:#e74c3c;font-weight:700;font-size:12px">− ৳${_fmtN(_breakdown.total)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);">
               <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">= Gross Profit</span>

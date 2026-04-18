@@ -2014,6 +2014,56 @@ async function admLoadData(){
       return cost;
     }
 
+    // Returns itemised cost breakdown for display
+    function calcSupplierCostDetailed(supplierName, category, items_json){
+      const catMap=supplierCostMap[supplierName];
+      const cfg2=catMap&&catMap[category];
+      const lines=[];
+      let total=0;
+      if(!cfg2||!cfg2.blank){
+        // Legacy fallback — no granular breakdown available
+        const cat2=(category||'').toLowerCase();
+        let blankCost=costRegular;
+        if(cat2.includes('hoodie'))blankCost=costHoodie;
+        else if(cat2.includes('drop'))blankCost=costDrop;
+        lines.push({label:'Blank ('+category+')',amount:blankCost});
+        lines.push({label:'Polybag',amount:costPolybag});
+        total=blankCost+costPolybag;
+        return{lines,total};
+      }
+      lines.push({label:'Blank ('+category+')',amount:cfg2.blank});
+      total+=cfg2.blank;
+      if(cfg2.printRate>0&&items_json&&items_json.length){
+        items_json.forEach(item=>{
+          const key=(item.id||item.product_id||'')+'|'+(item.category||category);
+          const ds=designSizeMap[key]||{};
+          const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
+          const itemName=item.name||(item.id||'item');
+          if(sqIn>0){
+            const printCost=sqIn*cfg2.printRate*(item.qty||1);
+            lines.push({label:'Print — '+itemName+' ('+sqIn.toFixed(1)+' sq in × ৳'+cfg2.printRate+(item.qty>1?' × '+item.qty:'')+')',amount:printCost});
+            total+=printCost;
+          }
+          if(cfg2.heatPress&&cfg2.heatPressCost>0){
+            const sides=item.type==='bothsides'?2:1;
+            const hpCost=cfg2.heatPressCost*sides*(item.qty||1);
+            lines.push({label:'Heat press ('+sides+' side'+(sides>1?'s':'')+(item.qty>1?' × '+item.qty:'')+')',amount:hpCost});
+            total+=hpCost;
+          }
+        });
+      } else {
+        if(cfg2.heatPress&&cfg2.heatPressCost>0){
+          lines.push({label:'Heat press (1 side)',amount:cfg2.heatPressCost});
+          total+=cfg2.heatPressCost;
+        }
+      }
+      if(cfg2.poly&&cfg2.polyCost>0){
+        lines.push({label:'Polybag',amount:cfg2.polyCost});
+        total+=cfg2.polyCost;
+      }
+      return{lines,total};
+    }
+
     // Compute per-order profit
     const confirmedStatuses=['Confirmed','Dispatched','Delivered'];
     const affiliatePayouts=payoutRes.data||[];
@@ -2021,18 +2071,11 @@ async function admLoadData(){
       const isConfirmed=confirmedStatuses.includes(o.status);
       // Determine supplier cost — use stored value if set, else compute from config
       let supplierCost=parseFloat(o.supplier_cost||0);
-      if(!supplierCost){
-        const items_json=o.items_json||[];
-        // Detect category from items_json or legacy items string
-        let detectedCat='Regular';
-        if(items_json.length) detectedCat=items_json[0].category||'Regular';
-        else{
-          const s=(o.items||'').toLowerCase();
-          if(s.includes('hoodie'))detectedCat='Hoodie';
-          else if(s.includes('drop'))detectedCat='Drop Shoulder';
-        }
-        supplierCost=calcSupplierCost(o.supplier||'T-Shirt Hub',detectedCat,items_json);
-      }
+      let detectedCat='Regular';
+      const _ij=o.items_json||[];
+      if(_ij.length) detectedCat=_ij[0].category||'Regular';
+      else{const _s=(o.items||'').toLowerCase();if(_s.includes('hoodie'))detectedCat='Hoodie';else if(_s.includes('drop'))detectedCat='Drop Shoulder';}
+      if(!supplierCost) supplierCost=calcSupplierCost(o.supplier||'T-Shirt Hub',detectedCat,_ij);
       // Affiliate commission
       let affComm=0;
       if(o.affiliate_code&&isConfirmed){
@@ -2064,6 +2107,7 @@ async function admLoadData(){
         dispatchedAt:o.dispatched_at||'',
         deliveredAt:o.delivered_at||'',
         supplier:o.supplier||'T-Shirt Hub',
+        detectedCat:detectedCat||'Regular',
         total,supplierCost,grossProfit,affCommission:affComm,netProfit,
         status:o.status,affiliateCode:o.affiliate_code||'',
         supplierFault:o.supplier_fault||false,
@@ -2337,41 +2381,48 @@ function admRenderOrders(){
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       // Build detail row fields
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-      // P&L breakdown panel
-      const _rev=o.total||0,_cost=o.supplierCost||0,_aff=o.affCommission||0,_gross=o.grossProfit||0,_net=o.netProfit||0;
-      const _cpct=_rev>0?Math.max(4,Math.round(_cost/_rev*100)):0;
-      const _apct=_rev>0&&_aff>0?Math.max(3,Math.round(_aff/_rev*100)):0;
-      const _npct=Math.max(0,100-_cpct-_apct);
-      const pnlBar=`<div style="grid-column:1/-1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 18px;margin-bottom:6px;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:10px;font-weight:700">📊 Cost &amp; Profit Breakdown</div>
-        <div style="display:flex;border-radius:5px;overflow:hidden;height:26px;margin-bottom:14px;">
-          <div style="width:${_cpct}%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);letter-spacing:0.5px;" title="Supplier Cost">${_cpct>12?'COST':''}</div>
-          ${_aff>0?`<div style="width:${_apct}%;background:#e67e22;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);" title="Aff Commission">${_apct>10?'AFF':''}</div>`:''}
-          <div style="width:${_npct}%;background:${_net>=0?'#27ae60':'#922b21'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);" title="Net Profit">${_npct>12?'NET':''}</div>
+      // P&L breakdown panel with itemised cost
+      const _rev=o.total||0,_aff=o.affCommission||0,_gross=o.grossProfit||0,_net=o.netProfit||0;
+      const _breakdown=calcSupplierCostDetailed(o.supplier||'T-Shirt Hub',o.detectedCat||'Regular',o.items_json||[]);
+      const _costLines=_breakdown.lines.map(l=>`
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+          <span style="color:rgba(255,255,255,0.45);font-size:10px">${l.label}</span>
+          <span style="color:#e74c3c;font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${l.amount%1===0?l.amount:l.amount.toFixed(1)}</span>
+        </div>`).join('');
+      const pnlBar=`<div style="grid-column:1/-1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;margin-bottom:6px;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:14px;font-weight:700">📊 Cost &amp; Profit Breakdown</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <div style="font-size:8px;letter-spacing:1.5px;color:rgba(255,255,255,0.2);text-transform:uppercase;margin-bottom:8px">Cost Breakdown</div>
+            ${_costLines}
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 0;margin-top:2px;border-top:1px solid rgba(255,255,255,0.12);">
+              <span style="color:rgba(255,255,255,0.6);font-size:10px;font-weight:700;letter-spacing:1px">TOTAL SUPPLIER COST</span>
+              <span style="color:#e74c3c;font-weight:900;font-size:12px">৳${_breakdown.total%1===0?_breakdown.total:_breakdown.total.toFixed(1)}</span>
+            </div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,0.07);padding-left:20px;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">Revenue</span>
+              <span style="color:#fff;font-weight:800;font-size:14px">${admFmt(_rev)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>
+              <span style="color:#e74c3c;font-weight:700;font-size:12px">− ${admFmt(_breakdown.total)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);">
+              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">= Gross Profit</span>
+              <span style="color:${_gross>=0?'#2ecc71':'#e74c3c'};font-weight:800;font-size:13px">${admFmt(_gross)} <span style="font-size:9px;font-weight:600;opacity:0.7">${_rev>0?'('+(_gross/_rev*100).toFixed(1)+'%)':''}</span></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Aff. Commission</span>
+              <span style="color:${_aff>0?'#e67e22':'rgba(255,255,255,0.2)'};font-weight:700;font-size:12px">${_aff>0?'− '+admFmt(_aff):'—'}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:8px;border-top:1px solid rgba(255,255,255,0.12);">
+              <span style="color:rgba(255,255,255,0.5);font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:700">= Net Profit</span>
+              <span style="color:${_net>=0?'#C9A84C':'#e74c3c'};font-weight:900;font-size:16px">${admFmt(_net)} <span style="font-size:9px;font-weight:600;opacity:0.8">${_rev>0?'('+(_net/_rev*100).toFixed(1)+'%)':''}</span></span>
+            </div>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;text-align:center;">
-          <div style="padding:0 8px;">
-            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Revenue</div>
-            <div style="font-size:13px;font-weight:800;color:#fff">${admFmt(_rev)}</div>
-          </div>
-          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
-            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">− Supplier</div>
-            <div style="font-size:13px;font-weight:800;color:#e74c3c">${admFmt(_cost)}</div>
-          </div>
-          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
-            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">= Gross</div>
-            <div style="font-size:13px;font-weight:800;color:${_gross>=0?'#2ecc71':'#e74c3c'}">${admFmt(_gross)}</div>
-          </div>
-          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
-            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">− Aff. Comm</div>
-            <div style="font-size:13px;font-weight:800;color:${_aff>0?'#e67e22':'rgba(255,255,255,0.15)'}">${_aff>0?admFmt(_aff):'—'}</div>
-          </div>
-          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
-            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">= Net Profit</div>
-            <div style="font-size:15px;font-weight:900;color:${_net>=0?'#C9A84C':'#e74c3c'}">${admFmt(_net)}</div>
-          </div>
-        </div>
-        ${_rev>0?`<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.2);text-align:right;letter-spacing:1px;">GROSS MARGIN <span style="color:${_gross/_rev>=0?'#2ecc71':'#e74c3c'};font-weight:700">${(_gross/_rev*100).toFixed(1)}%</span> &nbsp;·&nbsp; NET MARGIN <span style="color:${_net/_rev>=0?'#C9A84C':'#e74c3c'};font-weight:700">${(_net/_rev*100).toFixed(1)}%</span></div>`:''}
       </div>`;
       const detailHtml=`
         ${pnlBar}

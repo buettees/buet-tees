@@ -2029,24 +2029,37 @@ async function admLoadData(){
         items_json.forEach(item=>{
           const icat=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
           const cfg3=catMap[normalizeCat(icat)]||{};
-          const key=(item.id||item.product_id||'')+'|'+icat;
-          const ds=designSizeMap[key]||{};
-          const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
-          if(sqIn>0&&cfg3.printRate>0) cost+=sqIn*cfg3.printRate*(item.qty||1);
+          const qty=item.qty||1;
+          if(item.type==='bothsides'){
+            const frontDs=designSizeMap[(item.frontId||item.frontName||'')+'|'+icat]||{};
+            const backDs=designSizeMap[(item.backId||item.backName||'')+'|'+icat]||{};
+            const frontSqIn=(parseFloat(frontDs.w||0))*(parseFloat(frontDs.h||0));
+            const backSqIn=(parseFloat(backDs.w||0))*(parseFloat(backDs.h||0));
+            if(frontSqIn>0&&cfg3.printRate>0) cost+=frontSqIn*cfg3.printRate*qty;
+            if(backSqIn>0&&cfg3.printRate>0) cost+=backSqIn*cfg3.printRate*qty;
+          } else {
+            const key=(item.id||item.product_id||'')+'|'+icat;
+            const ds=designSizeMap[key]||{};
+            const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
+            if(sqIn>0&&cfg3.printRate>0) cost+=sqIn*cfg3.printRate*qty;
+          }
           if(cfg3.heatPress&&cfg3.heatPressCost>0){
             const sides=item.type==='bothsides'?2:1;
-            cost+=cfg3.heatPressCost*sides*(item.qty||1);
+            cost+=cfg3.heatPressCost*sides*qty;
           }
+        });
+        // Polybag per item (match detailed calculation)
+        items_json.forEach(item=>{
+          const icat=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
+          const cfg3=catMap[normalizeCat(icat)]||{};
+          const polyUnit=cfg3.poly&&cfg3.polyCost>0?cfg3.polyCost:costPolybag;
+          cost+=polyUnit*(item.qty||1);
         });
       } else {
         const cfg2=catMap[normalizeCat(category)]||{};
         cost+=(cfg2.blank||costRegular);
         if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost;
       }
-      // Polybag: one per item qty total
-      const firstCat=items_json&&items_json.length?(items_json[0].category||category):category;
-      const cfg2=catMap[normalizeCat(firstCat)]||{};
-      if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost*totalQty;
       return cost;
     }
 

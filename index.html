@@ -2141,13 +2141,28 @@ async function admLoadData(){
       if(!supplierCost) supplierCost=calcSupplierCost(o.supplier||'T-Shirt Hub',detectedCat,_ij);
       // Affiliate commission
       let affComm=0;
-      if(o.affiliate_code&&isConfirmed){
+      if(o.affiliate_code){
         const aff=affiliates.find(a=>a.code===o.affiliate_code);
         if(aff){
-          const itemsStr=(o.items||'').toLowerCase();
-          if(itemsStr.includes('hoodie'))affComm=parseFloat(aff.commission_hoodie||35);
-          else if(itemsStr.includes('drop'))affComm=parseFloat(aff.commission_drop||25);
-          else affComm=parseFloat(aff.commission_regular||20);
+          const ij=o.items_json||[];
+          if(ij.length){
+            // Per-item commission based on each item's category
+            ij.forEach(item=>{
+              const qty=item.qty||1;
+              const icat=(item.category||(item.type==='bothsides'?item.shirtType:null)||'').toLowerCase();
+              let rate;
+              if(icat.includes('hoodie')) rate=parseFloat(aff.commission_hoodie||35);
+              else if(icat.includes('drop')) rate=parseFloat(aff.commission_drop||25);
+              else rate=parseFloat(aff.commission_regular||20);
+              affComm+=rate*qty;
+            });
+          } else {
+            // Fallback to items string
+            const itemsStr=(o.items||'').toLowerCase();
+            if(itemsStr.includes('hoodie'))affComm=parseFloat(aff.commission_hoodie||35);
+            else if(itemsStr.includes('drop'))affComm=parseFloat(aff.commission_drop||25);
+            else affComm=parseFloat(aff.commission_regular||20);
+          }
         }
       }
       const total=parseFloat(o.total||0);

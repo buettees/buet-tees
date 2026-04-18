@@ -4713,6 +4713,8 @@ function admRenderFinance(){
   const transactions=ADM_DATA.transactions||[];
   const payouts=ADM_DATA.affiliatePayouts||[];
   const supplierPayments=ADM_DATA.supplierPayments||[];
+  const recentSupPayments=supplierPayments.slice(0,10);
+  const recentPayouts=payouts.slice().reverse().slice(0,8);
 
   // ── Core numbers ─────────────────────────────────────
   const capitalIn    = transactions.filter(t=>t.type==='Capital In').reduce((a,t)=>a+parseFloat(t.amount||0),0);

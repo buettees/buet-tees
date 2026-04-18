@@ -2337,7 +2337,44 @@ function admRenderOrders(){
       else if(o.status==='Cancelled')actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">CANCELLED</span><button class="adm-status-btn adm-status-confirm" onclick="admUpdateOrderStatus('${o.orderId}','Pending')" style="margin-left:6px">↩ Restore</button>`;
       // Build detail row fields
       const fmtDt=dt=>dt?new Date(dt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      // P&L breakdown panel
+      const _rev=o.total||0,_cost=o.supplierCost||0,_aff=o.affCommission||0,_gross=o.grossProfit||0,_net=o.netProfit||0;
+      const _cpct=_rev>0?Math.max(4,Math.round(_cost/_rev*100)):0;
+      const _apct=_rev>0&&_aff>0?Math.max(3,Math.round(_aff/_rev*100)):0;
+      const _npct=Math.max(0,100-_cpct-_apct);
+      const pnlBar=`<div style="grid-column:1/-1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 18px;margin-bottom:6px;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:10px;font-weight:700">📊 Cost &amp; Profit Breakdown</div>
+        <div style="display:flex;border-radius:5px;overflow:hidden;height:26px;margin-bottom:14px;">
+          <div style="width:${_cpct}%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);letter-spacing:0.5px;" title="Supplier Cost">${_cpct>12?'COST':''}</div>
+          ${_aff>0?`<div style="width:${_apct}%;background:#e67e22;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);" title="Aff Commission">${_apct>10?'AFF':''}</div>`:''}
+          <div style="width:${_npct}%;background:${_net>=0?'#27ae60':'#922b21'};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:rgba(255,255,255,0.8);" title="Net Profit">${_npct>12?'NET':''}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;text-align:center;">
+          <div style="padding:0 8px;">
+            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">Revenue</div>
+            <div style="font-size:13px;font-weight:800;color:#fff">${admFmt(_rev)}</div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
+            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">− Supplier</div>
+            <div style="font-size:13px;font-weight:800;color:#e74c3c">${admFmt(_cost)}</div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
+            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">= Gross</div>
+            <div style="font-size:13px;font-weight:800;color:${_gross>=0?'#2ecc71':'#e74c3c'}">${admFmt(_gross)}</div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
+            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">− Aff. Comm</div>
+            <div style="font-size:13px;font-weight:800;color:${_aff>0?'#e67e22':'rgba(255,255,255,0.15)'}">${_aff>0?admFmt(_aff):'—'}</div>
+          </div>
+          <div style="border-left:1px solid rgba(255,255,255,0.07);padding:0 8px;">
+            <div style="font-size:8px;color:rgba(255,255,255,0.25);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">= Net Profit</div>
+            <div style="font-size:15px;font-weight:900;color:${_net>=0?'#C9A84C':'#e74c3c'}">${admFmt(_net)}</div>
+          </div>
+        </div>
+        ${_rev>0?`<div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,0.2);text-align:right;letter-spacing:1px;">GROSS MARGIN <span style="color:${_gross/_rev>=0?'#2ecc71':'#e74c3c'};font-weight:700">${(_gross/_rev*100).toFixed(1)}%</span> &nbsp;·&nbsp; NET MARGIN <span style="color:${_net/_rev>=0?'#C9A84C':'#e74c3c'};font-weight:700">${(_net/_rev*100).toFixed(1)}%</span></div>`:''}
+      </div>`;
       const detailHtml=`
+        ${pnlBar}
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Phone</div>${o.phone||'—'}</div>
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${o.email||'—'}</div>
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Address</div>${o.address||'—'}</div>

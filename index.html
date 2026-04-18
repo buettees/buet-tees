@@ -2463,11 +2463,11 @@ function admRenderOrders(){
           <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);display:inline-block;padding:3px 10px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.cat} × ${sub.qty}</div>
           ${sub.lines.map(l=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
             <span style="color:rgba(255,255,255,0.4);font-size:10px">${l.label}</span>
-            <span style="color:rgba(255,255,255,0.75);font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${_fmtN(l.amount)}</span>
+            <span style="color:#e74c3c;font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${_fmtN(l.amount)}</span>
           </div>`).join('')}
           <div style="display:flex;justify-content:space-between;padding:4px 0 0;margin-top:2px;">
             <span style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:1px">SUBTOTAL</span>
-            <span style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.9)">৳${_fmtN(sub.subtotal)}</span>
+            <span style="font-size:11px;font-weight:800;color:#e74c3c">৳${_fmtN(sub.subtotal)}</span>
           </div>
         </div>`).join('');
       const pnlBar=`<div style="grid-column:1/-1;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px;margin-bottom:6px;">
@@ -2477,7 +2477,7 @@ function admRenderOrders(){
             ${_suborderHtml}
             <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 0;margin-top:4px;border-top:2px solid rgba(255,255,255,0.1);">
               <span style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Total Supplier Cost</span>
-              <span style="color:rgba(255,255,255,0.95);font-weight:900;font-size:13px">৳${_fmtN(_breakdown.total)}</span>
+              <span style="color:#e74c3c;font-weight:900;font-size:13px">৳${_fmtN(_breakdown.total)}</span>
             </div>
           </div>
           <div style="border-left:1px solid rgba(255,255,255,0.07);padding-left:20px;display:flex;flex-direction:column;gap:10px;justify-content:center;">

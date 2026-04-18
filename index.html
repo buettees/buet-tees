@@ -2460,7 +2460,7 @@ function admRenderOrders(){
       const _fmtN=n=>n%1===0?String(n):n.toFixed(1);
       const _suborderHtml=(_breakdown.suborders||[]).map((sub,si)=>`
         <div style="margin-bottom:${si<(_breakdown.suborders.length-1)?'14px':'0'};${si>0?'padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);':''}">
-          <div style="font-size:8px;letter-spacing:1.5px;color:rgba(109,0,26,0.9);background:rgba(109,0,26,0.15);border:1px solid rgba(109,0,26,0.3);display:inline-block;padding:2px 8px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.cat} × ${sub.qty}</div>
+          <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);display:inline-block;padding:3px 10px;border-radius:3px;margin-bottom:8px;font-weight:700;text-transform:uppercase">Sub-order ${si+1} · ${sub.cat} × ${sub.qty}</div>
           ${sub.lines.map(l=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);">
             <span style="color:rgba(255,255,255,0.4);font-size:10px">${l.label}</span>
             <span style="color:rgba(255,255,255,0.75);font-weight:700;font-size:10px;white-space:nowrap;margin-left:12px">৳${_fmtN(l.amount)}</span>

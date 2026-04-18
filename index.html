@@ -1977,7 +1977,7 @@ async function admLoadData(){
       const grossProfit=total-supplierCost;
       const netProfit=grossProfit-affComm;
       return{
-        orderId:o.id,timestamp:o.created_at,items:o.items||'',
+        orderId:o.id,timestamp:o.created_at,items:o.items||'',items_json:o.items_json||[],
         customerName:o.name||'',
         phone:o.phone||'',
         email:o.email||'',
@@ -3313,7 +3313,7 @@ function admRenderCosts(){
     const breakdownRows=unpaidOrders.map(o=>`
       <div style="display:grid;grid-template-columns:90px 1fr 95px 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
         <div style="font-weight:700;color:#fff;font-size:11px">${o.orderId}${o._unpaidCost<o.supplierCost-0.5?'<span style="font-size:8px;color:rgba(255,165,0,0.7);margin-left:4px">partial</span>':''}</div>
-        <div style="color:rgba(255,255,255,0.35);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(o.items||'').split(',')[0]||'—'}</div>
+        <div style="color:rgba(255,255,255,0.35);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(()=>{const ij=o.items_json||[];if(ij.length){return ij.map(it=>it.type==='bothsides'?`Both Sides (${it.size||''}/${it.color||''}) x${it.qty||1}`:`${it.name||''} [${it.category||''}] (${it.size||''}/${it.color||''}${it.side?' '+it.side+' print':''} x${it.qty||1})`).join(', ');}return(o.items||'—');})()}</div>
         <div style="color:rgba(255,255,255,0.25);font-size:10px">${new Date(o.confirmedAt||o.timestamp).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
         <div style="text-align:right;font-weight:700;color:#2ecc71;font-size:11px">৳${Math.round(o._unpaidCost)}</div>
       </div>`).join('');

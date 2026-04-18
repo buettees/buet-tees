@@ -1984,33 +1984,32 @@ async function admLoadData(){
     function calcSupplierCost(supplierName, category, items_json){
       const catMap=supplierCostMap[supplierName];
       const cfg2=catMap&&catMap[category];
+      const totalQty=items_json&&items_json.length?items_json.reduce((s,i)=>s+(i.qty||1),0):1;
       if(!cfg2||!cfg2.blank){
         // Fallback to legacy settings-based cost
         const cat2=(category||'').toLowerCase();
-        if(cat2.includes('hoodie'))return costHoodie+costPolybag;
-        if(cat2.includes('drop'))return costDrop+costPolybag;
-        return costRegular+costPolybag;
+        let blankUnit=costRegular;
+        if(cat2.includes('hoodie'))blankUnit=costHoodie;
+        else if(cat2.includes('drop'))blankUnit=costDrop;
+        return blankUnit*totalQty+costPolybag*totalQty;
       }
-      let cost=cfg2.blank;
+      let cost=cfg2.blank*totalQty;
       // Print cost: sum design sizes from items_json
       if(cfg2.printRate>0&&items_json&&items_json.length){
         items_json.forEach(item=>{
-          // item.id = product_id (e.g. "BT0025"), item.category = "Regular"/"Drop Shoulder"/"Hoodie"
           const key=(item.id||item.product_id||'')+'|'+(item.category||category);
           const ds=designSizeMap[key]||{};
           const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
           if(sqIn>0) cost+=sqIn*cfg2.printRate*(item.qty||1);
-          // Heat press cost per side per item
           if(cfg2.heatPress&&cfg2.heatPressCost>0){
             const sides=item.type==='bothsides'?2:1;
             cost+=cfg2.heatPressCost*sides*(item.qty||1);
           }
         });
       } else {
-        // No items_json — heat press fallback: 1 item, 1 side
-        if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost;
+        if(cfg2.heatPress&&cfg2.heatPressCost>0) cost+=cfg2.heatPressCost*totalQty;
       }
-      if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost;
+      if(cfg2.poly&&cfg2.polyCost>0) cost+=cfg2.polyCost*totalQty;
       return cost;
     }
 
@@ -2018,21 +2017,25 @@ async function admLoadData(){
     function calcSupplierCostDetailed(supplierName, category, items_json){
       const catMap=supplierCostMap[supplierName];
       const cfg2=catMap&&catMap[category];
+      const totalQty=items_json&&items_json.length?items_json.reduce((s,i)=>s+(i.qty||1),0):1;
       const lines=[];
       let total=0;
       if(!cfg2||!cfg2.blank){
-        // Legacy fallback — no granular breakdown available
+        // Legacy fallback
         const cat2=(category||'').toLowerCase();
-        let blankCost=costRegular;
-        if(cat2.includes('hoodie'))blankCost=costHoodie;
-        else if(cat2.includes('drop'))blankCost=costDrop;
-        lines.push({label:'Blank ('+category+')',amount:blankCost});
-        lines.push({label:'Polybag',amount:costPolybag});
-        total=blankCost+costPolybag;
+        let blankUnit=costRegular;
+        if(cat2.includes('hoodie'))blankUnit=costHoodie;
+        else if(cat2.includes('drop'))blankUnit=costDrop;
+        const blankTotal=blankUnit*totalQty;
+        const polyTotal=costPolybag*totalQty;
+        lines.push({label:'Blank ('+category+')'+(totalQty>1?' × '+totalQty:''),amount:blankTotal});
+        lines.push({label:'Polybag'+(totalQty>1?' × '+totalQty:''),amount:polyTotal});
+        total=blankTotal+polyTotal;
         return{lines,total};
       }
-      lines.push({label:'Blank ('+category+')',amount:cfg2.blank});
-      total+=cfg2.blank;
+      const blankTotal=cfg2.blank*totalQty;
+      lines.push({label:'Blank ('+category+')'+(totalQty>1?' × '+totalQty:''),amount:blankTotal});
+      total+=blankTotal;
       if(cfg2.printRate>0&&items_json&&items_json.length){
         items_json.forEach(item=>{
           const key=(item.id||item.product_id||'')+'|'+(item.category||category);
@@ -2053,13 +2056,15 @@ async function admLoadData(){
         });
       } else {
         if(cfg2.heatPress&&cfg2.heatPressCost>0){
-          lines.push({label:'Heat press (1 side)',amount:cfg2.heatPressCost});
-          total+=cfg2.heatPressCost;
+          const hpTotal=cfg2.heatPressCost*totalQty;
+          lines.push({label:'Heat press (1 side'+(totalQty>1?' × '+totalQty:'')+')',amount:hpTotal});
+          total+=hpTotal;
         }
       }
       if(cfg2.poly&&cfg2.polyCost>0){
-        lines.push({label:'Polybag',amount:cfg2.polyCost});
-        total+=cfg2.polyCost;
+        const polyTotal=cfg2.polyCost*totalQty;
+        lines.push({label:'Polybag'+(totalQty>1?' × '+totalQty:''),amount:polyTotal});
+        total+=polyTotal;
       }
       return{lines,total};
     }

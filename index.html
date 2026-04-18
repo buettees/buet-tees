@@ -3451,114 +3451,150 @@ function admRenderCosts(){
       </div>
     </div>`;
 
-  // ── PAY SUPPLIER section (moved from Finance tab) ────────
+  // ── PAY SUPPLIER section ────────────────────────────────────────
   const supplierPayments=ADM_DATA.supplierPayments||[];
   const orders=ADM_DATA.orders||[];
-  const confirmed=orders.filter(o=>o.isConfirmed);
-  const supByName={};
-  confirmed.forEach(o=>{
-    const n=o.supplier||'T-Shirt Hub';
-    if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0,orderList:[]};
-    supByName[n].orders++;
-    supByName[n].totalCost+=o.supplierCost;
-    supByName[n].orderList.push(o);
-  });
-  supplierPayments.forEach(p=>{
-    const n=p.supplier||'T-Shirt Hub';
-    if(!supByName[n])supByName[n]={name:n,orders:0,totalCost:0,totalPaid:0,orderList:[]};
-    supByName[n].totalPaid+=parseFloat(p.amount||0);
-  });
-  const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
-  faultOrders.forEach(o=>{
-    const sup=o.supplier||'T-Shirt Hub';
-    if(!supByName[sup])supByName[sup]={name:sup,orders:0,totalCost:0,totalPaid:0,orderList:[]};
-    supByName[sup].totalCost-=o.supplierCost;
-  });
-  const supPayRows=Object.values(supByName);
-  const recentSupPayments=supplierPayments.slice().reverse().slice(0,8);
+
+  // Return window helper
   const returnWinRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
   const returnWinChangedAt=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
   const settingChangedTs2=returnWinChangedAt?new Date(returnWinChangedAt).getTime():0;
-  const nowTs=Date.now();
+  const nowTs2=Date.now();
   function isWithinReturnWindow(deliveredAt){
     if(returnWinRaw==='0')return false;
     const ts=deliveredAt?new Date(deliveredAt).getTime():0;
-    if(settingChangedTs2&&ts&&ts<settingChangedTs2)return false;
-    if(returnWinRaw==='always')return !!ts;
+    if(!ts)return false;
+    if(settingChangedTs2&&ts<settingChangedTs2)return false;
+    if(returnWinRaw==='always')return true;
     const days=parseInt(returnWinRaw)||1;
-    return ts&&(nowTs-ts)<(days*86400000);
+    return (nowTs2-ts)<(days*86400000);
   }
-  // Per-supplier: block payment if any delivered order is within return window OR has supplier fault
-  const supReturnOpen={};
-  const supBlockReasons={};
-  orders.filter(o=>o.status==='Delivered').forEach(o=>{
-    const sup=o.supplier||'T-Shirt Hub';
-    if(isWithinReturnWindow(o.deliveredAt)){
-      supReturnOpen[sup]=true;
-      supBlockReasons[sup]='Return window open on '+o.orderId;
-    }
-  });
-  // All payments flat list, newest last
-  const allSupPayments=supplierPayments.slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
-  // Build fault rows to show in table alongside payments
-  const faultRows=faultOrders.map(o=>({
-    _isFault:true,
-    orderId:o.orderId,
-    supplier:o.supplier||'T-Shirt Hub',
-    amount:o.supplierCost,
-    faultNote:o.faultNote||'',
-    date:o.timestamp
-  }));
-  const allRows=[...allSupPayments.map(p=>({...p,_isFault:false})),...faultRows]
-    .sort((a,b)=>new Date(a.paid_at||a.date)-new Date(b.paid_at||b.date));
 
-  // ── Build running ledger per supplier: assign orders to payment events ───
-  // Sort confirmed orders by confirmed_at / created_at to build a FIFO queue
-  // then match payments chronologically so each payment "covers" the earliest unpaid orders
-  function buildSupplierLedger(supName){
-    const supOrders=confirmed
-      .filter(o=>(o.supplier||'T-Shirt Hub')===supName)
-      .slice()
-      .sort((a,b)=>new Date(a.confirmedAt||a.timestamp)-new Date(b.confirmedAt||b.timestamp));
+  // Only look at Delivered orders with return window closed — these are payable
+  const deliveredPayable=orders.filter(o=>
+    o.status==='Delivered' && !isWithinReturnWindow(o.deliveredAt)
+  );
+
+  // How much has already been paid per supplier (total)
+  const paidBySup={};
+  supplierPayments.forEach(p=>{
+    const n=p.supplier||'T-Shirt Hub';
+    paidBySup[n]=(paidBySup[n]||0)+parseFloat(p.amount||0);
+  });
+
+  // Fault deductions (returned + supplier fault) reduce what's owed
+  const faultOrders=orders.filter(o=>o.status==='Returned'&&o.supplierFault);
+  const faultDeductBySup={};
+  faultOrders.forEach(o=>{
+    const n=o.supplier||'T-Shirt Hub';
+    faultDeductBySup[n]=(faultDeductBySup[n]||0)+o.supplierCost;
+  });
+
+  // Total supplier cost of all payable delivered orders per supplier
+  const payableCostBySup={};
+  deliveredPayable.forEach(o=>{
+    const n=o.supplier||'T-Shirt Hub';
+    payableCostBySup[n]=(payableCostBySup[n]||0)+o.supplierCost;
+  });
+
+  // Group payable orders by supplier, sorted oldest first
+  const payableOrdersBySup={};
+  deliveredPayable.forEach(o=>{
+    const n=o.supplier||'T-Shirt Hub';
+    if(!payableOrdersBySup[n])payableOrdersBySup[n]=[];
+    payableOrdersBySup[n].push(o);
+  });
+  Object.values(payableOrdersBySup).forEach(arr=>
+    arr.sort((a,b)=>new Date(a.deliveredAt||a.confirmedAt)-new Date(b.deliveredAt||b.confirmedAt))
+  );
+
+  // Per-order remaining due: use FIFO to apply existing payments against payable orders
+  function calcPerOrderDue(supName){
+    const supOrders=(payableOrdersBySup[supName]||[]).slice();
     const supPays=supplierPayments
       .filter(p=>(p.supplier||'T-Shirt Hub')===supName)
-      .slice()
-      .sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
-    // Deduct faults
-    const faultDeductions=faultOrders
-      .filter(o=>(o.supplier||'T-Shirt Hub')===supName)
-      .map(o=>({orderId:o.orderId,amount:o.supplierCost,isFault:true,date:o.timestamp}));
-    // FIFO: walk through payments and assign orders
-    let remaining=[...supOrders.map(o=>({...o,_remaining:o.supplierCost}))];
-    const paymentBreakdowns=[];
+      .slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
+    // Build mutable remaining per order
+    const rem=supOrders.map(o=>({o,remaining:o.supplierCost}));
     supPays.forEach(pay=>{
       let budget=parseFloat(pay.amount||0);
-      const covered=[];
-      for(let i=0;i<remaining.length&&budget>0;i++){
-        if(remaining[i]._remaining<=0)continue;
-        const take=Math.min(remaining[i]._remaining,budget);
-        covered.push({orderId:remaining[i].orderId,date:remaining[i].confirmedAt||remaining[i].timestamp,items:remaining[i].items,items_json:remaining[i].items_json||[],status:remaining[i].status,cost:take,partial:take<remaining[i].supplierCost});
-        remaining[i]._remaining-=take;
+      for(const r of rem){
+        if(budget<=0)break;
+        const take=Math.min(r.remaining,budget);
+        r.remaining-=take;
         budget-=take;
       }
-      paymentBreakdowns.push({pay,covered,leftover:budget});
     });
-    // Remaining unpaid orders
-    const unpaid=remaining.filter(o=>o._remaining>0.01).map(o=>({...o,_unpaidCost:o._remaining}));
-    return{paymentBreakdowns,unpaid,faultDeductions};
+    return rem.filter(r=>r.remaining>0.01);
   }
 
-  // Store ledgers in window for toggle access
-  window._supLedgers={};
-  supPayRows.forEach(r=>{ window._supLedgers[r.name]=buildSupplierLedger(r.name); });
+  // Suppliers that have payable orders with remaining balance
+  const suppliersWithDue=[...new Set(deliveredPayable.map(o=>o.supplier||'T-Shirt Hub'))];
+
+  // Also count delivered-but-blocked (return window still open) and confirmed-but-not-delivered
+  function fmtOrderItems(o){
+    const ij=o.items_json||[];
+    if(ij.length)return ij.map(it=>it.type==='bothsides'?`Both Sides (${it.shirtType||it.category||''}) ×${it.qty||1}`:`${it.name||it.id||''} [${it.category||''}] ×${it.qty||1}`).join(', ');
+    return o.items||'—';
+  }
+
+  // Payment history rows
+  const allSupPayments=supplierPayments.slice().sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at));
+  const faultRows=faultOrders.map(o=>({_isFault:true,orderId:o.orderId,supplier:o.supplier||'T-Shirt Hub',amount:o.supplierCost,faultNote:o.faultNote||'',date:o.timestamp}));
+  const allHistoryRows=[...allSupPayments.map(p=>({...p,_isFault:false})),...faultRows]
+    .sort((a,b)=>new Date(b.paid_at||b.date)-new Date(a.paid_at||a.date));
 
   document.getElementById("adm-costs").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
+
+  <!-- ── Payable orders per supplier ── -->
+  ${suppliersWithDue.length?suppliersWithDue.map(supName=>{
+    const dueOrders=calcPerOrderDue(supName);
+    if(!dueOrders.length)return'';
+    const totalDue=dueOrders.reduce((s,r)=>s+r.remaining,0);
+    const bdId='spbd-'+supName.replace(/\s+/g,'_');
+    const orderRows=dueOrders.map(({o,remaining})=>`
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        <td style="padding:9px 12px;font-weight:800;color:#fff;font-size:11px;white-space:nowrap">${o.orderId}</td>
+        <td style="padding:9px 12px;color:rgba(255,255,255,0.35);font-size:10px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fmtOrderItems(o)}</td>
+        <td style="padding:9px 12px;color:rgba(255,255,255,0.3);font-size:10px;white-space:nowrap">${o.deliveredAt?new Date(o.deliveredAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—'}</td>
+        <td style="padding:9px 12px;text-align:right;font-weight:700;color:#2ecc71;font-size:12px;white-space:nowrap">৳${Math.round(remaining)}</td>
+        <td style="padding:9px 12px;text-align:right">
+          <button onclick="admOpenSupPayModal('${supName.replace(/'/g,"\\'")}',${Math.round(remaining)},null,'${o.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:4px;padding:4px 12px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;white-space:nowrap">Pay ৳${Math.round(remaining)}</button>
+        </td>
+      </tr>`).join('');
+    return`<div style="margin-bottom:16px;background:#111;border:1px solid rgba(39,174,96,0.15);border-radius:12px;overflow:hidden;">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#0c160c;border-bottom:1px solid rgba(39,174,96,0.12);">
+        <div>
+          <span style="font-size:13px;font-weight:800;color:#fff">${supName}</span>
+          <span style="font-size:10px;color:rgba(39,174,96,0.6);margin-left:10px">${dueOrders.length} order${dueOrders.length!==1?'s':''} payable</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="admToggleSupPayDetail('${bdId}')" style="background:rgba(39,174,96,0.08);color:rgba(39,174,96,0.6);border:1px solid rgba(39,174,96,0.2);border-radius:6px;padding:6px 12px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">▶ Details</button>
+          <button onclick="admOpenSupPayModal('${supName.replace(/'/g,"\\'")}',${Math.round(totalDue)},null,null)" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.5px">Pay All · ৳${Math.round(totalDue)}</button>
+        </div>
+      </div>
+      <div id="${bdId}" style="display:none;">
+        <div class="adm-tbl-scroll"><table class="adm-tbl" style="margin:0">
+          <thead><tr><th>Order</th><th>Items</th><th>Delivered</th><th style="text-align:right">Due</th><th style="text-align:right">Action</th></tr></thead>
+          <tbody>${orderRows}</tbody>
+          <tfoot><tr style="background:rgba(39,174,96,0.05);border-top:1px solid rgba(39,174,96,0.2)">
+            <td colspan="3" style="padding:10px 12px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:1px">${dueOrders.length} ORDER${dueOrders.length!==1?'S':''} TOTAL DUE</td>
+            <td style="padding:10px 12px;text-align:right;font-weight:900;color:#2ecc71;font-size:13px">৳${Math.round(totalDue)}</td>
+            <td></td>
+          </tfoot>
+        </table></div>
+      </div>
+    </div>`;
+  }).join(''):'<div class="adm-empty" style="padding:16px;font-size:11px">No payable orders — payments are due only after delivery with return window closed</div>'}
+
+  <!-- ── Payment history ── -->
+  <div class="adm-sec" style="margin-top:24px;margin-bottom:10px;">Payment History</div>
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:12px;">
-    ${allSupPayments.length?`
+    ${allHistoryRows.length?`
     <div class="adm-tbl-scroll"><table class="adm-tbl">
       <thead><tr><th>Date</th><th>Supplier</th><th>Amount</th><th>Method</th><th>Note</th><th style="min-width:90px"></th></tr></thead>
-      <tbody>${allRows.map((p,pi)=>p._isFault?`<tr style="background:rgba(231,76,60,0.05)">
+      <tbody>${allHistoryRows.map((p,pi)=>p._isFault?`<tr style="background:rgba(231,76,60,0.05)">
         <td style="color:rgba(255,255,255,0.3)">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
         <td style="color:#e74c3c;font-weight:600">⚠ ${p.supplier}</td>
         <td style="color:#e74c3c;font-weight:700">-${admFmt(p.amount)}</td>
@@ -3568,78 +3604,13 @@ function admRenderCosts(){
       </tr>`:`<tr>
         <td style="color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</td>
         <td class="adm-white" style="font-weight:600">${p.supplier||'—'}</td>
-        <td class="adm-green">${admFmt(p.amount)}</td>
+        <td class="adm-green">${admFmt(parseFloat(p.amount||0))}</td>
         <td style="color:rgba(255,255,255,0.3)">${p.method||'—'}</td>
         <td style="color:rgba(255,255,255,0.3)">${p.note||'—'}</td>
-        <td style="display:flex;gap:6px;align-items:center">
-          <button onclick="admToggleSupPayDetail('spd-${pi}')" style="background:rgba(100,149,237,0.12);color:#6495ED;border:1px solid rgba(100,149,237,0.3);border-radius:4px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">▶ Details</button>
-          <button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button>
-        </td>
-      </tr>
-      <tr id="spd-${pi}" style="display:none;background:rgba(100,149,237,0.04)">
-        <td colspan="6" style="padding:0">
-          <div style="padding:12px 16px 14px;border-top:1px solid rgba(100,149,237,0.12);">
-            <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#6495ED;margin-bottom:10px;text-transform:uppercase">Orders Covered by This Payment</div>
-            ${(()=>{
-              const ledger=window._supLedgers[p.supplier||'T-Shirt Hub'];
-              if(!ledger)return '<div style="color:rgba(255,255,255,0.2);font-size:10px">No data</div>';
-              // find which payment breakdown matches this payment by id
-              const bd=ledger.paymentBreakdowns.find(b=>b.pay.id===p.id);
-              if(!bd||!bd.covered.length)return '<div style="color:rgba(255,255,255,0.2);font-size:11px;font-style:italic">Could not match orders to this payment (old data).</div>';
-              const rows=bd.covered.map(c=>`
-                <div style="display:grid;grid-template-columns:90px 1fr 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-                  <div style="font-weight:700;color:#fff;font-size:11px">${c.orderId}${c.partial?'<span style="font-size:8px;color:rgba(255,165,0,0.7);margin-left:4px">partial</span>':''}</div>
-                  <div style="color:rgba(255,255,255,0.35);font-size:10px">${new Date(c.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} · ${(()=>{const ij=c.items_json||[];if(ij.length){return ij.map(it=>it.type==='bothsides'?`Both Sides (${it.size||''}/${it.color||''}) x${it.qty||1}`:`${it.name||''} [${it.category||''}] (${it.size||''}/${it.color||''}${it.side?' '+it.side+' print':''} x${it.qty||1})`).join(', ');}return(c.items||'—');})()}</div>
-                  <div style="text-align:right;font-weight:700;color:#6495ED;font-size:11px">৳${Math.round(c.cost)}</div>
-                </div>`).join('');
-              const total=bd.covered.reduce((s,c)=>s+c.cost,0);
-              const leftover=bd.leftover>0.5?`<div style="color:rgba(255,165,0,0.6);font-size:10px;margin-top:8px">৳${Math.round(bd.leftover)} of this payment went to a future batch (overpayment or advance)</div>`:'';
-              return `${rows}<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:6px;border-top:1px solid rgba(100,149,237,0.2)"><span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">${bd.covered.length} order${bd.covered.length!==1?'s':''}</span><span style="font-size:12px;font-weight:800;color:#6495ED">Total ৳${Math.round(total)}</span></div>${leftover}`;
-            })()}
-          </div>
-        </td>
+        <td><button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">↩ Revert</button></td>
       </tr>`).join('')}</tbody>
     </table></div>`:'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
   </div>
-
-  <!-- Pay button area + balance breakdown — one per supplier -->
-  ${supPayRows.map(r=>{
-    const owed=r.totalCost-r.totalPaid;
-    const ledger=window._supLedgers[r.name]||{unpaid:[],faultDeductions:[]};
-    const unpaidOrders=ledger.unpaid||[];
-    const unpaidTotal=unpaidOrders.reduce((s,o)=>s+o._unpaidCost,0);
-    const blocked=supReturnOpen[r.name];
-    const breakdownId='sup-breakdown-'+r.name.replace(/\s+/g,'_');
-    if(owed<=0) return '';
-    const breakdownRows=unpaidOrders.map(o=>`
-      <div style="display:grid;grid-template-columns:90px 1fr 95px 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-        <div style="font-weight:700;color:#fff;font-size:11px">${o.orderId}${o._unpaidCost<o.supplierCost-0.5?'<span style="font-size:8px;color:rgba(255,165,0,0.7);margin-left:4px">partial</span>':''}</div>
-        <div style="color:rgba(255,255,255,0.35);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(()=>{const ij=o.items_json||[];if(ij.length){return ij.map(it=>it.type==='bothsides'?`Both Sides (${it.size||''}/${it.color||''}) x${it.qty||1}`:`${it.name||''} [${it.category||''}] (${it.size||''}/${it.color||''}${it.side?' '+it.side+' print':''} x${it.qty||1})`).join(', ');}return(o.items||'—');})()}</div>
-        <div style="color:rgba(255,255,255,0.25);font-size:10px">${new Date(o.confirmedAt||o.timestamp).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
-        <div style="text-align:right;font-weight:700;color:#2ecc71;font-size:11px">৳${Math.round(o._unpaidCost)}</div>
-      </div>`).join('');
-    return `
-    <div style="margin-bottom:16px;">
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px;">
-        ${blocked
-          ? `<button style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:6px;padding:8px 16px;font-size:10px;font-weight:700;cursor:not-allowed;letter-spacing:1px" disabled>⏳ Return window open — ${r.name}</button>`
-          : `<button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admOpenSupPayModal('${r.name.replace(/'/g,"\\'")}',${owed})">Pay ${r.name} · ${admFmt(owed)}</button>`}
-        ${unpaidOrders.length?`<button onclick="admToggleSupPayDetail('${breakdownId}')" style="background:rgba(39,174,96,0.08);color:rgba(39,174,96,0.7);border:1px solid rgba(39,174,96,0.2);border-radius:6px;padding:8px 14px;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">▶ See ${unpaidOrders.length} unpaid order${unpaidOrders.length!==1?'s':''}</button>`:''}
-      </div>
-      ${unpaidOrders.length?`
-      <div id="${breakdownId}" style="display:none;background:#0c1a0c;border:1px solid rgba(39,174,96,0.15);border-radius:10px;padding:14px 16px;margin-bottom:4px;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(39,174,96,0.6);margin-bottom:10px;text-transform:uppercase">Unpaid Orders — ${r.name} (Balance Due: ${admFmt(owed)})</div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.2);display:grid;grid-template-columns:90px 1fr 95px 90px;gap:8px;margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.06);text-transform:uppercase;letter-spacing:1px">
-          <span>Order</span><span>Items</span><span>Date</span><span style="text-align:right">Cost Due</span>
-        </div>
-        ${breakdownRows}
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid rgba(39,174,96,0.2)">
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">${unpaidOrders.length} order${unpaidOrders.length!==1?'s':''} accrued, not yet paid</span>
-          <span style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(unpaidTotal)}</span>
-        </div>
-      </div>`:''}
-    </div>`;
-  }).join('')}
 
   <!-- Supplier payment form (inline) -->
   <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
@@ -3649,7 +3620,7 @@ function admRenderCosts(){
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 3500"/></div>
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
         <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. BT-045 to BT-052 batch"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note (auto-filled)</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. payment for BT-045"/></div>
     </div>
     <div style="display:flex;gap:10px">
       <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Confirm Payment</button>
@@ -4925,10 +4896,11 @@ function admToggleSupPayDetail(id){
   btns.forEach(b=>{ if(b.textContent.includes("▶")||b.textContent.includes("▼")) b.textContent=b.textContent.replace(visible?"▼":"▶",visible?"▶":"▼"); });
 }
 
-function admOpenSupPayModal(supplier, owed){
+function admOpenSupPayModal(supplier, owed, method, orderId){
   document.getElementById('finSupPayName').value=supplier;
   document.getElementById('finSupPayAmt').value=Math.round(owed);
-  document.getElementById('finSupPayNote').value='';
+  document.getElementById('finSupPayNote').value=orderId?'Payment for '+orderId:'';
+  if(method){const sel=document.getElementById('finSupPayMethod');if(sel)sel.value=method;}
   document.getElementById('finSupPayModal').style.display='block';
   document.getElementById('finSupPayModal').scrollIntoView({behavior:'smooth',block:'nearest'});
 }

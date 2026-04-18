@@ -1932,7 +1932,7 @@ async function admLoadData(){
       sbAdmin.from('suppliers').select('*').order('created_at',{ascending:true}),
       sbAdmin.from('affiliate_payouts').select('*').order('paid_at',{ascending:false}),
       sbAdmin.from('supplier_payments').select('*').order('paid_at',{ascending:false}),
-      sbAdmin.from('product_categories').select('product_id,category,design_w,design_h')
+      sbAdmin.from('product_categories').select('product_id,category,design_w,design_h,products(name)')
     ]);
     const orders=ordRes.data||[];
     const affiliates=affRes.data||[];
@@ -1949,6 +1949,13 @@ async function admLoadData(){
       if(pc.design_w||pc.design_h){
         const ds={w:parseFloat(pc.design_w||0),h:parseFloat(pc.design_h||0)};
         designSizeMap[pc.product_id+'|'+pc.category]=ds;
+        // Also key by product name for bothsides front/back lookup
+        const pname=pc.products&&pc.products.name;
+        if(pname){
+          designSizeMap[pname+'|'+pc.category]=ds;
+          // Normalize category key too
+          designSizeMap[pname+'|Drop Shoulder']=designSizeMap[pname+'|Drop Shoulder']||(pc.category==='Drop'?ds:undefined);
+        }
       }
     });
 
@@ -2004,7 +2011,7 @@ async function admLoadData(){
       if(items_json&&items_json.length){
         const catGroups={};
         items_json.forEach(item=>{
-          const c=item.category||category;
+          const c=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
           catGroups[c]=(catGroups[c]||0)+(item.qty||1);
         });
         Object.entries(catGroups).forEach(([cat,qty])=>{
@@ -2020,7 +2027,7 @@ async function admLoadData(){
         });
         // Print + heat press per item
         items_json.forEach(item=>{
-          const icat=item.category||category;
+          const icat=item.category||(item.type==='bothsides'?item.shirtType:null)||category;
           const cfg3=catMap[normalizeCat(icat)]||{};
           const key=(item.id||item.product_id||'')+'|'+icat;
           const ds=designSizeMap[key]||{};
@@ -2080,21 +2087,44 @@ async function admLoadData(){
         lines.push({label:'Blank ('+cat+')'+(qty>1?' × '+qty:''),amount:blankUnit*qty});sub+=blankUnit*qty;
         // Print + heat press per item
         items.forEach(item=>{
-          const key=(item.id||item.product_id||'')+'|'+cat;
-          const ds=designSizeMap[key]||{};
-          const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
-          const iname=item.name||(item.id||'item');
           const iq=item.qty||1;
-          if(sqIn>0&&cfg3.printRate>0){
-            const pc=sqIn*cfg3.printRate*iq;
-            lines.push({label:'Print — '+iname+' ('+fmtA(sqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
-            sub+=pc;
-          }
-          if(cfg3.heatPress&&cfg3.heatPressCost>0){
-            const sides=item.type==='bothsides'?2:1;
-            const hc=cfg3.heatPressCost*sides*iq;
-            lines.push({label:'Heat press ('+sides+' side'+(sides>1?'s':'')+(iq>1?' × '+iq:'')+')',amount:hc});
-            sub+=hc;
+          if(item.type==='bothsides'){
+            // Both-sides: look up front + back designs separately
+            const frontDs=designSizeMap[(item.frontId||item.frontName||'')+'|'+cat]||{};
+            const backDs=designSizeMap[(item.backId||item.backName||'')+'|'+cat]||{};
+            const frontSqIn=(parseFloat(frontDs.w||0))*(parseFloat(frontDs.h||0));
+            const backSqIn=(parseFloat(backDs.w||0))*(parseFloat(backDs.h||0));
+            if(frontSqIn>0&&cfg3.printRate>0){
+              const pc=frontSqIn*cfg3.printRate*iq;
+              lines.push({label:'Print (front) — '+item.frontName+' ('+fmtA(frontSqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
+              sub+=pc;
+            }
+            if(backSqIn>0&&cfg3.printRate>0){
+              const pc=backSqIn*cfg3.printRate*iq;
+              lines.push({label:'Print (back) — '+item.backName+' ('+fmtA(backSqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
+              sub+=pc;
+            }
+            if(cfg3.heatPress&&cfg3.heatPressCost>0){
+              const hc=cfg3.heatPressCost*2*iq;
+              lines.push({label:'Heat press (2 sides'+(iq>1?' × '+iq:'')+')',amount:hc});
+              sub+=hc;
+            }
+          } else {
+            const key=(item.id||item.product_id||'')+'|'+cat;
+            const ds=designSizeMap[key]||{};
+            const sqIn=(parseFloat(ds.w||0))*(parseFloat(ds.h||0));
+            const iname=item.name||(item.id||'item');
+            if(sqIn>0&&cfg3.printRate>0){
+              const pc=sqIn*cfg3.printRate*iq;
+              lines.push({label:'Print — '+iname+' ('+fmtA(sqIn)+' sq in × ৳'+cfg3.printRate+(iq>1?' × '+iq:'')+')',amount:pc});
+              sub+=pc;
+            }
+            if(cfg3.heatPress&&cfg3.heatPressCost>0){
+              const sides=1;
+              const hc=cfg3.heatPressCost*sides*iq;
+              lines.push({label:'Heat press (1 side'+(iq>1?' × '+iq:'')+')',amount:hc});
+              sub+=hc;
+            }
           }
         });
         // Polybag per qty in this suborder

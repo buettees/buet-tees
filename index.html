@@ -3509,20 +3509,25 @@ function admRenderCosts(){
   );
 
   // Per-order remaining due: use FIFO to apply existing payments against payable orders
+  // A payment only offsets orders delivered ON OR BEFORE the payment date
   function calcPerOrderDue(supName){
     const supOrders=(payableOrdersBySup[supName]||[]).slice();
     const supPays=supplierPayments
       .filter(p=>(p.supplier||'T-Shirt Hub')===supName)
       .slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
     // Build mutable remaining per order
-    // If supplierCost is 0 (no cost config), mark as unconfigured (use -1 sentinel)
+    // If supplierCost is 0 (no cost config), mark as unconfigured
     const rem=supOrders.map(o=>({o,remaining:o.supplierCost>0?o.supplierCost:0,unconfigured:!(o.supplierCost>0)}));
-    // Only apply FIFO against orders that have a real cost configured
+    // Apply payments FIFO, but only against orders delivered before the payment date
     supPays.forEach(pay=>{
+      const payTs=new Date(pay.paid_at).getTime();
       let budget=parseFloat(pay.amount||0);
       for(const r of rem){
         if(budget<=0)break;
-        if(r.unconfigured)continue; // skip unconfigured orders in FIFO
+        if(r.unconfigured)continue;
+        // Only offset this order if it was delivered before (or on) this payment date
+        const delivTs=r.o.deliveredAt?new Date(r.o.deliveredAt).getTime():0;
+        if(delivTs&&delivTs>payTs)continue; // order delivered after this payment — skip
         const take=Math.min(r.remaining,budget);
         r.remaining-=take;
         budget-=take;

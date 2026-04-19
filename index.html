@@ -2727,27 +2727,49 @@ function admRenderAffiliates(){
             </div>
             <!-- Orders table -->
             ${affOrders.length?`
-            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px">Orders covered by this affiliate</div>
+            <!-- Commission breakdown summary -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Commission breakdown</div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                ${affOrders.map(o=>`<span style="font-size:10px;color:rgba(255,255,255,0.35)">${o.orderId}</span><span style="font-size:11px;font-weight:700;color:#27ae60">+${admFmt(o.affCommission)}</span>`).join('<span style="color:rgba(255,255,255,0.15);padding:0 2px">=</span>')}
+                <span style="color:rgba(255,255,255,0.15);padding:0 4px;font-size:13px">=</span>
+                <span style="font-size:14px;font-weight:900;color:#C9A84C;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);border-radius:6px;padding:3px 10px">${admFmt(affOrders.reduce((s,o)=>s+o.affCommission,0))}</span>
+                ${Math.abs(affOrders.reduce((s,o)=>s+o.affCommission,0)-p.amount)>1?`<span style="font-size:9px;color:rgba(255,120,0,0.7);margin-left:4px" title="Payout amount differs from computed commission total">⚠ paid ${admFmt(p.amount)}</span>`:''}
+              </div>
+            </div>
             <div style="overflow-x:auto">
             <table style="width:100%;border-collapse:collapse;font-size:11px">
               <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
                 <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Order</th>
                 <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Customer</th>
                 <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Items</th>
-                <th style="text-align:right;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Total</th>
+                <th style="text-align:right;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Order Total</th>
                 <th style="text-align:right;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Commission</th>
                 <th style="text-align:center;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Status</th>
                 <th style="text-align:center;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Date</th>
               </tr></thead>
-              <tbody>${affOrders.map(o=>`<tr style="border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer" onclick="admJumpToOrder('${o.orderId}')" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+              <tbody>${(()=>{
+                let running=0;
+                return affOrders.map(o=>{
+                  running+=o.affCommission;
+                  return`<tr style="border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer" onclick="admJumpToOrder('${o.orderId}')" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
                 <td style="padding:8px 10px;font-weight:700;color:#6D001A;font-size:12px">${o.orderId}</td>
                 <td style="padding:8px 10px;color:rgba(255,255,255,0.6)">${o.customerName||'—'}<div style="font-size:9px;color:rgba(255,255,255,0.2)">${o.phone||''}</div></td>
                 <td style="padding:8px 10px;color:rgba(255,255,255,0.4);font-size:10px;max-width:160px">${o.items||'—'}</td>
                 <td style="padding:8px 10px;text-align:right;color:#C9A84C;font-weight:700">${admFmt(o.total)}</td>
-                <td style="padding:8px 10px;text-align:right;color:#27ae60;font-weight:700">${admFmt(o.affCommission)}</td>
+                <td style="padding:8px 10px;text-align:right">
+                  <span style="font-size:13px;font-weight:800;color:#27ae60">+${admFmt(o.affCommission)}</span>
+                  <div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:2px">running: ${admFmt(running)}</div>
+                </td>
                 <td style="padding:8px 10px;text-align:center"><span style="font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:${o.status==='Delivered'?'rgba(39,174,96,0.15)':o.status==='Dispatched'?'rgba(52,152,219,0.15)':'rgba(255,255,255,0.06)'};color:${o.status==='Delivered'?'#27ae60':o.status==='Dispatched'?'#3498db':'rgba(255,255,255,0.4)'}">${o.status}</span></td>
                 <td style="padding:8px 10px;text-align:center;font-size:10px;color:rgba(255,255,255,0.25)">${o.timestamp?new Date(o.timestamp).toLocaleDateString('en-GB'):'—'}</td>
-              </tr>`).join('')}</tbody>
+              </tr>`;}).join('');
+              })()}</tbody>
+              <tfoot><tr style="border-top:2px solid rgba(255,255,255,0.08);background:rgba(201,168,76,0.05)">
+                <td colspan="4" style="padding:10px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Total Commission Earned</td>
+                <td style="padding:10px 10px;text-align:right;font-size:16px;font-weight:900;color:#C9A84C">${admFmt(affOrders.reduce((s,o)=>s+o.affCommission,0))}</td>
+                <td colspan="2" style="padding:10px 10px;text-align:right;font-size:10px;color:rgba(255,255,255,0.25)">Paid out: <span style="color:#27ae60;font-weight:700">${admFmt(p.amount)}</span></td>
+              </tr></tfoot>
             </table></div>`
             :`<div style="font-size:11px;color:rgba(255,255,255,0.2);font-style:italic">No confirmed orders found for this affiliate.</div>`}
           </div>

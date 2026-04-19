@@ -2549,10 +2549,6 @@ function admRenderOrders(){
               <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>
               <span style="color:#e74c3c;font-weight:700;font-size:12px">− ৳${_fmtN(_breakdown.total)}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;">
-              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>
-              <span style="color:#e74c3c;font-weight:700;font-size:12px">− ৳${_fmtN(_breakdown.total)}</span>
-            </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);">
               <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">= Gross Profit</span>
               <span style="color:${_gross>=0?'#2ecc71':'#e74c3c'};font-weight:800;font-size:13px">${admFmt(_gross)} <span style="font-size:9px;font-weight:600;opacity:0.7">${_rev>0?'('+(_gross/_rev*100).toFixed(1)+'%)':''}</span></span>

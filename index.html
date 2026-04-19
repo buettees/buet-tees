@@ -4880,6 +4880,21 @@ function admOfferPreview(){
   el.textContent=txt;
 }
 
+async function admSaveReserve(){
+  const val=document.getElementById('reserveInput')?.value;
+  if(val===null||val===undefined||val==='')return;
+  const num=Math.max(0,parseFloat(val)||0);
+  try{
+    await sb.from('settings').upsert({key:'reserve_amount',value:String(num)},{onConflict:'key'});
+    // update local rawSettings so UI recalculates immediately
+    if(ADM_DATA.rawSettings){
+      const ex=ADM_DATA.rawSettings.find(r=>r.key==='reserve_amount');
+      if(ex)ex.value=String(num); else ADM_DATA.rawSettings.push({key:'reserve_amount',value:String(num)});
+    }
+    toast('Reserve updated ✓');
+    admRenderFinance();
+  }catch(e){toast('Failed: '+e.message);}
+}
 async function admSaveReturnWindow(val){
   try{
     const changedAt=new Date().toISOString();
@@ -5014,9 +5029,9 @@ function admRenderFinance(){
   const cashBalance  = capitalIn + revenueCollected - expensesPaid - affPayoutsMade - supPaidTotal - capitalOut;
   const totalAffOwed = s.totalAffComm - affPayoutsMade;
 
-  // ── Reserve (minimum operating buffer = 1 month expenses estimate) ──
-  // Using avg monthly expenses as a proxy; default to 8000 if no data yet
-  const RESERVE = Math.max(8000, expensesPaid * 0.2);
+ // ── Reserve (editable by owners, stored in settings) ──
+  const _reserveSetting = (ADM_DATA.rawSettings||[]).find(s=>s.key==='reserve_amount');
+  const RESERVE = _reserveSetting ? parseFloat(_reserveSetting.value||0) : 8000;
 
   // ── Per-owner withdrawal calculation ─────────────────
   // Available to extract = Cash − Reserve − Supplier Owed − Affiliate Owed
@@ -5063,9 +5078,13 @@ function admRenderFinance(){
         <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px">Revenue − all costs on paper</div>
       </div>
       <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px;flex:1;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:6px;">🛡 Reserve (keep locked)</div>
-        <div style="font-size:20px;font-weight:800;color:#C9A84C">${admFmt(RESERVE)}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px">1-month operating buffer</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:6px;">🛡 Reserve</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <input id="reserveInput" type="number" min="0" value="${RESERVE}"
+            style="width:90px;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.35);color:#C9A84C;padding:4px 8px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;"/>
+          <button onclick="admSaveReserve()" style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;padding:4px 10px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;">SET</button>
+        </div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.15)">Deducted from safe-to-extract</div>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">

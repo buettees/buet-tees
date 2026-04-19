@@ -2632,29 +2632,84 @@ function admRenderAffiliates(){
       </td>
     </tr>`).join("")}</tbody></table></div></div>`;
 
-  // ── PAY AFFILIATES section (moved from Finance tab) ──────
+  // ── PAY AFFILIATES section ──────────────────────────────
   const payouts=ADM_DATA.affiliatePayouts||[];
+  const allOrders=ADM_DATA.orders||[];
+
+  // ── Same return-window helper as supplier tab ──
+  const _rwRaw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+  const _rwChangedAt=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+  const _rwChangedTs=_rwChangedAt?new Date(_rwChangedAt).getTime():0;
+  const _nowTs=Date.now();
+  function affIsWithinReturnWindow(deliveredAt){
+    if(_rwRaw==='0')return false;
+    const ts=deliveredAt?new Date(deliveredAt).getTime():0;
+    if(!ts)return false;
+    if(_rwChangedTs&&ts<_rwChangedTs)return false;
+    if(_rwRaw==='always')return true;
+    const days=parseInt(_rwRaw)||1;
+    return(_nowTs-ts)<(days*86400000);
+  }
+
+  // ── Only Delivered orders whose return window has closed are payable ──
+  const affPayableOrders=allOrders.filter(o=>
+    o.status==='Delivered' && !affIsWithinReturnWindow(o.deliveredAt)
+  );
+  // Orders still in return window (delivered but not yet payable)
+  const affReturnWindowOrders=allOrders.filter(o=>
+    o.status==='Delivered' && affIsWithinReturnWindow(o.deliveredAt)
+  );
+
+  // ── Build per-affiliate payable commission from payable orders only ──
+  const affPayableByCode={};
+  affPayableOrders.forEach(o=>{
+    if(!o.affiliateCode)return;
+    if(!affPayableByCode[o.affiliateCode])affPayableByCode[o.affiliateCode]={earned:0,orders:[]};
+    affPayableByCode[o.affiliateCode].earned+=o.affCommission;
+    affPayableByCode[o.affiliateCode].orders.push(o);
+  });
+
+  // ── Pending (return window still open) commission per affiliate ──
+  const affPendingByCode={};
+  affReturnWindowOrders.forEach(o=>{
+    if(!o.affiliateCode)return;
+    if(!affPendingByCode[o.affiliateCode])affPendingByCode[o.affiliateCode]={pending:0,count:0};
+    affPendingByCode[o.affiliateCode].pending+=o.affCommission;
+    affPendingByCode[o.affiliateCode].count++;
+  });
+
+  // ── Build affByCode for the pay table ──
   const affByCode={};
   rows.forEach(a=>{
-    affByCode[a.code]={name:a.name,code:a.code,payment_method:a.payment_method,payment_details:a.payment_details,earned:a.totalCommission,paid:0,orders:a.orderCount};
+    const payable=affPayableByCode[a.code]||{earned:0,orders:[]};
+    affByCode[a.code]={
+      name:a.name,code:a.code,
+      payment_method:a.payment_method,payment_details:a.payment_details,
+      earned:payable.earned,   // only payable commission
+      paid:0,
+      orders:payable.orders.length,
+      pending:affPendingByCode[a.code]?.pending||0,
+      pendingCount:affPendingByCode[a.code]?.count||0
+    };
   });
   payouts.forEach(p=>{
     if(affByCode[p.affiliate_code])affByCode[p.affiliate_code].paid+=parseFloat(p.amount||0);
-    else affByCode[p.affiliate_code]={name:p.affiliate_code,code:p.affiliate_code,earned:0,paid:parseFloat(p.amount||0),orders:0};
+    else affByCode[p.affiliate_code]={name:p.affiliate_code,code:p.affiliate_code,earned:0,paid:parseFloat(p.amount||0),orders:0,pending:0,pendingCount:0};
   });
-  const affPayRows=Object.values(affByCode).filter(a=>a.earned>0||a.paid>0);
+  const affPayRows=Object.values(affByCode).filter(a=>a.earned>0||a.paid>0||a.pending>0);
   affPayRows.sort((a,b)=>(b.earned-b.paid)-(a.earned-a.paid));
 
-  // ── Who needs to be paid right now ──
+  // ── Who needs to be paid right now (payable commission > paid out) ──
   const owedRows=affPayRows.filter(a=>(a.earned-a.paid)>0);
-  const settledRows=affPayRows.filter(a=>(a.earned-a.paid)<=0&&a.earned>0);
+  const settledRows=affPayRows.filter(a=>(a.earned-a.paid)<=0&&a.earned>0&&!a.pending);
+  const waitingRows=affPayRows.filter(a=>(a.earned-a.paid)<=0&&a.pending>0);
 
-  // ── Full payout history (all payouts, not limited to 8) ──
+  // ── Full payout history (all payouts) ──
   const allPayouts=payouts.slice().reverse();
 
   document.getElementById("adm-affiliates").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Affiliates</div>
-  <div style="margin-bottom:12px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Monthly · after supplier is paid · only Delivered orders count</div>
+  <div style="margin-bottom:12px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Only Delivered orders with return window closed · same rule as supplier payments</div>
 
   <!-- WHO NEEDS PAYMENT -->
   ${owedRows.length?`
@@ -2671,12 +2726,26 @@ function admRenderAffiliates(){
           <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Earned</div><div style="font-size:13px;font-weight:700;color:#C9A84C">${admFmt(a.earned)}</div></div>
           <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Paid</div><div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.35)">${a.paid>0?admFmt(a.paid):'—'}</div></div>
           <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Owed</div><div style="font-size:18px;font-weight:900;color:#C9A84C">${admFmt(owed)}</div></div>
+          ${a.pending>0?`<div style="text-align:center;opacity:0.5" title="Commission locked until return window closes"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,165,0,0.6);margin-bottom:3px">⏳ In Window</div><div style="font-size:12px;font-weight:700;color:rgba(255,165,0,0.7)">${admFmt(a.pending)}</div></div>`:''}
         </div>
         <button class="adm-tx-btn" style="flex-shrink:0;padding:10px 22px;font-size:12px" onclick="admOpenPayoutModal('${a.code}','${(a.name||a.code).replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>
       </div>`;
     }).join('')}
   </div>`
-  :`<div style="background:#0d1a0d;border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:11px;color:#27ae60;font-weight:700;letter-spacing:1px">✓ All affiliates are settled — no payments due</div>`}
+  :''}
+
+  ${!owedRows.length&&!waitingRows.length?`<div style="background:#0d1a0d;border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:11px;color:#27ae60;font-weight:700;letter-spacing:1px">✓ All affiliates are settled — no payments due</div>`:''}
+
+  <!-- WAITING FOR RETURN WINDOW TO CLOSE -->
+  ${waitingRows.length||affPayRows.some(a=>a.pending>0&&(a.earned-a.paid)<=0)?`
+  <div style="background:#141008;border:1px solid rgba(255,165,0,0.15);border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,165,0,0.5);margin-bottom:10px">⏳ Waiting for return window to close</div>
+    ${affPayRows.filter(a=>a.pending>0).map(a=>`
+    <div style="display:flex;align-items:center;gap:16px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03)">
+      <div style="flex:1"><span class="adm-id" style="font-size:11px">${a.code}</span><span style="font-size:10px;color:rgba(255,255,255,0.2);margin-left:8px">${a.name||''}</span></div>
+      <div style="font-size:10px;color:rgba(255,165,0,0.6);font-weight:700">${admFmt(a.pending)} across ${a.pendingCount} order${a.pendingCount!==1?'s':''} — not payable yet</div>
+    </div>`).join('')}
+  </div>`:''}
 
   ${settledRows.length?`
   <div style="margin-bottom:20px;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">
@@ -2705,7 +2774,7 @@ function admRenderAffiliates(){
   <div class="adm-sec">Payout History</div>
   <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
     ${allPayouts.map((p,i)=>{
-      const affOrders=(ADM_DATA.orders||[]).filter(o=>o.affiliateCode===p.affiliate_code&&o.isConfirmed);
+      const affOrders=(ADM_DATA.orders||[]).filter(o=>o.affiliateCode===p.affiliate_code&&o.status==='Delivered'&&!affIsWithinReturnWindow(o.deliveredAt));
       const affInfo=affByCode[p.affiliate_code]||{};
       return`<div style="border-bottom:1px solid rgba(255,255,255,0.04)">
         <!-- Collapsed row — click to expand -->

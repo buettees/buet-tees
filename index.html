@@ -1919,6 +1919,21 @@ function admTab(name){
   if(name==="inventory"&&ADM_DATA)admRenderInventory();
 }
 
+function admJumpToOrder(orderId){
+  admTab('orders');
+  setTimeout(()=>{
+    const rows=document.querySelectorAll('#adm-orders tr');
+    rows.forEach(r=>{
+      if(r.textContent.includes(orderId)){
+        r.scrollIntoView({behavior:'smooth',block:'center'});
+        r.style.transition='background 0.3s';
+        r.style.background='rgba(201,168,76,0.15)';
+        setTimeout(()=>{r.style.background='';},2000);
+      }
+    });
+  },300);
+}
+
 let ADM_DATA=null;
 async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
@@ -2668,14 +2683,22 @@ function admRenderAffiliates(){
   ${recentPayouts.length?`
   <div class="adm-sec">Recent Payouts</div>
   <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
-    <tbody>${recentPayouts.map(p=>`<tr>
+    <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Method</th><th>Note</th><th>Orders</th><th>Action</th></tr></thead>
+    <tbody>${recentPayouts.map(p=>{
+      // Find delivered orders for this affiliate
+      const affOrders=(ADM_DATA.orders||[]).filter(o=>o.affiliateCode===p.affiliate_code&&o.isConfirmed);
+      const orderLinks=affOrders.length
+        ? affOrders.map(o=>`<span style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.5px;color:rgba(255,255,255,0.5);margin:1px;cursor:pointer" onclick="admJumpToOrder('${o.orderId}')" title="${o.customerName} · ৳${o.total} · ${o.status}">${o.orderId}</span>`).join('')
+        : '<span style="color:rgba(255,255,255,0.15);font-size:9px">—</span>';
+      return`<tr>
       <td style="font-size:10px;color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB')}</td>
       <td class="adm-id">${p.affiliate_code||'—'}</td>
       <td class="adm-gold">${admFmt(p.amount)}</td>
       <td style="color:rgba(255,255,255,0.35)">${p.method||'—'}</td>
       <td class="adm-white">${p.note||'—'}</td>
-    </tr>`).join('')}</tbody>
+      <td style="max-width:200px;line-height:1.6">${orderLinks}</td>
+      <td><button class="adm-status-btn adm-status-revert" style="font-size:9px;padding:4px 8px" onclick="admRevertAffiliatePayout('${p.id}','${p.affiliate_code}',${p.amount})" title="Revert this payout">↩ Revert</button></td>
+    </tr>`;}).join('')}</tbody>
   </table></div></div>`:''}`;
 }
 

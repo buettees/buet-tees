@@ -2705,7 +2705,7 @@ function admRenderAffiliates(){
   const waitingRows=affPayRows.filter(a=>(a.earned-a.paid)<=0&&a.pending>0);
 
   // ── Full payout history (all payouts) ──
-  const allPayouts=payouts.slice().reverse();
+  const allPayouts=payouts.slice();
 
   document.getElementById("adm-affiliates").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Affiliates</div>

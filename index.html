@@ -1919,6 +1919,15 @@ function admTab(name){
   if(name==="inventory"&&ADM_DATA)admRenderInventory();
 }
 
+function admTogglePayoutRow(id){
+  const panel=document.getElementById(id);
+  const arrow=document.getElementById(id+'-arrow');
+  if(!panel)return;
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  if(arrow)arrow.textContent=open?'▶':'▼';
+}
+
 function admJumpToOrder(orderId){
   admTab('orders');
   setTimeout(()=>{
@@ -2635,35 +2644,46 @@ function admRenderAffiliates(){
   });
   const affPayRows=Object.values(affByCode).filter(a=>a.earned>0||a.paid>0);
   affPayRows.sort((a,b)=>(b.earned-b.paid)-(a.earned-a.paid));
-  const recentPayouts=payouts.slice().reverse().slice(0,8);
+
+  // ── Who needs to be paid right now ──
+  const owedRows=affPayRows.filter(a=>(a.earned-a.paid)>0);
+  const settledRows=affPayRows.filter(a=>(a.earned-a.paid)<=0&&a.earned>0);
+
+  // ── Full payout history (all payouts, not limited to 8) ──
+  const allPayouts=payouts.slice().reverse();
 
   document.getElementById("adm-affiliates").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Affiliates</div>
-  <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Monthly, after supplier is paid</div>
-  
-  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
-    ${affPayRows.length?`
-    <div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Affiliate</th><th>Orders</th><th>Earned</th><th>Paid Out</th><th style="color:#C9A84C">Owed</th><th>Action</th></tr></thead>
-      <tbody>${affPayRows.map(a=>{
-        const owed=a.earned-a.paid;
-        return`<tr>
-          <td><div class="adm-id">${a.code}</div><div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px">${a.name||''}</div>${a.payment_details?`<div style="font-size:9px;color:rgba(255,255,255,0.15);margin-top:1px">${a.payment_method||''}: ${a.payment_details}</div>`:''}
-          </td>
-          <td style="color:rgba(255,255,255,0.35)">${a.orders}</td>
-          <td class="adm-gold">${admFmt(a.earned)}</td>
-          <td class="${a.paid>0?'adm-green':''}">${a.paid>0?admFmt(a.paid):'<span style="color:rgba(255,255,255,0.1)">—</span>'}</td>
-          <td style="font-size:15px;font-weight:800;color:${owed>0?'#C9A84C':'#27ae60'}">${owed>0?admFmt(owed):'✓ Settled'}</td>
-          <td>${owed>0?`<button class="adm-tx-btn" onclick="admOpenPayoutModal('${a.code}','${(a.name||a.code).replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>`:'<span style="color:rgba(255,255,255,0.1);font-size:10px">Settled</span>'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>
-    <div style="padding:10px 18px;border-top:1px solid rgba(255,255,255,0.04);font-size:10px;color:rgba(255,255,255,0.2)">
-      💡 Only pay for orders in Delivered status. Do this at month-end after clearing the supplier first.
-    </div>`:'<div class="adm-empty">No affiliate commissions yet</div>'}
-  </div>
+  <div style="margin-bottom:12px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Monthly · after supplier is paid · only Delivered orders count</div>
 
-  <!-- Affiliate payout form (inline) -->
+  <!-- WHO NEEDS PAYMENT -->
+  ${owedRows.length?`
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+    ${owedRows.map(a=>{
+      const owed=a.earned-a.paid;
+      return`<div style="background:#1a1200;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:160px">
+          <div class="adm-id" style="font-size:13px">${a.code}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:2px">${a.name||''}</div>
+          ${a.payment_details?`<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:3px">${a.payment_method||''}: <span style="color:rgba(255,255,255,0.45);font-weight:700">${a.payment_details}</span></div>`:''}
+        </div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+          <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Earned</div><div style="font-size:13px;font-weight:700;color:#C9A84C">${admFmt(a.earned)}</div></div>
+          <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Paid</div><div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.35)">${a.paid>0?admFmt(a.paid):'—'}</div></div>
+          <div style="text-align:center"><div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:3px">Owed</div><div style="font-size:18px;font-weight:900;color:#C9A84C">${admFmt(owed)}</div></div>
+        </div>
+        <button class="adm-tx-btn" style="flex-shrink:0;padding:10px 22px;font-size:12px" onclick="admOpenPayoutModal('${a.code}','${(a.name||a.code).replace(/'/g,"\\'")}',${owed})">Pay ৳${Math.round(owed)}</button>
+      </div>`;
+    }).join('')}
+  </div>`
+  :`<div style="background:#0d1a0d;border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:16px 20px;margin-bottom:20px;font-size:11px;color:#27ae60;font-weight:700;letter-spacing:1px">✓ All affiliates are settled — no payments due</div>`}
+
+  ${settledRows.length?`
+  <div style="margin-bottom:20px;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">
+    ✓ Settled: ${settledRows.map(a=>`<span style="color:rgba(255,255,255,0.35);font-weight:700">${a.code}</span>`).join(' · ')}
+  </div>`:''}
+
+  <!-- Payout form (inline, shown on Pay click) -->
   <div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
     <input type="hidden" id="finPayoutCode"/>
@@ -2680,26 +2700,61 @@ function admRenderAffiliates(){
     </div>
   </div>
 
-  ${recentPayouts.length?`
-  <div class="adm-sec">Recent Payouts</div>
-  <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Date</th><th>Affiliate</th><th>Amount</th><th>Method</th><th>Note</th><th>Orders</th><th>Action</th></tr></thead>
-    <tbody>${recentPayouts.map(p=>{
-      // Find delivered orders for this affiliate
+  <!-- FULL PAYOUT HISTORY — expandable rows -->
+  ${allPayouts.length?`
+  <div class="adm-sec">Payout History</div>
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:20px;">
+    ${allPayouts.map((p,i)=>{
       const affOrders=(ADM_DATA.orders||[]).filter(o=>o.affiliateCode===p.affiliate_code&&o.isConfirmed);
-      const orderLinks=affOrders.length
-        ? affOrders.map(o=>`<span style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;letter-spacing:0.5px;color:rgba(255,255,255,0.5);margin:1px;cursor:pointer" onclick="admJumpToOrder('${o.orderId}')" title="${o.customerName} · ৳${o.total} · ${o.status}">${o.orderId}</span>`).join('')
-        : '<span style="color:rgba(255,255,255,0.15);font-size:9px">—</span>';
-      return`<tr>
-      <td style="font-size:10px;color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB')}</td>
-      <td class="adm-id">${p.affiliate_code||'—'}</td>
-      <td class="adm-gold">${admFmt(p.amount)}</td>
-      <td style="color:rgba(255,255,255,0.35)">${p.method||'—'}</td>
-      <td class="adm-white">${p.note||'—'}</td>
-      <td style="max-width:200px;line-height:1.6">${orderLinks}</td>
-      <td><button class="adm-status-btn adm-status-revert" style="font-size:9px;padding:4px 8px" onclick="admRevertAffiliatePayout('${p.id}','${p.affiliate_code}',${p.amount})" title="Revert this payout">↩ Revert</button></td>
-    </tr>`;}).join('')}</tbody>
-  </table></div></div>`:''}`;
+      const affInfo=affByCode[p.affiliate_code]||{};
+      return`<div style="border-bottom:1px solid rgba(255,255,255,0.04)">
+        <!-- Collapsed row — click to expand -->
+        <div onclick="admTogglePayoutRow('prow-${i}')" style="display:flex;align-items:center;gap:16px;padding:14px 18px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+          <div style="flex:0 0 80px;font-size:10px;color:rgba(255,255,255,0.3)">${new Date(p.paid_at).toLocaleDateString('en-GB')}</div>
+          <div style="flex:1"><div class="adm-id" style="font-size:12px">${p.affiliate_code||'—'}</div><div style="font-size:9px;color:rgba(255,255,255,0.2);margin-top:1px">${affInfo.name||''}</div></div>
+          <div class="adm-gold" style="font-size:14px;font-weight:800;flex:0 0 90px;text-align:right">${admFmt(p.amount)}</div>
+          <div style="flex:0 0 60px;text-align:center;font-size:10px;color:rgba(255,255,255,0.3)">${p.method||'—'}</div>
+          <div style="flex:1;font-size:10px;color:rgba(255,255,255,0.4);font-style:italic">${p.note||'—'}</div>
+          <div style="flex:0 0 90px;text-align:center;font-size:10px;color:rgba(255,255,255,0.2)">${affOrders.length} order${affOrders.length!==1?'s':''}</div>
+          <div style="flex:0 0 16px;color:rgba(255,255,255,0.2);font-size:12px;text-align:right" id="prow-${i}-arrow">▶</div>
+        </div>
+        <!-- Expanded detail panel -->
+        <div id="prow-${i}" style="display:none;background:rgba(0,0,0,0.25);border-top:1px solid rgba(255,255,255,0.04)">
+          <div style="padding:16px 20px">
+            <!-- Revert button -->
+            <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+              <button class="adm-status-btn adm-status-revert" style="font-size:10px;padding:6px 14px" onclick="admRevertAffiliatePayout('${p.id}','${p.affiliate_code}',${p.amount})">↩ Revert This Payout</button>
+            </div>
+            <!-- Orders table -->
+            ${affOrders.length?`
+            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px">Orders covered by this affiliate</div>
+            <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+                <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Order</th>
+                <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Customer</th>
+                <th style="text-align:left;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Items</th>
+                <th style="text-align:right;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Total</th>
+                <th style="text-align:right;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Commission</th>
+                <th style="text-align:center;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Status</th>
+                <th style="text-align:center;padding:6px 10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.25);font-weight:600">Date</th>
+              </tr></thead>
+              <tbody>${affOrders.map(o=>`<tr style="border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer" onclick="admJumpToOrder('${o.orderId}')" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''">
+                <td style="padding:8px 10px;font-weight:700;color:#6D001A;font-size:12px">${o.orderId}</td>
+                <td style="padding:8px 10px;color:rgba(255,255,255,0.6)">${o.customerName||'—'}<div style="font-size:9px;color:rgba(255,255,255,0.2)">${o.phone||''}</div></td>
+                <td style="padding:8px 10px;color:rgba(255,255,255,0.4);font-size:10px;max-width:160px">${o.items||'—'}</td>
+                <td style="padding:8px 10px;text-align:right;color:#C9A84C;font-weight:700">${admFmt(o.total)}</td>
+                <td style="padding:8px 10px;text-align:right;color:#27ae60;font-weight:700">${admFmt(o.affCommission)}</td>
+                <td style="padding:8px 10px;text-align:center"><span style="font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700;background:${o.status==='Delivered'?'rgba(39,174,96,0.15)':o.status==='Dispatched'?'rgba(52,152,219,0.15)':'rgba(255,255,255,0.06)'};color:${o.status==='Delivered'?'#27ae60':o.status==='Dispatched'?'#3498db':'rgba(255,255,255,0.4)'}">${o.status}</span></td>
+                <td style="padding:8px 10px;text-align:center;font-size:10px;color:rgba(255,255,255,0.25)">${o.timestamp?new Date(o.timestamp).toLocaleDateString('en-GB'):'—'}</td>
+              </tr>`).join('')}</tbody>
+            </table></div>`
+            :`<div style="font-size:11px;color:rgba(255,255,255,0.2);font-style:italic">No confirmed orders found for this affiliate.</div>`}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`:''}`;
 }
 
 function admRenderOwners(){

@@ -2525,9 +2525,29 @@ function admRenderOrders(){
             </div>
           </div>
           <div style="border-left:1px solid rgba(255,255,255,0.07);padding-left:20px;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+            <!-- Revenue build-up -->
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:8px 10px;margin-bottom:2px;">
+              <div style="font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.2);text-transform:uppercase;font-weight:700;margin-bottom:7px">💰 Revenue Build-up</div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;">
+                <span style="color:rgba(255,255,255,0.35);font-size:9px">Product subtotal</span>
+                <span style="color:rgba(255,255,255,0.7);font-weight:700;font-size:10px">৳${_fmtN(o.subtotal||0)}</span>
+              </div>
+              ${(o.discountAmt||0)>0?`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;">
+                <span style="color:rgba(255,255,255,0.35);font-size:9px">− Discount (${o.discountPct||0}%${o.affiliateCode?' · '+o.affiliateCode:''})</span>
+                <span style="color:#e74c3c;font-size:10px;font-weight:700">− ৳${_fmtN(o.discountAmt||0)}</span>
+              </div>`:''}
+              ${(o.deliveryFee||0)>0?`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0;">
+                <span style="color:rgba(255,255,255,0.35);font-size:9px">+ Delivery fee</span>
+                <span style="color:#27ae60;font-size:10px;font-weight:700">+ ৳${_fmtN(o.deliveryFee||0)}</span>
+              </div>`:''}
+              <div style="display:flex;justify-content:space-between;align-items:baseline;padding-top:5px;border-top:1px solid rgba(255,255,255,0.08);margin-top:3px;">
+                <span style="color:rgba(255,255,255,0.5);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase">= Revenue</span>
+                <span style="color:#fff;font-weight:900;font-size:13px">${admFmt(_rev)}</span>
+              </div>
+            </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;">
-              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">Revenue</span>
-              <span style="color:#fff;font-weight:800;font-size:14px">${admFmt(_rev)}</span>
+              <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>
+              <span style="color:#e74c3c;font-weight:700;font-size:12px">− ৳${_fmtN(_breakdown.total)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:baseline;">
               <span style="color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:1px;text-transform:uppercase">− Supplier Cost</span>

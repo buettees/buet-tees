@@ -2961,7 +2961,7 @@ function admRenderTransactions(){
       <button class="adm-tx-btn" onclick="admAddTx()">+ Add Transaction</button>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-      <thead><tr><th>Date</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Owner</th><th>Amount</th><th>Description</th><th></th></tr></thead>
       <tbody>${!rows.length?`<tr><td colspan="6" style="text-align:center;padding:32px;color:rgba(255,255,255,0.1);font-size:10px;letter-spacing:2px">No transactions yet</td></tr>`:
         rows.map(t=>{
           const isOut=t.type.includes("Expense")||t.type.includes("Out");

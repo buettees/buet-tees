@@ -3137,12 +3137,13 @@ async function sendEmail(to, subject, html){
 async function sendTelegram(token, chatId, text){
   if(!token||!chatId) return;
   try{
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({chat_id:chatId, text, parse_mode:'HTML'})
     });
-  }catch(e){console.error('Telegram failed:',e);}
+    if(!r.ok){ const e=await r.text(); console.warn('Telegram warn:',r.status,e); }
+  }catch(e){console.warn('Telegram failed:',e);}
 }
 
 async function getOwners(){
@@ -3169,7 +3170,7 @@ function getSupplier(){
   }catch(e){return{};}
 }
 
-function ownerTelegramToken(){ return '8698121676:AAEP2BclCvo49aam5bawz2wmRgbh2qD-sj4'; }
+function ownerTelegramToken(){ return '7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY'; }
 
 async function notifyOwnersTelegram(text){
   const owners = await getOwners();

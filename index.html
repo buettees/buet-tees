@@ -2227,6 +2227,8 @@ async function admLoadData(){
         status:o.status,affiliateCode:o.affiliate_code||'',
         supplierFault:o.supplier_fault||false,
         faultNote:o.fault_note||'',
+        supplierPaid:o.supplier_paid||false,
+        affiliatePaid:o.affiliate_paid||false,
         isConfirmed
       };
     });
@@ -2410,7 +2412,7 @@ function admRenderOverview(){
 function admRenderOrders(){
   const rows=ADM_DATA.orders;
   const returnWinVal=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'1';
-  const returnWinLabel={'0':'No Return','1':'1 Day','3':'3 Days','7':'7 Days','14':'14 Days','30':'30 Days','always':'Always'}[returnWinVal]||returnWinVal+' Days';
+  const returnWinLabel={'0':'No Return','1':'1 Day','3':'3 Days','7':'7 Days','14':'14 Days','30':'30 Days','always':'Always','5s':'5 Sec (Test)'}[returnWinVal]||returnWinVal+' Days';
   if(!rows.length){document.getElementById("adm-orders").innerHTML='<div class="adm-empty">No confirmed orders yet</div>';return;}
   // Summary totals row
   const totRev=rows.reduce((s,o)=>s+o.total,0);
@@ -2432,6 +2434,7 @@ function admRenderOrders(){
       <option value="14" ${returnWinVal==='14'?'selected':''}>14 Days</option>
       <option value="30" ${returnWinVal==='30'?'selected':''}>30 Days</option>
       <option value="always" ${returnWinVal==='always'?'selected':''}>Anytime</option>
+      <option value="5s" ${returnWinVal==='5s'?'selected':''}>5 Sec (Test)</option>
     </select>
     <span style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:1px">Currently: <strong style="color:#C9A84C">${returnWinLabel}</strong></span>
   </div>
@@ -2471,6 +2474,7 @@ function admRenderOrders(){
         // Only applies if this order was delivered AFTER the setting was last changed
         if(settingChangedTs&&delivTs&&delivTs<settingChangedTs)return false;
         if(returnWinRaw==='always')return !!delivTs;
+        if(returnWinRaw==='5s')return delivTs&&(now24-delivTs)<5000;
         const days=parseInt(returnWinRaw)||1;
         return delivTs&&(now24-delivTs)<(days*86400000);
       })();
@@ -2484,7 +2488,10 @@ function admRenderOrders(){
         if(within24h){
           actionBtns=`<button class="adm-status-btn adm-status-return" onclick="admUpdateOrderStatus('${o.orderId}','Returned')">↩ Mark Returned</button><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" style="margin-left:4px" title="Revert to Dispatched">↩ Revert</button><span style="display:block;font-size:8px;color:#C9A84C;margin-top:3px;letter-spacing:1px">Return window open</span>`;
         } else {
-          actionBtns=`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus('${o.orderId}','Dispatched')" style="margin-left:6px" title="Revert to Dispatched">↩ Revert</button>`;
+          const _bothPaid=o.supplierPaid&&(o.affiliatePaid||!o.affiliateCode);
+          actionBtns=_bothPaid
+            ?`<span style="color:#2ecc71;font-size:9px;letter-spacing:1px;font-weight:700">✓ DONE &amp; PAID</span>`
+            :`<span style="color:rgba(255,255,255,0.12);font-size:9px;letter-spacing:1px">DONE</span><button class="adm-status-btn adm-status-revert" onclick="admUpdateOrderStatus(\'${o.orderId}\',\'Dispatched\')" style="margin-left:6px" title="Revert to Dispatched">↩ Revert</button>`;
         }
       }
       else if(o.status==='Returned'){
@@ -2608,7 +2615,38 @@ function admRenderAffiliates(){
   const active=rows.filter(a=>a.status.toLowerCase()==="active");
   const totalComm=rows.reduce((s,a)=>s+a.totalCommission,0);
   const totalDisc=rows.reduce((s,a)=>s+a.totalDiscount,0);
-  document.getElementById("adm-affiliates").innerHTML=`
+  // DONE orders pending affiliate payment
+  const _doneAffOrders=(ADM_DATA.orders||[]).filter(o=>{
+    if(o.status!=='Delivered'||o.affiliatePaid||!o.affiliateCode)return false;
+    const rw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+    const rc=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+    const delivTs=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
+    const rcTs=rc?new Date(rc).getTime():0;
+    if(rcTs&&delivTs&&delivTs<rcTs)return true;
+    if(rw==='0'||!delivTs)return true;
+    if(rw==='always')return false;
+    const ms=rw==='5s'?5000:(parseInt(rw)||1)*86400000;
+    return (Date.now()-delivTs)>=ms;
+  });
+  if(_doneAffOrders.length>0){
+    let _affBanner='<div style="margin-bottom:24px;padding:16px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:10px;">';
+    _affBanner+='<div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin-bottom:14px;">Pending Affiliate Commissions ('+_doneAffOrders.length+' order'+(_doneAffOrders.length!==1?'s':'')+')</div>';
+    _doneAffOrders.forEach(o=>{
+      const _aff=ADM_DATA.affiliates.find(a=>a.code===o.affiliateCode)||{};
+      _affBanner+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,168,76,0.15);border-radius:7px;">`
+        +`<div><span style="font-size:12px;font-weight:700;color:#C9A84C;">${o.orderId}</span>`
+        +`<span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:8px;">${o.customerName||''}</span>`
+        +`<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">Affiliate: <b style="color:#C9A84C;">${o.affiliateCode}</b> &mdash; ${_aff.name||''}</div></div>`
+        +`<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:14px;font-weight:900;color:#C9A84C;">${admFmt(o.affCommission)}</span>`
+        +`<button onclick="admOpenPayoutModal('${o.affiliateCode}','${(_aff.name||o.affiliateCode).replace(/'/g,'\\\'')}',${o.affCommission},'${o.orderId}')" style="background:rgba(201,168,76,0.15);color:#C9A84C;border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ${admFmt(o.affCommission)}</button></div></div>`;
+    });
+    _affBanner+='</div>';
+    document.getElementById('adm-affiliates').innerHTML=_affBanner;
+  } else {
+    document.getElementById('adm-affiliates').innerHTML='';
+  }
+
+  document.getElementById("adm-affiliates").innerHTML+=`
     <div class="adm-kpi-row" style="margin-bottom:20px;">
       <div class="adm-kpi"><div class="adm-kpi-label">Total Affiliates</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Active</div><div class="adm-kpi-val c-green">${active.length}</div></div>
@@ -2772,6 +2810,7 @@ function admRenderAffiliates(){
   <div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
     <input type="hidden" id="finPayoutCode"/>
+  <input type="hidden" id="finPayoutOrderId"/>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
@@ -3423,6 +3462,52 @@ async function notifyOrderDelivered(order){
   await sendEmail(order.email, 'Your BUET Tees Order Has Been Delivered! 🎉', html);
 }
 
+async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
+  try{
+    const sup=getSupplier();
+    const amtStr='৳'+Math.round(amount).toLocaleString();
+    const tgText=`💸 Payment Sent\n\nOrder: ${orderId}\nAmount: ${amtStr}\nMethod: ${method}\n\nThank you for your service!`;
+    await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
+    if(sup.email){
+      const html=emailBase(`
+        <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Payment Sent</div>
+        <div style="font-size:28px;font-weight:900;color:#1a1a1a;margin-bottom:16px;">Your payment is on the way!</div>
+        <div style="background:#e8f5e9;border-left:3px solid #2e7d32;padding:16px 20px;border-radius:4px;margin-bottom:24px;">
+          <div style="font-size:13px;color:#555;margin-bottom:6px;">Order Reference: <b style="color:#1a1a1a;">${orderId}</b></div>
+          <div style="font-size:32px;font-weight:900;color:#2e7d32;">${amtStr}</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">via ${method}</div>
+        </div>
+        <p style="font-size:14px;color:#555;">We have sent your payment for order <b>${orderId}</b>. Please confirm receipt.</p>
+        <p style="font-size:13px;color:#888;">Thank you for your continued partnership with BUET Tees.</p>`, '#1a1a1a');
+      await sendEmail(sup.email, 'Payment Sent for Order '+orderId+' — BUET Tees', html);
+    }
+  }catch(e){console.error('Supplier payment notify failed:',e);}
+}
+
+async function notifyAffiliatePaymentSent(aff, amount, orderId, method){
+  try{
+    const amtStr='৳'+Math.round(amount).toLocaleString();
+    const tgText=`💰 Commission Paid!\n\nOrder: ${orderId}\nAmount: ${amtStr}\nMethod: ${method}\n\nKeep sharing your code 🎉`;
+    // Affiliate telegram (if they have a chat id stored)
+    if(aff.telegram_chat_id) await sendTelegram(ownerTelegramToken(), aff.telegram_chat_id, tgText);
+    if(aff.email){
+      const html=emailBase(`
+        <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Commission Paid</div>
+        <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Your commission is on the way, ${aff.full_name||''}!</div>
+        <div style="background:#e8f5e9;border-left:3px solid #2e7d32;padding:16px 20px;border-radius:4px;margin-bottom:24px;">
+          <div style="font-size:13px;color:#555;margin-bottom:6px;">Order: <b style="color:#1a1a1a;">${orderId}</b></div>
+          <div style="font-size:32px;font-weight:900;color:#2e7d32;">${amtStr}</div>
+          <div style="font-size:13px;color:#888;margin-top:6px;">via ${method}</div>
+        </div>
+        <p style="font-size:14px;color:#555;">Your commission for order <b>${orderId}</b> has been sent. Keep sharing your code to earn more!</p>
+        <div style="margin-top:20px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:14px;text-align:center;font-size:13px;color:#666;">
+          Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b>
+        </div>`);
+      await sendEmail(aff.email, 'Your Commission for Order '+orderId+' Has Been Paid 🎉 — BUET Tees', html);
+    }
+  }catch(e){console.error('Affiliate payment notify failed:',e);}
+}
+
 async function admUpdateOrderStatus(orderId,newStatus){
   if(newStatus==='Cancelled'&&!confirm(`Cancel order ${orderId}? This cannot be undone easily.`))return;
   try{
@@ -3457,7 +3542,13 @@ async function admUpdateOrderStatus(orderId,newStatus){
         });
       }
       else if(newStatus==='Dispatched') notifyOrderDispatched(ord);
-      else if(newStatus==='Delivered') notifyOrderDelivered(ord);
+      else if(newStatus==='Delivered'){
+        notifyOrderDelivered(ord);
+        // If no affiliate, auto-mark affiliate_paid so revert lock works cleanly
+        if(!ord.affiliate_code){
+          await sbAdmin.from('orders').update({affiliate_paid:true}).eq('id',orderId);
+        }
+      }
     }
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
@@ -3804,6 +3895,35 @@ function admRenderCosts(){
   }
   if(!_supPayHtml) _supPayHtml='<div class="adm-empty" style="padding:16px;font-size:11px">No payable orders \u2014 payments are due only after delivery with return window closed</div>';
 
+  // DONE orders pending supplier payment
+  const _doneSupOrders=(ADM_DATA.orders||[]).filter(o=>{
+    if(o.status!=='Delivered'||o.supplierPaid)return false;
+    const rw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+    const rc=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+    const delivTs=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
+    const rcTs=rc?new Date(rc).getTime():0;
+    if(rcTs&&delivTs&&delivTs<rcTs)return true;
+    if(rw==='0'||!delivTs)return true;
+    if(rw==='always')return false;
+    const ms=rw==='5s'?5000:(parseInt(rw)||1)*86400000;
+    return (Date.now()-delivTs)>=ms;
+  });
+  if(_doneSupOrders.length>0){
+    const _sup=getSupplier();
+    let _spBanner='<div style="margin-bottom:24px;padding:16px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:10px;">';
+    _spBanner+='<div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin-bottom:14px;">Pending Supplier Payments ('+_doneSupOrders.length+' order'+(_doneSupOrders.length!==1?'s':'')+')</div>';
+    _doneSupOrders.forEach(o=>{
+      _spBanner+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,168,76,0.15);border-radius:7px;">`
+        +`<div><span style="font-size:12px;font-weight:700;color:#C9A84C;">${o.orderId}</span>`
+        +`<span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:10px;">${o.customerName||''}</span>`
+        +`<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px;">${(o.items||'').substring(0,48)}${(o.items||'').length>48?'...':''}</div></div>`
+        +`<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:14px;font-weight:900;color:#2ecc71;">${admFmt(o.supplierCost)}</span>`
+        +`<button onclick="admOpenSupPayModal('${_sup.name||'T-Shirt Hub'}',${o.supplierCost},'bKash','${o.orderId}')" style="background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.4);border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ${admFmt(o.supplierCost)}</button></div></div>`;
+    });
+    _spBanner+='</div>';
+    document.getElementById('adm-costs').innerHTML+=_spBanner;
+  }
+
   document.getElementById("adm-costs").innerHTML+=`
   <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
 
@@ -3813,6 +3933,7 @@ function admRenderCosts(){
   <!-- Supplier payment form (inline) — shown here, right below the Pay Supplier cards -->
   <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Supplier Payment</div>
+    <input type="hidden" id="finSupPayOrderId"/>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 3500"/></div>
@@ -5226,6 +5347,7 @@ function admOpenSupPayModal(supplier, owed, method, orderId){
   document.getElementById('finSupPayName').value=supplier;
   document.getElementById('finSupPayAmt').value=Math.round(owed);
   document.getElementById('finSupPayNote').value=orderId?'Payment for '+orderId:'';
+  document.getElementById('finSupPayOrderId').value=orderId||'';
   if(method){const sel=document.getElementById('finSupPayMethod');if(sel)sel.value=method;}
   document.getElementById('finSupPayModal').style.display='block';
   document.getElementById('finSupPayModal').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -5236,28 +5358,39 @@ async function admSaveSupPay(){
   const amt=parseFloat(document.getElementById('finSupPayAmt').value);
   const method=document.getElementById('finSupPayMethod').value;
   const note=document.getElementById('finSupPayNote').value.trim();
+  const orderId=document.getElementById('finSupPayOrderId').value.trim();
   if(!supplier||!amt||amt<=0){toast('Enter a valid amount');return;}
   try{
-    const{error}=await sbAdmin.from('supplier_payments').insert({supplier,amount:amt,method,note:note||null});
+    const{error}=await sbAdmin.from('supplier_payments').insert({
+      supplier,amount:amt,method,note:note||null,
+      order_id:orderId||null
+    });
     if(error)throw error;
+    // Mark order as supplier_paid
+    if(orderId){
+      await sbAdmin.from('orders').update({supplier_paid:true}).eq('id',orderId);
+    }
     // Auto-log to transactions tab
     await sbAdmin.from('transactions').insert({
       date:new Date().toISOString().slice(0,10),
       type:'Money Out',owner:null,amount:amt,
-      description:(note||('Payment to '+supplier))+' [auto-logged]',
+      description:(note||('Payment to '+supplier+(orderId?' for '+orderId:'')))+' [auto-logged]',
       category:'Supplier Payment'
     });
+    // Notify supplier: payment sent
+    if(orderId) await notifySupplierPaymentSent(supplier, amt, orderId, method);
     document.getElementById('finSupPayModal').style.display='none';
     toast('Supplier payment recorded ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
 }
 
-function admOpenPayoutModal(code, name, owed){
+function admOpenPayoutModal(code, name, owed, orderId){
   document.getElementById('finPayoutCode').value=code;
   document.getElementById('finPayoutName').value=name+' ('+code+')';
   document.getElementById('finPayoutAmt').value=Math.round(owed);
-  document.getElementById('finPayoutNote').value='';
+  document.getElementById('finPayoutNote').value=orderId?'Commission for '+orderId:'';
+  document.getElementById('finPayoutOrderId').value=orderId||'';
   document.getElementById('finPayoutModal').style.display='block';
   document.getElementById('finPayoutModal').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -5267,21 +5400,31 @@ async function admSavePayout(){
   const amt=parseFloat(document.getElementById('finPayoutAmt').value);
   const method=document.getElementById('finPayoutMethod').value;
   const note=document.getElementById('finPayoutNote').value.trim();
+  const orderId=document.getElementById('finPayoutOrderId').value.trim();
   if(!code||!amt||amt<=0){toast('Enter a valid amount');return;}
   try{
-    const {error}=await sbAdmin.from('affiliate_payouts').insert({affiliate_code:code,amount:amt,method,note:note||null});
+    const {error}=await sbAdmin.from('affiliate_payouts').insert({
+      affiliate_code:code,amount:amt,method,note:note||null,
+      order_id:orderId||null
+    });
     if(error)throw error;
     // Also update total_paid on affiliates table
-    const {data:aff}=await sbAdmin.from('affiliates').select('total_paid,full_name').eq('code',code).single();
+    const {data:aff}=await sbAdmin.from('affiliates').select('total_paid,full_name,email,whatsapp').eq('code',code).single();
     const newPaid=(parseFloat(aff?.total_paid||0)+amt);
     await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
+    // Mark order as affiliate_paid
+    if(orderId){
+      await sbAdmin.from('orders').update({affiliate_paid:true}).eq('id',orderId);
+    }
     // Auto-log to transactions tab
     await sbAdmin.from('transactions').insert({
       date:new Date().toISOString().slice(0,10),
       type:'Money Out',owner:null,amount:amt,
-      description:(note||('Affiliate payout to '+(aff?.full_name||code)+' ('+code+')'))+' [auto-logged]',
+      description:(note||('Affiliate payout to '+(aff?.full_name||code)+' ('+code+(orderId?' for '+orderId:'')+')'))+' [auto-logged]',
       category:'Affiliate Payment'
     });
+    // Notify affiliate: payment sent
+    if(orderId && aff) await notifyAffiliatePaymentSent(aff, amt, orderId, method);
     document.getElementById('finPayoutModal').style.display='none';
     toast('Payout recorded ✓');
     admLoadData();

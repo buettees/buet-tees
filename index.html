@@ -549,7 +549,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 /* ── MOBILE (≤640px) full overhaul ── */
 @media(max-width:640px){
   header{padding:0 16px;height:56px;gap:8px;}
-  .logo{font-size:13px;letter-spacing:5px;position:absolute;left:50%;transform:translateX(-50%);}
+  .logo{font-size:13px;letter-spacing:5px;position:static;transform:none;flex:1;justify-content:center;}
   .srch-input.open{width:130px;}
   .cart-btn{padding:8px 14px;font-size:11px;gap:6px;letter-spacing:1px;}
   .hero{padding:48px 20px 44px;}
@@ -652,9 +652,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 /* Mobile nav drawer */
 .mob-nav-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:98;backdrop-filter:blur(4px);}
 .mob-nav-bg.on{display:block;}
-.mob-nav{position:fixed;top:0;left:-100%;width:80%;max-width:300px;height:100vh;background:var(--black2);z-index:99;display:flex;flex-direction:column;transition:left 0.3s cubic-bezier(0.25,0.46,0.45,0.94);border-right:2px solid var(--burg);overflow-y:auto;}
+.mob-nav{position:fixed;top:0;left:-100%;width:80%;max-width:300px;height:100vh;background:var(--black2);z-index:101;display:flex;flex-direction:column;transition:left 0.3s cubic-bezier(0.25,0.46,0.45,0.94);border-right:2px solid var(--burg);overflow-y:auto;padding-top:0;}
 .mob-nav.open{left:0;}
-.mob-nav-hd{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;}
+.mob-nav-hd{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .mob-nav-logo{font-size:13px;font-weight:900;letter-spacing:6px;text-transform:uppercase;color:var(--w);}
 .mob-nav-close{width:30px;height:30px;background:rgba(255,255,255,0.06);border:none;border-radius:6px;cursor:pointer;color:var(--w);font-size:14px;display:flex;align-items:center;justify-content:center;}
 .mob-nav-links{padding:12px 0;flex:1;}

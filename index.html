@@ -2324,7 +2324,10 @@ async function admLoadData(){
 function admFmt(n){return"৳ "+Math.round(n).toLocaleString("en-IN");}
 function admFmtShort(n){if(Math.abs(n)>=1000)return"৳"+(n/1000).toFixed(1)+"k";return"৳"+Math.round(n);}
 
-function admRenderAll(){admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();admRenderCRM();admRenderInventory();}
+function admRenderAll(){admRenderOrders();admRenderAffiliates();admRenderOwners();admRenderMonthly();admRenderTransactions();admRenderCosts();admRenderFinance();admRenderCRM();admRenderInventory();
+  const _curRW=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+  _startReturnWindowTimer(_curRW);
+}
 
 function admRenderOverview(){
   const s=ADM_DATA.summary;
@@ -2641,6 +2644,23 @@ function admRenderAffiliates(){
         +`<button onclick="admOpenPayoutModal('${o.affiliateCode}','${(_aff.name||o.affiliateCode).replace(/'/g,'\\\'')}',${o.affCommission},'${o.orderId}')" style="background:rgba(201,168,76,0.15);color:#C9A84C;border:1px solid rgba(201,168,76,0.4);border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ${admFmt(o.affCommission)}</button></div></div>`;
     });
     _affBanner+='</div>';
+    // Inject the payout modal right after the banner so Pay button scrolls to it nearby
+    _affBanner+=`<div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
+    <input type="hidden" id="finPayoutCode"/>
+    <input type="hidden" id="finPayoutOrderId"/>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
+        <select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="adm-tx-btn" onclick="admSavePayout()">✓ Save Payout</button>
+      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
+    </div>
+  </div>`;
     document.getElementById('adm-affiliates').innerHTML=_affBanner;
   } else {
     document.getElementById('adm-affiliates').innerHTML='';
@@ -2799,11 +2819,11 @@ function admRenderAffiliates(){
 
 
 
-  <!-- Payout form (inline, shown on Pay click) -->
-  <div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
+  <!-- Payout form — injected near banner when pending orders exist, fallback here otherwise -->
+  ${!_doneAffOrders||!_doneAffOrders.length?`<div id="finPayoutModal" style="display:none;background:#1a0d00;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Affiliate Payout</div>
     <input type="hidden" id="finPayoutCode"/>
-  <input type="hidden" id="finPayoutOrderId"/>
+    <input type="hidden" id="finPayoutOrderId"/>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1" placeholder="500"/></div>
@@ -2815,7 +2835,8 @@ function admRenderAffiliates(){
       <button class="adm-tx-btn" onclick="admSavePayout()">✓ Save Payout</button>
       <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
     </div>
-  </div>
+  </div>`:''}
+
 
   <!-- FULL PAYOUT HISTORY — expandable rows -->
   ${allPayouts.length?`

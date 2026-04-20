@@ -549,8 +549,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 /* ── MOBILE (≤640px) full overhaul ── */
 @media(max-width:640px){
   header{padding:0 16px;height:56px;gap:8px;}
-  .logo{font-size:13px;letter-spacing:5px;}
-  .srch-input.open{width:140px;}
+  .logo{font-size:13px;letter-spacing:5px;position:absolute;left:50%;transform:translateX(-50%);}
+  .srch-input.open{width:130px;}
   .cart-btn{padding:8px 14px;font-size:11px;gap:6px;letter-spacing:1px;}
   .hero{padding:48px 20px 44px;}
   .hero-h1{font-size:clamp(42px,14vw,72px);}
@@ -640,7 +640,33 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .contact-card-sub{font-size:11px;color:var(--g2);margin-top:4px;}
 .contact-aff-box{background:var(--black);border-radius:14px;padding:32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
 .contact-aff-txt{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.8;}
-.contact-aff-title{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--w);margin-bottom:6px;}      
+.contact-aff-title{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--w);margin-bottom:6px;}
+/* ── Mobile Hamburger Menu ── */
+.ham-btn{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:36px;height:36px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;cursor:pointer;transition:background 0.15s;flex-shrink:0;}
+.ham-btn:hover{background:rgba(255,255,255,0.12);}
+.ham-btn span{display:block;width:16px;height:1.5px;background:var(--w);border-radius:2px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);}
+.ham-btn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+.ham-btn.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.ham-btn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+@media(max-width:899px){.ham-btn{display:flex;}}
+/* Mobile nav drawer */
+.mob-nav-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:98;backdrop-filter:blur(4px);}
+.mob-nav-bg.on{display:block;}
+.mob-nav{position:fixed;top:0;left:-100%;width:80%;max-width:300px;height:100vh;background:var(--black2);z-index:99;display:flex;flex-direction:column;transition:left 0.3s cubic-bezier(0.25,0.46,0.45,0.94);border-right:2px solid var(--burg);overflow-y:auto;}
+.mob-nav.open{left:0;}
+.mob-nav-hd{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;}
+.mob-nav-logo{font-size:13px;font-weight:900;letter-spacing:6px;text-transform:uppercase;color:var(--w);}
+.mob-nav-close{width:30px;height:30px;background:rgba(255,255,255,0.06);border:none;border-radius:6px;cursor:pointer;color:var(--w);font-size:14px;display:flex;align-items:center;justify-content:center;}
+.mob-nav-links{padding:12px 0;flex:1;}
+.mob-nav-link{display:flex;align-items:center;gap:14px;padding:14px 22px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;}
+.mob-nav-link:hover{color:var(--w);background:rgba(255,255,255,0.04);border-left-color:rgba(255,255,255,0.2);}
+.mob-nav-link.active-page{color:var(--w);border-left-color:var(--burg);}
+.mob-nav-link svg{opacity:0.5;flex-shrink:0;}
+.mob-nav-link:hover svg{opacity:1;}
+.mob-nav-aff{margin:12px 16px;padding:14px 18px;background:var(--burg);border-radius:10px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);cursor:pointer;text-align:center;transition:background 0.15s;}
+.mob-nav-aff:hover{background:var(--burg2);}
+.mob-nav-foot{padding:20px;border-top:1px solid rgba(255,255,255,0.06);}
+.mob-nav-foot-txt{font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;}
 </style>
 </head>
 <body>
@@ -653,6 +679,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
 </div>
 <header>
+  <button class="ham-btn" id="hamBtn" onclick="toggleMobNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
   <div class="logo">BUET<div class="logo-sep"></div>TEES</div>
   <nav class="nav-mid">
     <span class="nav-a active-page" id="nav-home" onclick="showPage('home')">Home</span>
@@ -677,7 +706,37 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   </div>
 </header>
 
-<div id="page-home" class="page active">
+<!-- Mobile Nav Overlay -->
+<div class="mob-nav-bg" id="mobNavBg" onclick="closeMobNav()"></div>
+<!-- Mobile Nav Drawer -->
+<div class="mob-nav" id="mobNav">
+  <div class="mob-nav-hd">
+    <div class="mob-nav-logo">BUET · TEES</div>
+    <button class="mob-nav-close" onclick="closeMobNav()">✕</button>
+  </div>
+  <div class="mob-nav-links">
+    <div class="mob-nav-link active-page" id="mob-nav-home" onclick="showPage('home');closeMobNav()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </div>
+    <div class="mob-nav-link" id="mob-nav-products" onclick="showPage('products');closeMobNav()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Products
+    </div>
+    <div class="mob-nav-link" id="mob-nav-about" onclick="showPage('about');closeMobNav()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      About
+    </div>
+    <div class="mob-nav-link" id="mob-nav-contact" onclick="showPage('contact');closeMobNav()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Contact
+    </div>
+  </div>
+  <div class="mob-nav-aff" onclick="openAffModal();closeMobNav()">🤝 Join Affiliate</div>
+  <div class="mob-nav-foot">
+    <div class="mob-nav-foot-txt">buettees.shop</div>
+  </div>
+</div> class="page active">
 <div class="hero">
   <div class="hero-geo"></div><div class="hero-geo2"></div>
   <div class="hero-inner">
@@ -1417,10 +1476,14 @@ function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   // Show target
   document.getElementById('page-'+name).classList.add('active');
-  // Update nav highlight
+  // Update desktop nav highlight
   document.querySelectorAll('.nav-a[id^="nav-"]').forEach(a=>a.classList.remove('active-page'));
   const navEl=document.getElementById('nav-'+name);
   if(navEl)navEl.classList.add('active-page');
+  // Update mobile nav highlight
+  document.querySelectorAll('.mob-nav-link[id^="mob-nav-"]').forEach(a=>a.classList.remove('active-page'));
+  const mobNavEl=document.getElementById('mob-nav-'+name);
+  if(mobNavEl)mobNavEl.classList.add('active-page');
   // Scroll to top
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -6130,6 +6193,21 @@ function srchPick(id,cat){
   // Set the right filter then open product
   homeActiveCat=cat;allActiveCat=cat;
   openP(id);
+}
+// ── Mobile Nav ──
+function toggleMobNav(){
+  const nav=document.getElementById('mobNav');
+  const bg=document.getElementById('mobNavBg');
+  const btn=document.getElementById('hamBtn');
+  const isOpen=nav.classList.contains('open');
+  if(isOpen){closeMobNav();}
+  else{nav.classList.add('open');bg.classList.add('on');btn.classList.add('open');document.body.style.overflow='hidden';}
+}
+function closeMobNav(){
+  document.getElementById('mobNav').classList.remove('open');
+  document.getElementById('mobNavBg').classList.remove('on');
+  document.getElementById('hamBtn').classList.remove('open');
+  document.body.style.overflow='';
 }
 loadProducts();upd();
 </script>

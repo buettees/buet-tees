@@ -1123,10 +1123,11 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // For admin panel API calls we use a separate admin endpoint or Edge Function
 const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI3OTQ3NiwiZXhwIjoyMDkwODU1NDc2fQ.PZPPhiL66ryCOcMnkBAUSSSeafzPNXOVcoEG_pxdmhY"; // only used in admin, not exposed to customers
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+// One client only — use service key for admin panel
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   realtime: { params: { eventsPerSecond: 10 } }
 });
+const sbAdmin = sb; // alias — same client
 
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;

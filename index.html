@@ -550,7 +550,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 @media(max-width:640px){
   /* Header */
   header{padding:0 12px;height:56px;gap:8px;}
-  .logo{font-size:13px;letter-spacing:5px;position:static;transform:none;flex:1;justify-content:center;}
+  .logo{font-size:13px;letter-spacing:5px;position:static;transform:none;flex:1;justify-content:flex-start;}
   .srch-input.open{width:120px;}
   .cart-btn{padding:8px 12px;font-size:10px;gap:5px;letter-spacing:1px;}
   /* Hero */
@@ -561,25 +561,27 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .hstat-n{font-size:15px;}
   .hero-cta{padding:12px 20px;font-size:11px;letter-spacing:2px;flex-shrink:0;}
   /* Home collection section */
-  .collection{padding:36px 12px 44px;}
-  .col-hd{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:20px;}
+  .collection{padding:20px 6px 44px;}
+  .col-hd{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:12px;}
   .col-title{font-size:clamp(26px,8vw,36px);}
   .col-eyebrow{font-size:11px;letter-spacing:3px;}
-  /* Product grid — tight gap, full-width cards */
-  .pgrid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  /* Product grid — larger images, minimal gap */
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:6px;}
   .pcard{border-radius:10px;}
+  .pimg{aspect-ratio:3/4;}
   .pinfo{padding:9px 10px 11px;}
   .pname{font-size:11px;letter-spacing:0;}
   .pprice{font-size:15px;}
   .pcat{font-size:10px;letter-spacing:1px;margin-bottom:8px;}
   .view-all-wrap{margin-top:28px;}
   .view-all-btn{padding:13px 24px;font-size:10px;letter-spacing:2px;width:100%;justify-content:center;}
-  /* Products page — minimal padding so cards fill screen */
-  .prodpage{padding:28px 10px 48px;}
-  .prodpage .col-hd{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:16px;}
-  .prodpage .col-title{font-size:clamp(26px,8vw,36px);}
-  .prodpage .col-eyebrow{font-size:11px;letter-spacing:3px;}
-  .prodpage .cat-filters{margin-bottom:16px;gap:6px;}
+  /* Products page — tight layout, cards fill screen */
+  .prodpage{padding:16px 6px 48px;}
+  .prodpage .col-hd{flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;margin-bottom:12px;}
+  .prodpage .col-title{font-size:clamp(22px,7vw,28px);}
+  .prodpage .col-eyebrow{display:none;}
+  .prodpage .cat-filters{margin-bottom:12px;gap:6px;}
+  .col-count{font-size:12px;color:var(--g2);font-weight:600;letter-spacing:1px;align-self:flex-end;padding-bottom:3px;}
   /* Category filter pills */
   .cat-filters{gap:6px;}
   .cat-pill{padding:6px 12px;font-size:10px;letter-spacing:1.5px;}

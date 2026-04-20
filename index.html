@@ -1125,6 +1125,11 @@ const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+// Separate client for realtime — uses anon key (realtime works with RLS public-read tables)
+// Service role key doesn't support realtime WebSocket in the browser client
+const sbRealtime = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+});
 
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;
@@ -1917,34 +1922,54 @@ function _setLiveIndicator(state){
   // state: 'live' | 'connecting' | 'off'
   const el=document.getElementById('admCountdown');
   if(!el)return;
-  if(state==='live')     el.innerHTML='<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#2ecc71;display:inline-block;animation:rtPulse 1.5s infinite"></span><span style="color:rgba(255,255,255,0.3)">LIVE</span></span>';
-  else if(state==='connecting') el.innerHTML='<span style="color:rgba(255,165,0,0.5);font-size:9px">connecting…</span>';
+  if(state==='live')       el.innerHTML='<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#2ecc71;display:inline-block;animation:rtPulse 1.5s infinite"></span><span style="color:rgba(46,204,113,0.6);font-size:9px;font-weight:700;letter-spacing:1px">LIVE</span></span>';
+  else if(state==='connecting') el.innerHTML='<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#e67e22;display:inline-block;animation:rtPulse 1s infinite"></span><span style="color:rgba(255,165,0,0.5);font-size:9px">connecting…</span></span>';
+  else if(state==='fallback')   el.innerHTML='<span style="color:rgba(255,255,255,0.2);font-size:9px">↻ 30s</span>';
   else el.textContent='';
 }
+
+let _realtimeFallbackTimer=null;
 
 function _stopRealtime(){
   if(_realtimeDebounce){clearTimeout(_realtimeDebounce);_realtimeDebounce=null;}
   if(_realtimeChannel){
-    try{sbAdmin.removeChannel(_realtimeChannel);}catch(e){}
+    try{sbRealtime.removeChannel(_realtimeChannel);}catch(e){}
     _realtimeChannel=null;
   }
+  if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
   _setLiveIndicator('off');
 }
 
 function _startRealtime(){
   _stopRealtime();
   _setLiveIndicator('connecting');
-  _realtimeChannel = sbAdmin
-    .channel('admin-dashboard')
-    .on('postgres_changes',{event:'*',schema:'public',table:'orders'},       _onRealtimeChange)
-    .on('postgres_changes',{event:'*',schema:'public',table:'affiliates'},    _onRealtimeChange)
-    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},  _onRealtimeChange)
-    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},      _onRealtimeChange)
-    .on('postgres_changes',{event:'*',schema:'public',table:'affiliate_payouts'}, _onRealtimeChange)
-    .on('postgres_changes',{event:'*',schema:'public',table:'supplier_payments'}, _onRealtimeChange)
+  let _rtConnected=false;
+
+  _realtimeChannel = sbRealtime
+    .channel('admin-dashboard-v2')
+    .on('postgres_changes',{event:'*',schema:'public',table:'orders'},            _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'affiliates'},         _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},       _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},           _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'affiliate_payouts'},  _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'supplier_payments'},  _onRealtimeChange)
     .subscribe((status)=>{
-      if(status==='SUBSCRIBED') _setLiveIndicator('live');
-      else if(status==='CLOSED'||status==='CHANNEL_ERROR') _setLiveIndicator('connecting');
+      if(status==='SUBSCRIBED'){
+        _rtConnected=true;
+        _setLiveIndicator('live');
+        // Stop fallback poll if realtime connected
+        if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
+      } else if(status==='CLOSED'||status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+        _rtConnected=false;
+        _setLiveIndicator('connecting');
+        // Start fallback poll every 30s while realtime is down
+        _setLiveIndicator('fallback');
+        if(!_realtimeFallbackTimer){
+          _realtimeFallbackTimer=setInterval(()=>{
+            if(!_rtConnected) admLoadData();
+          },30000);
+        }
+      }
     });
 }
 

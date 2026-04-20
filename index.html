@@ -736,7 +736,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   <div class="mob-nav-foot">
     <div class="mob-nav-foot-txt">buettees.shop</div>
   </div>
-</div> class="page active">
+</div>
+
+<div id="page-home" class="page active">
 <div class="hero">
   <div class="hero-geo"></div><div class="hero-geo2"></div>
   <div class="hero-inner">
@@ -1315,11 +1317,16 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 
 async function loadProducts(){
   try{
-    const [{data:products,error:pe},{data:suppliersData}]=await Promise.all([
-      sb.from('products').select('*, product_categories(*)').eq('active',true),
-      sb.from('suppliers').select('*').eq('active',true)
+    const [{data:products,error:pe}]=await Promise.all([
+      sb.from('products').select('*, product_categories(*)').eq('active',true)
     ]);
     if(pe)throw pe;
+    // Fetch suppliers separately — gracefully skip if table missing or CORS
+    let suppliersData=[];
+    try{
+      const {data:sd}=await sb.from('suppliers').select('name,categories').eq('active',true);
+      suppliersData=sd||[];
+    }catch(e){/* suppliers table not accessible via anon key — skip */}
      (products||[]).sort((a,b)=>{
   const na=parseInt(a.id.replace(/\D/g,''))||0;
   const nb=parseInt(b.id.replace(/\D/g,''))||0;

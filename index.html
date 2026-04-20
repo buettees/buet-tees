@@ -2967,6 +2967,7 @@ function admRenderTransactions(){
           const isOut=t.type.includes("Expense")||t.type.includes("Out");
           return`<tr>
             <td style="font-size:10px;white-space:nowrap">${t.date}</td>
+            <td style="font-size:10px;color:rgba(255,255,255,0.45)">${t.category||''}</td>
             <td><span class="adm-badge ${isOut?"adm-badge-red":"adm-badge-green"}">${t.type}</span></td>
             <td>${t.owner||"BUET Tees"}</td>
             <td class="${isOut?"adm-red":"adm-green"}">${admFmt(t.amount)}</td>

@@ -548,50 +548,66 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 }
 /* ── MOBILE (≤640px) full overhaul ── */
 @media(max-width:640px){
-  header{padding:0 16px;height:56px;gap:8px;}
+  /* Header */
+  header{padding:0 12px;height:56px;gap:8px;}
   .logo{font-size:13px;letter-spacing:5px;position:static;transform:none;flex:1;justify-content:center;}
-  .srch-input.open{width:130px;}
-  .cart-btn{padding:8px 14px;font-size:11px;gap:6px;letter-spacing:1px;}
-  .hero{padding:48px 20px 44px;}
+  .srch-input.open{width:120px;}
+  .cart-btn{padding:8px 12px;font-size:10px;gap:5px;letter-spacing:1px;}
+  /* Hero */
+  .hero{padding:48px 16px 44px;}
   .hero-h1{font-size:clamp(42px,14vw,72px);}
   .hero-stats{gap:0;padding-top:18px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .hstat{padding:0 16px 0 0;margin-right:16px;}
   .hstat-n{font-size:15px;}
   .hero-cta{padding:12px 20px;font-size:11px;letter-spacing:2px;flex-shrink:0;}
-  .collection{padding:48px 20px 56px;}
-  .col-hd{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:28px;}
-  .col-title{font-size:clamp(24px,8vw,36px);}
-  .pgrid{grid-template-columns:repeat(2,1fr);gap:16px;}
-  .pcard{border-radius:12px;}
-  .pinfo{padding:12px 14px 16px;}
-  .pname{font-size:12px;}
-  .pprice{font-size:17px;}
-  .view-all-wrap{margin-top:32px;}
-  .view-all-btn{padding:14px 28px;font-size:11px;letter-spacing:2px;width:100%;justify-content:center;}
-  .custom-section{padding:48px 20px 56px;}
-  .aff-section{padding:48px 20px 56px;}
+  /* Home collection section */
+  .collection{padding:36px 12px 44px;}
+  .col-hd{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:20px;}
+  .col-title{font-size:clamp(26px,8vw,36px);}
+  .col-eyebrow{font-size:11px;letter-spacing:3px;}
+  /* Product grid — tight gap, full-width cards */
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .pcard{border-radius:10px;}
+  .pinfo{padding:9px 10px 11px;}
+  .pname{font-size:11px;letter-spacing:0;}
+  .pprice{font-size:15px;}
+  .pcat{font-size:10px;letter-spacing:1px;margin-bottom:8px;}
+  .view-all-wrap{margin-top:28px;}
+  .view-all-btn{padding:13px 24px;font-size:10px;letter-spacing:2px;width:100%;justify-content:center;}
+  /* Products page — minimal padding so cards fill screen */
+  .prodpage{padding:28px 10px 48px;}
+  .prodpage .col-hd{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:16px;}
+  .prodpage .col-title{font-size:clamp(26px,8vw,36px);}
+  .prodpage .col-eyebrow{font-size:11px;letter-spacing:3px;}
+  .prodpage .cat-filters{margin-bottom:16px;gap:6px;}
+  /* Category filter pills */
+  .cat-filters{gap:6px;}
+  .cat-pill{padding:6px 12px;font-size:10px;letter-spacing:1.5px;}
+  /* Other sections */
+  .custom-section{padding:40px 16px 48px;}
+  .aff-section{padding:40px 16px 48px;}
   .aff-grid{grid-template-columns:1fr;}
   .aff-cta-box{flex-direction:column;padding:24px 20px;}
   .istrip{grid-template-columns:repeat(2,1fr);}
-  footer{padding:40px 20px 32px;}
+  /* Footer */
+  footer{padding:40px 16px 32px;}
   .ft-grid{grid-template-columns:1fr;gap:28px;}
   .ft-bot{flex-direction:column;align-items:flex-start;gap:8px;}
-  .prodpage{padding:48px 20px 56px;}
-  .prodpage .col-hd{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:28px;}
-  .aboutpage{padding:48px 20px 56px;}
+  /* About page */
+  .aboutpage{padding:40px 16px 48px;}
   .about-h{font-size:clamp(28px,9vw,44px);}
   .about-vals{grid-template-columns:1fr 1fr;gap:16px;}
-  .contactpage{padding:48px 20px 56px;}
+  /* Contact page */
+  .contactpage{padding:40px 16px 48px;}
   .contact-h{font-size:clamp(28px,9vw,44px);}
   .contact-grid{grid-template-columns:1fr 1fr;gap:14px;}
   .contact-card{padding:20px 16px;}
   .contact-card-val{font-size:14px;}
   .contact-aff-box{flex-direction:column;gap:16px;}
-  .cat-filters{gap:6px;}
-  .cat-pill{padding:6px 14px;font-size:10px;}
+  /* Ticker */
   .ticker{height:32px;}
   .ticker-t span{font-size:11px;padding:0 16px;}
-  /* Product modal mobile */
+  /* Product modal */
   .pm{flex-direction:column;max-height:90vh;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;}
   .pm-img{width:100%;height:220px;border-radius:16px 16px 0 0;}
   .pm-img img{width:100%;height:100%;object-fit:cover;border-radius:16px 16px 0 0;}

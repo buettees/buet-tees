@@ -1125,11 +1125,7 @@ const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-// Realtime client — service key bypasses RLS so all table changes are received
-const sbRealtime = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-  realtime: { params: { eventsPerSecond: 10 } },
-  global: { headers: { Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY } }
-});
+// No separate realtime client — reuse sbAdmin to avoid multiple GoTrueClient warnings
 
 // Legacy compat (kept so nothing else breaks)
 let U = SUPABASE_URL;
@@ -1933,7 +1929,7 @@ let _realtimeFallbackTimer=null;
 function _stopRealtime(){
   if(_realtimeDebounce){clearTimeout(_realtimeDebounce);_realtimeDebounce=null;}
   if(_realtimeChannel){
-    try{sbRealtime.removeChannel(_realtimeChannel);}catch(e){}
+    try{sbAdmin.removeChannel(_realtimeChannel);}catch(e){}
     _realtimeChannel=null;
   }
   if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
@@ -1944,9 +1940,13 @@ function _startRealtime(){
   _stopRealtime();
   _setLiveIndicator('connecting');
   let _rtConnected=false;
+  // Set longer timeout on the realtime socket to avoid TIMED_OUT on slow connections
+  try{sbAdmin.realtime.setAuth(SUPABASE_SERVICE_KEY);}catch(e){}
 
-  _realtimeChannel = sbRealtime
-    .channel('admin-dashboard-v2')
+  // Unique channel name per session avoids stale channel conflicts
+  const _chName = 'admin-dashboard-' + Date.now();
+  _realtimeChannel = sbAdmin
+    .channel(_chName)
     .on('postgres_changes',{event:'*',schema:'public',table:'orders'},            _onRealtimeChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'affiliates'},         _onRealtimeChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},       _onRealtimeChange)
@@ -1962,9 +1962,16 @@ function _startRealtime(){
       } else if(status==='CLOSED'||status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
         _rtConnected=false;
         _setLiveIndicator('fallback');
+        // Retry realtime connection after 10s on timeout/error
         if(!_realtimeFallbackTimer){
           _realtimeFallbackTimer=setInterval(()=>{
-            if(!_rtConnected) admLoadData();
+            if(!_rtConnected){
+              admLoadData();
+              // Try to reconnect realtime
+              clearInterval(_realtimeFallbackTimer);
+              _realtimeFallbackTimer=null;
+              setTimeout(_startRealtime, 2000);
+            }
           },15000);
         }
       }

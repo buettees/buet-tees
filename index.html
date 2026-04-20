@@ -1125,10 +1125,10 @@ const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const sbAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-// Separate client for realtime — uses anon key (realtime works with RLS public-read tables)
-// Service role key doesn't support realtime WebSocket in the browser client
-const sbRealtime = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  realtime: { params: { eventsPerSecond: 10 } }
+// Realtime client — service key bypasses RLS so all table changes are received
+const sbRealtime = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } },
+  global: { headers: { Authorization: 'Bearer ' + SUPABASE_SERVICE_KEY } }
 });
 
 // Legacy compat (kept so nothing else breaks)
@@ -1954,20 +1954,18 @@ function _startRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'affiliate_payouts'},  _onRealtimeChange)
     .on('postgres_changes',{event:'*',schema:'public',table:'supplier_payments'},  _onRealtimeChange)
     .subscribe((status)=>{
+      console.log('[Realtime] status:', status);
       if(status==='SUBSCRIBED'){
         _rtConnected=true;
         _setLiveIndicator('live');
-        // Stop fallback poll if realtime connected
         if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
       } else if(status==='CLOSED'||status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
         _rtConnected=false;
-        _setLiveIndicator('connecting');
-        // Start fallback poll every 30s while realtime is down
         _setLiveIndicator('fallback');
         if(!_realtimeFallbackTimer){
           _realtimeFallbackTimer=setInterval(()=>{
             if(!_rtConnected) admLoadData();
-          },30000);
+          },15000);
         }
       }
     });

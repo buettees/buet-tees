@@ -3434,12 +3434,26 @@ async function admUpdateOrderStatus(orderId,newStatus){
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
+    // If reverting a confirmation, remove the auto-logged customer payment transaction
+    if(newStatus==='Pending'){
+      await sbAdmin.from('transactions').delete()
+        .eq('category','Customer Payment')
+        .like('description','%'+orderId+'%[auto-logged]%');
+    }
     // Fetch full order for notifications + stock deduction
     const{data:ord}=await sbAdmin.from('orders').select('*').eq('id',orderId).single();
     if(ord){
       if(newStatus==='Confirmed'){
         notifyOrderConfirmed(ord);
         await invDeductStock(ord); // auto-deduct stock
+        // Auto-log customer payment to transactions
+        await sbAdmin.from('transactions').insert({
+          date:new Date().toISOString().slice(0,10),
+          type:'Money In',owner:null,
+          amount:parseFloat(ord.total||0),
+          description:'Customer payment — '+orderId+' ('+ord.name+') via '+(ord.payment_method||'bKash')+' [auto-logged]',
+          category:'Customer Payment'
+        });
       }
       else if(newStatus==='Dispatched') notifyOrderDispatched(ord);
       else if(newStatus==='Delivered') notifyOrderDelivered(ord);
@@ -4885,7 +4899,7 @@ async function admSaveReserve(){
   if(val===null||val===undefined||val==='')return;
   const num=Math.max(0,parseFloat(val)||0);
   try{
-    await sb.from('settings').upsert({key:'reserve_amount',value:String(num)},{onConflict:'key'});
+    await sbAdmin.from('settings').upsert({key:'reserve_amount',value:String(num)},{onConflict:'key'});
     // update local rawSettings so UI recalculates immediately
     if(ADM_DATA.rawSettings){
       const ex=ADM_DATA.rawSettings.find(r=>r.key==='reserve_amount');
@@ -5225,6 +5239,13 @@ async function admSaveSupPay(){
   try{
     const{error}=await sbAdmin.from('supplier_payments').insert({supplier,amount:amt,method,note:note||null});
     if(error)throw error;
+    // Auto-log to transactions tab
+    await sbAdmin.from('transactions').insert({
+      date:new Date().toISOString().slice(0,10),
+      type:'Money Out',owner:null,amount:amt,
+      description:(note||('Payment to '+supplier))+' [auto-logged]',
+      category:'Supplier Payment'
+    });
     document.getElementById('finSupPayModal').style.display='none';
     toast('Supplier payment recorded ✓');
     admLoadData();
@@ -5250,9 +5271,16 @@ async function admSavePayout(){
     const {error}=await sbAdmin.from('affiliate_payouts').insert({affiliate_code:code,amount:amt,method,note:note||null});
     if(error)throw error;
     // Also update total_paid on affiliates table
-    const {data:aff}=await sbAdmin.from('affiliates').select('total_paid').eq('code',code).single();
+    const {data:aff}=await sbAdmin.from('affiliates').select('total_paid,full_name').eq('code',code).single();
     const newPaid=(parseFloat(aff?.total_paid||0)+amt);
     await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
+    // Auto-log to transactions tab
+    await sbAdmin.from('transactions').insert({
+      date:new Date().toISOString().slice(0,10),
+      type:'Money Out',owner:null,amount:amt,
+      description:(note||('Affiliate payout to '+(aff?.full_name||code)+' ('+code+')'))+' [auto-logged]',
+      category:'Affiliate Payment'
+    });
     document.getElementById('finPayoutModal').style.display='none';
     toast('Payout recorded ✓');
     admLoadData();
@@ -5264,6 +5292,10 @@ async function admRevertSupPay(id, supplier, amount){
   try{
     const{error}=await sbAdmin.from('supplier_payments').delete().eq('id',id);
     if(error) throw error;
+    // Remove the matching auto-logged transaction
+    await sbAdmin.from('transactions').delete()
+      .eq('category','Supplier Payment').eq('amount',amount)
+      .like('description','%[auto-logged]%');
     toast('Supplier payment reverted ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
@@ -5278,6 +5310,10 @@ async function admRevertAffiliatePayout(id, code, amount){
     const{data:aff}=await sbAdmin.from('affiliates').select('total_paid').eq('code',code).single();
     const newPaid=Math.max(0,parseFloat(aff?.total_paid||0)-amount);
     await sbAdmin.from('affiliates').update({total_paid:newPaid}).eq('code',code);
+    // Remove the matching auto-logged transaction
+    await sbAdmin.from('transactions').delete()
+      .eq('category','Affiliate Payment').eq('amount',amount)
+      .like('description','%[auto-logged]%');
     toast('Affiliate payout reverted ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}

@@ -5048,15 +5048,30 @@ async function admSaveReserve(){
 let _returnWindowTimer=null;
 function _startReturnWindowTimer(val){
   if(_returnWindowTimer){clearInterval(_returnWindowTimer);_returnWindowTimer=null;}
-  // For short test windows, auto re-render every second so buttons disappear in real time
+  // For short test windows, auto re-render ONLY when no dropdown is focused
   const shortMs={'5s':5000}[val]||null;
   if(!shortMs)return;
   _returnWindowTimer=setInterval(()=>{
-    // Re-read current setting from cache
+    // Stop if setting changed
     const cur=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
     if(cur!==val){clearInterval(_returnWindowTimer);_returnWindowTimer=null;return;}
-    admRenderOrders();
-  },1000);
+    // Skip re-render if user has a dropdown/select open — avoids closing it mid-interaction
+    const active=document.activeElement;
+    if(active&&(active.tagName==='SELECT'||active.id==='returnWinSelect'))return;
+    // Only re-render if at least one delivered order's window has now expired
+    const rw=val==='5s'?5000:null;
+    if(!rw)return;
+    const now=Date.now();
+    const needsUpdate=(ADM_DATA.orders||[]).some(o=>{
+      if(o.status!=='Delivered')return false;
+      const ts=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
+      if(!ts)return false;
+      const elapsed=now-ts;
+      // Re-render if an order just crossed the window boundary (within last 2 seconds)
+      return elapsed>=rw&&elapsed<rw+2000;
+    });
+    if(needsUpdate)admRenderOrders();
+  },500);
 }
 async function admSaveReturnWindow(val){
   try{

@@ -546,6 +546,69 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   header{padding:0 28px;}footer{padding:48px 28px 36px;}.ft-grid{grid-template-columns:1fr 1fr;gap:32px;}
   .aff-section{padding:52px 28px 60px;}
 }
+/* ── MOBILE (≤640px) full overhaul ── */
+@media(max-width:640px){
+  header{padding:0 16px;height:56px;gap:8px;}
+  .logo{font-size:13px;letter-spacing:5px;}
+  .srch-input.open{width:140px;}
+  .cart-btn{padding:8px 14px;font-size:11px;gap:6px;letter-spacing:1px;}
+  .hero{padding:48px 20px 44px;}
+  .hero-h1{font-size:clamp(42px,14vw,72px);}
+  .hero-stats{gap:0;padding-top:18px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .hstat{padding:0 16px 0 0;margin-right:16px;}
+  .hstat-n{font-size:15px;}
+  .hero-cta{padding:12px 20px;font-size:11px;letter-spacing:2px;flex-shrink:0;}
+  .collection{padding:48px 20px 56px;}
+  .col-hd{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:28px;}
+  .col-title{font-size:clamp(24px,8vw,36px);}
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:16px;}
+  .pcard{border-radius:12px;}
+  .pinfo{padding:12px 14px 16px;}
+  .pname{font-size:12px;}
+  .pprice{font-size:17px;}
+  .view-all-wrap{margin-top:32px;}
+  .view-all-btn{padding:14px 28px;font-size:11px;letter-spacing:2px;width:100%;justify-content:center;}
+  .custom-section{padding:48px 20px 56px;}
+  .aff-section{padding:48px 20px 56px;}
+  .aff-grid{grid-template-columns:1fr;}
+  .aff-cta-box{flex-direction:column;padding:24px 20px;}
+  .istrip{grid-template-columns:repeat(2,1fr);}
+  footer{padding:40px 20px 32px;}
+  .ft-grid{grid-template-columns:1fr;gap:28px;}
+  .ft-bot{flex-direction:column;align-items:flex-start;gap:8px;}
+  .prodpage{padding:48px 20px 56px;}
+  .prodpage .col-hd{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:28px;}
+  .aboutpage{padding:48px 20px 56px;}
+  .about-h{font-size:clamp(28px,9vw,44px);}
+  .about-vals{grid-template-columns:1fr 1fr;gap:16px;}
+  .contactpage{padding:48px 20px 56px;}
+  .contact-h{font-size:clamp(28px,9vw,44px);}
+  .contact-grid{grid-template-columns:1fr 1fr;gap:14px;}
+  .contact-card{padding:20px 16px;}
+  .contact-card-val{font-size:14px;}
+  .contact-aff-box{flex-direction:column;gap:16px;}
+  .cat-filters{gap:6px;}
+  .cat-pill{padding:6px 14px;font-size:10px;}
+  .ticker{height:32px;}
+  .ticker-t span{font-size:11px;padding:0 16px;}
+  /* Product modal mobile */
+  .pm{flex-direction:column;max-height:90vh;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;}
+  .pm-img{width:100%;height:220px;border-radius:16px 16px 0 0;}
+  .pm-img img{width:100%;height:100%;object-fit:cover;border-radius:16px 16px 0 0;}
+  .pm-body{flex:1;overflow-y:auto;padding:20px 20px 24px;}
+  .pm-x{top:12px;right:12px;}
+  /* Cart drawer */
+  .cdrawer{width:100%;border-radius:20px 20px 0 0;}
+  /* Checkout modal */
+  .coin{width:100%;max-width:100%;border-radius:20px 20px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:92vh;}
+}
+/* ── View All Button ── */
+.view-all-wrap{display:flex;justify-content:center;margin-top:48px;}
+.view-all-btn{display:inline-flex;align-items:center;gap:10px;background:var(--black);color:var(--w);border:none;padding:16px 40px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:background 0.15s,transform 0.15s;}
+.view-all-btn:hover{background:var(--burg);transform:translateY(-2px);}
+.view-all-btn svg{transition:transform 0.15s;}
+.view-all-btn:hover svg{transform:translateX(4px);}
+
 /* ── PAGE SYSTEM ── */
 .page{display:none;}.page.active{display:block;}
 .nav-a.active-page{color:var(--w) !important;}
@@ -649,6 +712,12 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
     <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
   </div>
+  <div class="view-all-wrap">
+    <button class="view-all-btn" onclick="showPage('products')">
+      <span>View All Products</span>
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
 </div>
 
 <div class="custom-section">
@@ -743,6 +812,15 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       <div class="sk"><div class="sk-img"></div><div class="sk-body"><div class="sk-ln"></div><div class="sk-ln s"></div></div></div>
     </div>
   </div>
+<footer>
+  <div class="ft-grid">
+    <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
+    <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
+    <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
+  </div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
+</footer>
 </div>
 
 <!-- ═══════════════════════════════ ABOUT PAGE ═══════════════════════════════ -->
@@ -778,6 +856,15 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       <p class="about-body" style="color:#999;font-size:12px;">BUET Campus, Dhaka, Bangladesh · buettees.shop · bKash: 01782761981</p>
     </div>
   </div>
+<footer>
+  <div class="ft-grid">
+    <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
+    <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
+    <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
+  </div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
+</footer>
 </div>
 
 <!-- ═══════════════════════════════ CONTACT PAGE ═══════════════════════════════ -->
@@ -822,6 +909,15 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
       </div>
     </div>
   </div>
+<footer>
+  <div class="ft-grid">
+    <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
+    <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
+    <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
+  </div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
+</footer>
 </div>
 
 <!-- Affiliate Registration Modal -->
@@ -1250,7 +1346,7 @@ function filterProds(list,cat){
 function homePickCat(cat){
   homeActiveCat=cat;
   document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent===cat));
-  const filtered=filterProds(prods,cat).slice(0,12);
+  const filtered=filterProds(prods,cat).slice(0,4);
   document.getElementById('pgrid').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   updateHomeCount(filtered.length);
 }
@@ -1275,7 +1371,7 @@ function renderCatFilters(containerId, activeCat, pickFnName){
 function homePickCat(cat){
   homeActiveCat=cat;
   document.querySelectorAll('#cat-filters-home .cat-pill').forEach(b=>b.classList.toggle('on',b.textContent.trim()===cat));
-  const filtered=filterProds(prods,cat).slice(0,12);
+  const filtered=filterProds(prods,cat).slice(0,4);
   document.getElementById('pgrid').innerHTML=filtered.map(p=>makeCard(p,cat==='All'?null:cat)).join('');
   updateHomeCount(filtered.length);
 }
@@ -1295,7 +1391,7 @@ function render(){
   if(!prods.length){g.innerHTML='<div class="lerr">No products yet.</div>';return;}
 
   renderCatFilters('cat-filters-home',homeActiveCat,'homePickCat');
-  const homeFiltered=filterProds(prods,homeActiveCat).slice(0,12);
+  const homeFiltered=filterProds(prods,homeActiveCat).slice(0,4);
   g.innerHTML=homeFiltered.map(p=>makeCard(p,homeActiveCat==='All'?null:homeActiveCat)).join('');
   updateHomeCount(homeFiltered.length);
 

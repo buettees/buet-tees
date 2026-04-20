@@ -180,6 +180,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .adm-hdr-sep{width:1px;height:16px;background:rgba(255,255,255,0.08);}
 .adm-hdr-title{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.6);}
 .adm-hdr-right{display:flex;align-items:center;gap:10px;}
+@keyframes rtPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
 .adm-reload{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);padding:6px 14px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
 .adm-reload:hover{border-color:rgba(255,255,255,0.3);color:#fff;}
 .adm-close{background:var(--burg);border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
@@ -1075,7 +1076,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     </div>
     <div class="adm-hdr-right">
       <div class="adm-updated" id="admUpdated"></div>
-      <button class="adm-reload" onclick="admLoadData()">↻ Refresh</button>
+      <span id="admCountdown" style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.2);margin-right:4px"></span>
+      <button class="adm-reload" id="admRefreshBtn" onclick="admLoadData();_resetAutoRefresh()">↻ Refresh</button>
       <button class="adm-close" onclick="closeAdmin()">✕</button>
     </div>
   </div>
@@ -1892,6 +1894,7 @@ async function adminLogin(){
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
+    _startAutoRefresh();
   }else{
     document.getElementById("adminPassErr").textContent="Incorrect password";
     document.getElementById("adminPassInput").value="";
@@ -1903,7 +1906,61 @@ function closeAdmin(){
   document.getElementById("adminPanel").classList.remove("on");
   document.getElementById("adminLock").classList.remove("on");
   document.body.style.overflow="";
+  _stopRealtime();
 }
+
+// ── Supabase Realtime — instant push updates ────────────
+let _realtimeChannel=null;
+let _realtimeDebounce=null;
+
+function _setLiveIndicator(state){
+  // state: 'live' | 'connecting' | 'off'
+  const el=document.getElementById('admCountdown');
+  if(!el)return;
+  if(state==='live')     el.innerHTML='<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#2ecc71;display:inline-block;animation:rtPulse 1.5s infinite"></span><span style="color:rgba(255,255,255,0.3)">LIVE</span></span>';
+  else if(state==='connecting') el.innerHTML='<span style="color:rgba(255,165,0,0.5);font-size:9px">connecting…</span>';
+  else el.textContent='';
+}
+
+function _stopRealtime(){
+  if(_realtimeDebounce){clearTimeout(_realtimeDebounce);_realtimeDebounce=null;}
+  if(_realtimeChannel){
+    try{sbAdmin.removeChannel(_realtimeChannel);}catch(e){}
+    _realtimeChannel=null;
+  }
+  _setLiveIndicator('off');
+}
+
+function _startRealtime(){
+  _stopRealtime();
+  _setLiveIndicator('connecting');
+  _realtimeChannel = sbAdmin
+    .channel('admin-dashboard')
+    .on('postgres_changes',{event:'*',schema:'public',table:'orders'},       _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'affiliates'},    _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'transactions'},  _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'settings'},      _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'affiliate_payouts'}, _onRealtimeChange)
+    .on('postgres_changes',{event:'*',schema:'public',table:'supplier_payments'}, _onRealtimeChange)
+    .subscribe((status)=>{
+      if(status==='SUBSCRIBED') _setLiveIndicator('live');
+      else if(status==='CLOSED'||status==='CHANNEL_ERROR') _setLiveIndicator('connecting');
+    });
+}
+
+function _onRealtimeChange(payload){
+  // Debounce — if multiple tables update at once, reload only once after 400ms
+  if(_realtimeDebounce)clearTimeout(_realtimeDebounce);
+  _realtimeDebounce=setTimeout(()=>{
+    _realtimeDebounce=null;
+    admLoadData();
+  },400);
+}
+
+// Keep the reset/stop names so Refresh button still works
+function _resetAutoRefresh(){} // no-op — realtime doesn't need countdown reset
+function _stopAutoRefresh(){_stopRealtime();}
+function _startAutoRefresh(){_startRealtime();}
 
 function admTab(name){
   document.querySelectorAll(".adm-tab").forEach((t,i)=>{

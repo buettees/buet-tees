@@ -321,8 +321,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 @keyframes su{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
 .pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;animation:su 0.22s ease;border-top:3px solid var(--burg);}
 @media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);}}
-.pm-img{width:100%;overflow:hidden;background:#000;position:relative;border-radius:16px 16px 0 0;}
-.pm-img img{width:100%;height:auto;display:block;}
+.pm-img{width:100%;overflow:hidden;background:#000;position:relative;border-radius:16px 16px 0 0;flex-shrink:0;max-height:42vh;}
+.pm-img img{width:100%;height:100%;object-fit:cover;display:block;}
 .pm-x{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);color:var(--w);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .pm-x:hover{background:var(--burg);}
 .pm-body{padding:22px 22px 36px;overflow-y:auto;flex:1;}
@@ -612,8 +612,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .ticker-t span{font-size:11px;padding:0 16px;}
   /* Product modal */
   .pm{flex-direction:column;max-height:90vh;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;overflow:hidden;}
-  .pm-img{width:100%;height:auto;border-radius:0;background:#000;overflow:hidden;flex-shrink:0;}
-  .pm-img img{width:100%;height:auto;display:block;}
+  .pm-img{width:100%;max-height:38vh;border-radius:0;background:#000;overflow:hidden;flex-shrink:0;}
+  .pm-img img{width:100%;height:100%;object-fit:cover;display:block;}
   .pm-body{flex:1;overflow-y:auto;padding:20px 20px 24px;}
   .pm-x{top:12px;right:12px;}
   /* Cart drawer */
@@ -871,7 +871,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
@@ -897,7 +897,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
@@ -941,7 +941,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
@@ -994,7 +994,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>

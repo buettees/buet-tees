@@ -134,6 +134,48 @@ tbody td{padding:12px 16px;font-size:12px;font-weight:600;}
 .loading-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.07);border-top-color:var(--burg);border-radius:50%;animation:spin 0.7s linear infinite;margin:60px auto;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── EXPANDABLE ORDER ROWS ── */
+tbody tr.ord-main-row{cursor:pointer;transition:background 0.12s;}
+tbody tr.ord-main-row:hover td{background:rgba(255,255,255,0.03);}
+tbody tr.ord-main-row.expanded td{background:rgba(201,168,76,0.04);}
+.expand-arrow{display:inline-block;font-size:9px;color:rgba(255,255,255,0.3);transition:transform 0.2s;margin-left:4px;vertical-align:middle;}
+.expanded .expand-arrow{transform:rotate(90deg);color:var(--gold);}
+tr.ord-detail-row td{padding:0!important;background:rgba(0,0,0,0.35)!important;border-bottom:1px solid rgba(255,255,255,0.06)!important;}
+tr.ord-detail-row{display:none;}
+tr.ord-detail-row.open{display:table-row;}
+.ord-breakdown{padding:14px 20px 16px;border-left:3px solid var(--burg);}
+.breakdown-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;}
+.breakdown-item-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;gap:12px;}
+.breakdown-item-row:last-child{border:none;}
+.breakdown-item-name{color:rgba(255,255,255,0.65);font-weight:600;}
+.breakdown-item-name span{display:block;font-size:10px;color:rgba(255,255,255,0.3);font-weight:500;margin-top:2px;}
+.breakdown-item-comm{color:var(--gold);font-weight:800;white-space:nowrap;flex-shrink:0;}
+.breakdown-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 0;margin-top:6px;border-top:1px solid rgba(201,168,76,0.2);}
+.breakdown-total-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.breakdown-total-amt{font-size:16px;font-weight:900;color:var(--gold);}
+.breakdown-footer{margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.breakdown-status-note{font-size:10px;color:rgba(255,255,255,0.25);font-style:italic;}
+.bd-badge{display:inline-block;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.bd-badge-paid{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+.bd-badge-pending{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.25);}
+.bd-badge-waiting{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);}
+
+/* ── PAYOUT EXPAND ── */
+.payout-row{cursor:pointer;transition:background 0.12s;display:block;}
+.payout-row:hover{background:rgba(255,255,255,0.025);}
+.payout-row.expanded{background:rgba(34,197,94,0.04);}
+.payout-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;}
+.payout-detail{display:none;background:rgba(0,0,0,0.3);border-left:3px solid var(--green);padding:12px 20px 14px;}
+.payout-detail.open{display:block;}
+.payout-expand-arrow{display:inline-block;font-size:9px;color:rgba(255,255,255,0.25);transition:transform 0.2s;margin-left:6px;vertical-align:middle;}
+.payout-row.expanded .payout-expand-arrow{transform:rotate(90deg);color:var(--green);}
+.payout-covered-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:12px;}
+.payout-covered-row:last-child{border:none;}
+.payout-covered-id{color:var(--gold);font-weight:800;font-size:11px;white-space:nowrap;}
+.payout-covered-items{font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;}
+.payout-covered-comm{color:var(--green);font-weight:800;white-space:nowrap;flex-shrink:0;font-size:13px;}
+.payout-covered-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;}
+
 /* ── FOOTER ── */
 .dash-footer{background:var(--black);border-top:1px solid rgba(255,255,255,0.06);padding:20px 32px;text-align:center;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;}
 .dash-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
@@ -447,6 +489,114 @@ function renderAll() {
   ).join('');
 }
 
+function buildOrderBreakdown(o) {
+  const a = currentAffiliate;
+  const items = Array.isArray(o.items_json) ? o.items_json : [];
+  const isDelivered = o.status === 'Delivered';
+  const isCancelled = o.status === 'Cancelled' || o.status === 'Returned';
+
+  // Per-item rows
+  let itemRowsHtml = '';
+  let totalComm = 0;
+
+  if (items.length > 0) {
+    itemRowsHtml = items.map(item => {
+      const cat = (item.category || item.shirtType || '').toLowerCase();
+      const qty = parseInt(item.qty) || 1;
+      let rate = parseFloat(a.commission_regular) || 20;
+      let catLabel = 'Regular';
+      if (cat.includes('drop')) { rate = parseFloat(a.commission_drop) || 25; catLabel = 'Drop Shoulder'; }
+      else if (cat.includes('hoodie')) { rate = parseFloat(a.commission_hoodie) || 35; catLabel = 'Hoodie'; }
+      const lineComm = rate * qty;
+      totalComm += lineComm;
+
+      let nameHtml = '';
+      if (item.type === 'bothsides') {
+        nameHtml = `Both Sides — ${item.shirtType||catLabel}
+          <span>Front: ${item.frontName||'—'} · Back: ${item.backName||'—'}</span>
+          <span>${[item.size,item.color].filter(Boolean).join(' · ')} · Qty ${qty}</span>`;
+      } else {
+        nameHtml = `${item.name||''} <span style="font-size:10px;opacity:0.7">[${item.category||catLabel}]</span>
+          <span>${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''} · Qty ${qty}</span>`;
+      }
+      return `<div class="breakdown-item-row">
+        <div class="breakdown-item-name">${nameHtml}</div>
+        <div class="breakdown-item-comm">
+          ${fmt(rate)} × ${qty} = <strong>${fmt(lineComm)}</strong>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    // fallback: items string only
+    const rate = parseFloat(a.commission_regular) || 20;
+    totalComm = rate;
+    itemRowsHtml = `<div class="breakdown-item-row">
+      <div class="breakdown-item-name">${o.items||'Order items'}<span>Rate based on Regular T-Shirt</span></div>
+      <div class="breakdown-item-comm">${fmt(rate)}</div>
+    </div>`;
+  }
+
+  // Payment status badge
+  let badgeHtml = '';
+  if (isCancelled) {
+    badgeHtml = `<span class="bd-badge bd-badge-waiting">Cancelled — no commission</span>`;
+  } else if (isDelivered) {
+    // Check if this order is covered by a payout (FIFO)
+    const covered = isOrderCommissionPaid(o.id, totalComm);
+    if (covered) badgeHtml = `<span class="bd-badge bd-badge-paid">✓ Commission Paid</span>`;
+    else badgeHtml = `<span class="bd-badge bd-badge-pending">Pending Payment</span>`;
+  } else {
+    badgeHtml = `<span class="bd-badge bd-badge-waiting">Waiting for Delivery</span>`;
+  }
+
+  const note = isCancelled
+    ? 'This order was cancelled. No commission is earned.'
+    : isDelivered
+      ? 'Commission is earned on delivery. Payment is made after the return window closes.'
+      : 'Commission will be calculated once this order is delivered.';
+
+  return `<div class="ord-breakdown">
+    <div class="breakdown-title">Commission Breakdown</div>
+    ${itemRowsHtml}
+    <div class="breakdown-total-row">
+      <span class="breakdown-total-label">Total Commission</span>
+      <span class="breakdown-total-amt" style="${isCancelled?'color:rgba(255,255,255,0.2)':''}">${isCancelled?'—':fmt(totalComm)}</span>
+    </div>
+    <div class="breakdown-footer">
+      ${badgeHtml}
+      <span class="breakdown-status-note">${note}</span>
+    </div>
+  </div>`;
+}
+
+// FIFO check: given all payouts, has this order's commission been covered?
+function isOrderCommissionPaid(orderId, commAmt) {
+  // Get all delivered orders sorted oldest-first
+  const deliveredOrders = allOrders
+    .filter(o => o.status === 'Delivered' || o.status === 'Returned')
+    .slice().sort((a,b) => (a.created_at||'').localeCompare(b.created_at||''));
+  const payoutsSorted = allPayouts.slice().sort((a,b) => (a.paid_at||'').localeCompare(b.paid_at||''));
+
+  // Build remaining balance per order using FIFO
+  const remaining = deliveredOrders.map(o => ({
+    id: o.id,
+    rem: commissionForOrder(o)
+  }));
+
+  payoutsSorted.forEach(pay => {
+    let budget = parseFloat(pay.amount || 0);
+    for (const r of remaining) {
+      if (budget <= 0) break;
+      const take = Math.min(r.rem, budget);
+      r.rem -= take;
+      budget -= take;
+    }
+  });
+
+  const entry = remaining.find(r => r.id === orderId);
+  return entry ? entry.rem <= 0.01 : false;
+}
+
 function renderOrders() {
   const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
   const tbody = document.getElementById('ord-tbody');
@@ -454,24 +604,42 @@ function renderOrders() {
     tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty">No orders found</td></tr>`;
     return;
   }
-  tbody.innerHTML = filtered.map(o => {
+  tbody.innerHTML = filtered.map((o, idx) => {
     const comm = commissionForOrder(o);
     const isEarned = (o.status === 'Delivered');
-    const items = o.items_json ? (Array.isArray(o.items_json) ? o.items_json : []) : [];
+    const isCancelled = o.status === 'Cancelled' || o.status === 'Returned';
+    const items = Array.isArray(o.items_json) ? o.items_json : [];
     const itemsStr = items.length > 0
-      ? items.map(i => `${i.name||''} ${i.category||''} ${i.size||''} ×${i.qty||1}`).join(', ')
+      ? items.map(i => i.type==='bothsides'
+          ? `Both Sides (${i.shirtType||''}) ×${i.qty||1}`
+          : `${i.name||''} [${i.category||''}] ×${i.qty||1}`)
+          .join(', ')
       : (o.items || '—');
     const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
-    return `<tr>
-      <td class="ord-id">${o.id}</td>
+    const detailId = `ord-det-${idx}`;
+    const commColor = isCancelled ? 'color:rgba(255,255,255,0.2)' : !isEarned ? 'color:rgba(255,255,255,0.35)' : '';
+    const commText = isCancelled ? '—' : fmt(comm) + (!isEarned ? '*' : '');
+
+    return `<tr class="ord-main-row" onclick="toggleOrderDetail('${detailId}', this)">
+      <td class="ord-id">${o.id} <span class="expand-arrow">▶</span></td>
       <td class="ord-name">${o.name || '—'}</td>
       <td class="ord-item" style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${itemsStr}">${itemsStr}</td>
       <td class="ord-total">${fmt(o.total)}</td>
-      <td class="ord-comm" style="${!isEarned?'color:rgba(255,255,255,0.3);':''}">${fmt(comm)}${!isEarned?'*':''}</td>
+      <td class="ord-comm" style="${commColor}">${commText}</td>
       <td><span class="status-chip status-${o.status||'Pending'}">${o.status||'Pending'}</span></td>
       <td class="ord-date">${dateStr}</td>
+    </tr>
+    <tr class="ord-detail-row" id="${detailId}">
+      <td colspan="7">${buildOrderBreakdown(o)}</td>
     </tr>`;
   }).join('');
+}
+
+function toggleOrderDetail(id, row) {
+  const det = document.getElementById(id);
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  row.classList.toggle('expanded', !isOpen);
 }
 
 function filterOrders(filter, btn) {
@@ -481,23 +649,106 @@ function filterOrders(filter, btn) {
   renderOrders();
 }
 
+// Build FIFO map: for each payout, which orders (and how much) does it cover?
+function buildPayoutCoverageMap() {
+  const deliveredOrders = allOrders
+    .filter(o => o.status === 'Delivered' || o.status === 'Returned')
+    .slice().sort((a,b) => (a.created_at||'').localeCompare(b.created_at||''));
+  const payoutsSorted = allPayouts.slice().sort((a,b) => (a.paid_at||'').localeCompare(b.paid_at||''));
+
+  // Mutable remaining per order
+  const remaining = deliveredOrders.map(o => ({
+    id: o.id,
+    name: o.name,
+    items: o.items_json,
+    itemsStr: o.items,
+    rem: commissionForOrder(o),
+    total: commissionForOrder(o)
+  }));
+
+  // For each payout, record which orders it covered and how much
+  const coverageMap = {};
+  payoutsSorted.forEach(pay => {
+    let budget = parseFloat(pay.amount || 0);
+    const covered = [];
+    for (const r of remaining) {
+      if (budget <= 0) break;
+      if (r.rem <= 0.01) continue;
+      const take = Math.min(r.rem, budget);
+      r.rem -= take;
+      budget -= take;
+      covered.push({ id: r.id, name: r.name, items: r.items, itemsStr: r.itemsStr, amount: take });
+    }
+    coverageMap[pay.id] = covered;
+  });
+
+  return coverageMap;
+}
+
 function renderPayouts() {
   const list = document.getElementById('payout-list');
   if (!allPayouts.length) {
     list.innerHTML = `<div class="payout-empty">No payouts recorded yet</div>`;
     return;
   }
-  list.innerHTML = allPayouts.map(p => {
+
+  const coverageMap = buildPayoutCoverageMap();
+
+  list.innerHTML = allPayouts.map((p, idx) => {
     const dateStr = p.paid_at ? new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-    return `<div class="payout-row">
-      <div>
-        <div class="payout-date">${dateStr}</div>
-        <div class="payout-method">${p.method || 'bKash'}</div>
-        ${p.note ? `<div class="payout-note">${p.note}</div>` : ''}
+    const covered = coverageMap[p.id] || [];
+    const detailId = `payout-det-${idx}`;
+
+    // Build covered orders rows
+    let coveredHtml = '';
+    if (covered.length > 0) {
+      coveredHtml = covered.map(c => {
+        const items = Array.isArray(c.items) ? c.items : [];
+        const itemsStr = items.length
+          ? items.map(i => i.type==='bothsides'
+              ? `Both Sides (${i.shirtType||''}) ×${i.qty||1}`
+              : `${i.name||''} [${i.category||''}] ×${i.qty||1}`)
+              .join(', ')
+          : (c.itemsStr || '—');
+        return `<div class="payout-covered-row">
+          <div>
+            <div class="payout-covered-id">${c.id}</div>
+            <div class="payout-covered-items" style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${itemsStr}</div>
+          </div>
+          <div class="payout-covered-comm">+${fmt(c.amount)}</div>
+        </div>`;
+      }).join('');
+    } else {
+      coveredHtml = `<div style="font-size:11px;color:rgba(255,255,255,0.25);font-style:italic">No specific order matched — general payment</div>`;
+    }
+
+    return `<div class="payout-row" id="payout-row-${idx}" onclick="togglePayoutDetail('${detailId}', 'payout-row-${idx}')">
+      <div class="payout-inner">
+        <div>
+          <div class="payout-date">${dateStr} · ${p.method || 'bKash'} <span class="payout-expand-arrow">▶</span></div>
+          ${p.note ? `<div class="payout-note">${p.note}</div>` : ''}
+          <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:3px">${covered.length > 0 ? `Covers ${covered.length} order${covered.length>1?'s':''}` : 'General payment'}</div>
+        </div>
+        <div class="payout-amt">+${fmt(p.amount)}</div>
       </div>
-      <div class="payout-amt">+${fmt(p.amount)}</div>
+      <div class="payout-detail" id="${detailId}">
+        <div class="payout-covered-title">Orders Covered by This Payment</div>
+        ${coveredHtml}
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:8px;border-top:1px solid rgba(34,197,94,0.15);">
+          <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Total Paid</span>
+          <span style="font-size:15px;font-weight:900;color:var(--green)">+${fmt(p.amount)}</span>
+        </div>
+      </div>
     </div>`;
   }).join('');
+}
+
+function togglePayoutDetail(detailId, rowId) {
+  const det = document.getElementById(detailId);
+  const row = document.getElementById(rowId);
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  row.classList.toggle('expanded', !isOpen);
 }
 
 // ── COPY CODE ──

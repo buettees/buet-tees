@@ -842,6 +842,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 <!-- Admin Lock Screen -->
 <!-- admin panel moved to admin.html -->
 
+
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1620,6 +1621,7 @@ async function submitAffReg(){
 // Password is SHA-256 hashed. Default = "buettees2025"
 // To change: go to https://emn178.github.io/online-tools/sha256.html
 /* admin JS moved to admin.html */
+function srchToggle(){
   const inp=document.getElementById('srchInput');
   inp.classList.toggle('open');
   if(inp.classList.contains('open')){inp.focus();}

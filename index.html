@@ -2645,17 +2645,35 @@ async function admExportFinanceXLSX(){
     ];
     const ws1=window.XLSX.utils.aoa_to_sheet(summaryRows);
     ws1['!cols']=[{wch:38},{wch:20},{wch:20},{wch:20},{wch:20}];
+    // Highlight CASH BALANCE row — this is the money in your pocket right now
+    const cashRowIdx=summaryRows.findIndex(r=>r[0]==='CASH BALANCE');
+    if(cashRowIdx>=0){
+      const cellA=window.XLSX.utils.encode_cell({r:cashRowIdx,c:0});
+      const cellB=window.XLSX.utils.encode_cell({r:cashRowIdx,c:1});
+      const hlStyle={font:{bold:true,sz:14,color:{rgb:'000000'}},fill:{fgColor:{rgb:'C9A84C'}},alignment:{horizontal:'left'}};
+      if(ws1[cellA])ws1[cellA].s=hlStyle;
+      if(ws1[cellB])ws1[cellB].s={...hlStyle,alignment:{horizontal:'right'}};
+    }
+    // Also highlight SAFE TO EXTRACT row
+    const safeRowIdx=summaryRows.findIndex(r=>r[0]==='SAFE TO EXTRACT (owners total)');
+    if(safeRowIdx>=0){
+      const cellA=window.XLSX.utils.encode_cell({r:safeRowIdx,c:0});
+      const cellB=window.XLSX.utils.encode_cell({r:safeRowIdx,c:1});
+      const safeStyle={font:{bold:true,sz:12,color:{rgb:'000000'}},fill:{fgColor:{rgb:'27AE60'}},alignment:{horizontal:'left'}};
+      if(ws1[cellA])ws1[cellA].s=safeStyle;
+      if(ws1[cellB])ws1[cellB].s={...safeStyle,alignment:{horizontal:'right'}};
+    }
     window.XLSX.utils.book_append_sheet(wb,ws1,'Finance Summary');
     // ── Sheet 2: All Orders ──
-    const orderHeaders=['Order ID','Date','Customer','Phone','Email','Address','Zone','Status','Items','Subtotal','Delivery Fee','Discount %','Discount Amt','Total','Payment Method','Trx ID','Affiliate Code','Supplier Cost','Gross Profit','Aff Commission','Net Profit','Notes'];
+    const orderHeaders=['Order ID','Date','Customer','Phone','Email','Address','Zone','Status','Items','Subtotal (৳)','Delivery Fee (৳)','Discount %','Discount Amt (৳)','Total (৳)','Trx ID','Affiliate Code','Supplier Cost (৳)','Gross Profit (৳)','Aff Commission (৳)','Net Profit (৳)','Notes'];
     const orderData=orders.map(o=>[
-      o.id||o.orderId,
-      o.created_at?new Date(o.created_at).toLocaleDateString('en-GB'):'',
-      o.name||'',o.phone||'',o.email||'',o.address||'',o.zone||'',o.status||'',
-      o.items||(o.itemsJson?JSON.stringify(o.itemsJson):''),
+      o.orderId||'',
+      o.timestamp?new Date(o.timestamp).toLocaleDateString('en-GB'):'',
+      o.customerName||'',o.phone||'',o.email||'',o.address||'',o.zone||'',o.status||'',
+      o.items||(o.items_json?JSON.stringify(o.items_json):''),
       parseFloat(o.subtotal||0),parseFloat(o.deliveryFee||0),
       parseFloat(o.discountPct||0),parseFloat(o.discountAmt||0),
-      parseFloat(o.total||0),o.paymentMethod||'bKash',o.trxId||'',
+      parseFloat(o.total||0),o.trxId||'',
       o.affiliateCode||'',parseFloat(o.supplierCost||0),
       parseFloat(o.grossProfit||0),parseFloat(o.affCommission||0),
       parseFloat(o.netProfit||0),o.notes||''
@@ -5646,10 +5664,12 @@ function admRenderFinance(){
   </div>
 
   <!-- Cash balance big card -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
-    <div style="background:#141414;border:1px solid ${cashBalance>=0?'rgba(39,174,96,0.3)':'rgba(231,76,60,0.3)'};border-radius:12px;padding:16px 18px;grid-column:span 2;">
-      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">💵 Cash Balance (in bKash/hand)</div>
-      <div style="font-size:28px;font-weight:900;color:${cashBalance>=0?'#27ae60':'#e74c3c'};letter-spacing:-1px;">${admFmt(cashBalance)}</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:10px;">
+    <div style="background:#141414;border:2px solid ${cashBalance>=0?'#C9A84C':'rgba(231,76,60,0.5)'};border-radius:12px;padding:16px 18px;position:relative;">
+      <div style="position:absolute;top:-1px;right:12px;background:#C9A84C;color:#000;font-size:8px;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:0 0 6px 6px;">💰 Money In Your Pocket Right Now</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;">💵 Cash Balance (bKash + hand)</div>
+      <div style="font-size:32px;font-weight:900;color:${cashBalance>=0?'#C9A84C':'#e74c3c'};letter-spacing:-1px;">${admFmt(cashBalance)}</div>
+      <div style="margin-top:6px;font-size:9px;color:rgba(255,255,255,0.3);font-weight:600;letter-spacing:1px;">Cross-check this against your bKash balance + cash on hand</div>
       <div style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.18);line-height:1.7;">
         <div>+ Capital In &nbsp;<strong style="color:rgba(255,255,255,0.5)">${admFmt(capitalIn)}</strong></div>
         <div>+ Revenue &nbsp;<strong style="color:#27ae60">${admFmt(revenueCollected)}</strong></div>
@@ -5690,7 +5710,7 @@ function admRenderFinance(){
   </div>
 
   <!-- Safe-to-extract banner -->
-  <div style="background:${safeToExtract>0?'linear-gradient(135deg,#0d2a1a,#0f3320)':'#141414'};border:1px solid ${safeToExtract>0?'rgba(39,174,96,0.35)':'rgba(255,255,255,0.06)'};border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <div style="background:${safeToExtract>0?'linear-gradient(135deg,#0d2a1a,#0f3320)':'#141414'};border:1px solid ${safeToExtract>0?'rgba(39,174,96,0.35)':'rgba(255,255,255,0.06)'};border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
     <div>
       <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:4px;">✅ Safe to Extract (owners total)</div>
       <div style="font-size:22px;font-weight:900;color:${safeToExtract>0?'#2ecc71':'rgba(255,255,255,0.2)'}">${admFmt(safeToExtract)}</div>
@@ -5748,7 +5768,7 @@ function admRenderFinance(){
   <!-- SECTION 5 — PAYMENT HISTORY LOGS (collapsed)        -->
   <!-- ════════════════════════════════════════════════════ -->
   <div style="margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Payment History</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:12px;">
 
     <!-- Recent supplier payments -->
     <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;">

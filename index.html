@@ -323,7 +323,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 @media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);border-radius:20px;}}
 .pm-img{width:100%;overflow:hidden;background:#111;position:relative;border-radius:20px 20px 0 0;}
 .pm-img img{width:100%;height:auto;display:block;}
-.pm-x{position:sticky;top:14px;float:right;margin:14px 14px -46px 0;z-index:10;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);color:var(--w);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.pm-x{position:absolute;top:14px;right:14px;z-index:10;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);color:var(--w);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .pm-x:hover{background:var(--burg);}
 .pm-body{padding:28px 24px 44px;}
 .pm-name{font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);line-height:1.1;margin-bottom:5px;margin-top:8px;}
@@ -1137,7 +1137,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 <!-- Product Modal -->
 <div class="mbg" id="pmbg" onclick="if(event.target===this)closePM()">
   <div class="pm">
-    <button class="pm-x" onclick="closePM()">&#10005;</button><div class="pm-img"><img id="pmimg" src="" alt=""/></div>
+    <div class="pm-img"><img id="pmimg" src="" alt=""/><button class="pm-x" onclick="closePM()">&#10005;</button></div>
     <div class="pm-body">
       <div class="pm-name" id="pmname"></div>
       <div class="pm-cat" id="pmcat"></div>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Affiliate Dashboard — BUET Tees</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--burg:#6D001A;--burg2:#850020;--w:#FFFFFF;--w2:#F7F5F2;--w3:#EEEBE6;--black:#000000;--black2:#0d0d0d;--black3:#1a1a1a;--gold:#C9A84C;--green:#22c55e;--g2:#999;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black2);color:var(--w);font-family:'Montserrat',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ── */
+.hdr{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-weight:900;font-size:15px;letter-spacing:6px;text-transform:uppercase;color:var(--w);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.logo em{color:var(--burg);font-style:normal;}
+.hdr-tag{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);}
+@media(max-width:500px){.hdr{padding:0 16px;}.hdr-tag{display:none;}}
+
+/* ── LOGIN SCREEN ── */
+#screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:32px 20px;}
+.login-box{background:var(--black3);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:40px 36px;width:100%;max-width:420px;}
+.login-eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--burg);margin-bottom:12px;}
+.login-title{font-size:22px;font-weight:900;letter-spacing:-0.5px;text-transform:uppercase;margin-bottom:8px;}
+.login-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:32px;line-height:1.6;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:8px;}
+.field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--w);padding:12px 16px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;outline:none;transition:border-color 0.15s;}
+.field input:focus{border-color:var(--burg);}
+.field input::placeholder{color:rgba(255,255,255,0.2);font-weight:400;}
+.login-btn{width:100%;background:var(--burg);border:none;color:var(--w);padding:14px;cursor:pointer;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;margin-top:4px;}
+.login-btn:hover{background:var(--burg2);}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.login-err{display:none;margin-top:16px;padding:12px 16px;background:rgba(180,20,20,0.15);border:1px solid rgba(180,20,20,0.3);border-radius:8px;font-size:12px;color:#ff6b6b;font-weight:600;}
+.login-err.on{display:block;}
+
+/* ── DASHBOARD SCREEN ── */
+#screen-dashboard{display:none;padding:0;}
+
+/* ── TOP BAR ── */
+.dash-topbar{background:var(--black);border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.dash-who{display:flex;align-items:center;gap:12px;}
+.dash-avatar{width:38px;height:38px;background:var(--burg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;}
+.dash-name{font-size:13px;font-weight:800;letter-spacing:0.5px;}
+.dash-code{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:2px;}
+.dash-status-badge{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.dash-status-badge.active{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+.dash-status-badge.inactive{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1);}
+.dash-logout{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:7px 16px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.dash-logout:hover{border-color:rgba(255,255,255,0.25);color:var(--w);}
+@media(max-width:500px){.dash-topbar{padding:12px 16px;}}
+
+/* ── MAIN CONTENT ── */
+.dash-main{padding:32px;max-width:1000px;margin:0 auto;}
+@media(max-width:640px){.dash-main{padding:20px 16px;}}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+.kpi{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px;}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;}
+.kpi-val{font-size:26px;font-weight:900;line-height:1;}
+.kpi-val.gold{color:var(--gold);}
+.kpi-val.green{color:var(--green);}
+.kpi-val.white{color:var(--w);}
+.kpi-val.red{color:#ff6b6b;}
+.kpi-sub{font-size:10px;color:rgba(255,255,255,0.25);margin-top:6px;font-weight:600;}
+
+/* ── CODE SHARE CARD ── */
+.code-card{background:linear-gradient(135deg,var(--burg) 0%,var(--burg2) 100%);border-radius:12px;padding:24px 28px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.code-card-left .code-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.code-big{font-size:28px;font-weight:900;letter-spacing:4px;text-transform:uppercase;}
+.code-card-left .code-note{font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;}
+.code-copy-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:var(--w);padding:10px 22px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+.code-copy-btn:hover{background:rgba(255,255,255,0.25);}
+.code-copy-btn.copied{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.4);color:var(--green);}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.07);}
+
+/* ── COMMISSION RATES ── */
+.rates-row{display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;}
+.rate-chip{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 20px;flex:1;min-width:120px;}
+.rate-chip-type{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px;}
+.rate-chip-amt{font-size:20px;font-weight:900;color:var(--gold);}
+.rate-chip-discount{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;}
+
+/* ── ORDERS TABLE ── */
+.tbl-wrap{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:32px;}
+.tbl-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tbl-head-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.tbl-filter{display:flex;gap:8px;flex-wrap:wrap;}
+.tbl-pill{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);background:transparent;font-family:'Montserrat',sans-serif;transition:all 0.15s;}
+.tbl-pill.on{background:var(--burg);border-color:var(--burg);color:var(--w);}
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);text-align:left;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.05);}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);}
+tbody tr:last-child{border:none;}
+tbody td{padding:12px 16px;font-size:12px;font-weight:600;}
+.ord-id{color:var(--gold);font-weight:800;font-size:11px;white-space:nowrap;}
+.ord-name{color:var(--w);}
+.ord-item{font-size:10px;color:rgba(255,255,255,0.35);}
+.ord-total{color:var(--w);font-weight:800;}
+.ord-comm{color:var(--gold);font-weight:800;}
+.status-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.status-Pending{background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.2);}
+.status-Confirmed{background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);}
+.status-Dispatched{background:rgba(168,85,247,0.1);color:#c084fc;border:1px solid rgba(168,85,247,0.2);}
+.status-Delivered{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.status-Cancelled{background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2);}
+.status-Returned{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);}
+.tbl-empty{padding:40px;text-align:center;color:rgba(255,255,255,0.2);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.ord-date{font-size:10px;color:rgba(255,255,255,0.3);white-space:nowrap;}
+
+/* ── PAYOUTS TABLE ── */
+.payout-row{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.payout-row:last-child{border:none;}
+.payout-date{font-size:11px;color:rgba(255,255,255,0.3);font-weight:600;}
+.payout-method{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.payout-note{font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px;}
+.payout-amt{font-size:16px;font-weight:900;color:var(--green);}
+.payout-empty{padding:32px;text-align:center;color:rgba(255,255,255,0.2);font-size:11px;letter-spacing:2px;text-transform:uppercase;}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:32px;}
+.info-cell{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 18px;}
+.info-cell-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px;}
+.info-cell-val{font-size:12px;font-weight:700;color:var(--w);}
+
+/* ── LOADING ── */
+.loading-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.07);border-top-color:var(--burg);border-radius:50%;animation:spin 0.7s linear infinite;margin:60px auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── FOOTER ── */
+.dash-footer{background:var(--black);border-top:1px solid rgba(255,255,255,0.06);padding:20px 32px;text-align:center;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;}
+.dash-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
+.dash-footer a:hover{color:var(--w);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a href="/" class="logo">BUET<em>·</em>TEES</a>
+  <span class="hdr-tag">Affiliate Portal</span>
+</header>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-eyebrow">Affiliate Portal</div>
+    <div class="login-title">Your Dashboard</div>
+    <div class="login-sub">Enter your registered WhatsApp number and affiliate code to access your earnings and order history.</div>
+    <div class="field">
+      <label>WhatsApp Number</label>
+      <input type="tel" id="inp-phone" placeholder="e.g. 01711234567" autocomplete="off" oninput="clearErr()" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="field">
+      <label>Affiliate Code</label>
+      <input type="text" id="inp-code" placeholder="e.g. RAHIM123" autocomplete="off" oninput="clearErr()" onkeydown="if(event.key==='Enter')doLogin()" style="text-transform:uppercase;"/>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD SCREEN -->
+<div id="screen-dashboard">
+  <!-- TOP BAR -->
+  <div class="dash-topbar">
+    <div class="dash-who">
+      <div class="dash-avatar" id="d-avatar">?</div>
+      <div>
+        <div class="dash-name" id="d-name">—</div>
+        <div class="dash-code" id="d-code">—</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="dash-status-badge" id="d-status">active</span>
+      <button class="dash-logout" onclick="doLogout()">Log Out</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="dash-main">
+    <div id="dash-loading"><div class="loading-spin"></div></div>
+    <div id="dash-content" style="display:none;">
+
+      <!-- CODE SHARE CARD -->
+      <div class="code-card">
+        <div class="code-card-left">
+          <div class="code-eyebrow">Your Affiliate Code</div>
+          <div class="code-big" id="d-code-big">—</div>
+          <div class="code-note">Share this code with buyers — they get a discount, you earn commission.</div>
+        </div>
+        <button class="code-copy-btn" id="copy-btn" onclick="copyCode()">Copy Code</button>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-val white" id="d-total-orders">0</div>
+          <div class="kpi-sub">via your code</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total Earned</div>
+          <div class="kpi-val gold" id="d-total-earned">৳0</div>
+          <div class="kpi-sub">from delivered orders</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Already Paid Out</div>
+          <div class="kpi-val green" id="d-total-paid">৳0</div>
+          <div class="kpi-sub">received so far</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Pending Balance</div>
+          <div class="kpi-val gold" id="d-pending">৳0</div>
+          <div class="kpi-sub">yet to be paid</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Discount Given</div>
+          <div class="kpi-val white" id="d-discount-pct">0%</div>
+          <div class="kpi-sub">to buyers using your code</div>
+        </div>
+      </div>
+
+      <!-- COMMISSION RATES -->
+      <div class="sec-title">Your Commission Rates</div>
+      <div class="rates-row" id="d-rates-row"></div>
+
+      <!-- ORDERS TABLE -->
+      <div class="sec-title">Order History</div>
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <div class="tbl-head-title">Orders via Your Code</div>
+          <div class="tbl-filter" id="ord-filter">
+            <button class="tbl-pill on" onclick="filterOrders('all',this)">All</button>
+            <button class="tbl-pill" onclick="filterOrders('Delivered',this)">Delivered</button>
+            <button class="tbl-pill" onclick="filterOrders('Pending',this)">Pending</button>
+            <button class="tbl-pill" onclick="filterOrders('Confirmed',this)">Confirmed</button>
+          </div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Order Total</th>
+                <th>Your Commission</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="ord-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAYOUTS -->
+      <div class="sec-title">Payout History</div>
+      <div class="tbl-wrap" id="payout-wrap">
+        <div id="payout-list"></div>
+      </div>
+
+      <!-- ACCOUNT INFO -->
+      <div class="sec-title">Account Details</div>
+      <div class="info-grid" id="d-info-grid"></div>
+
+    </div><!-- /dash-content -->
+  </div><!-- /dash-main -->
+
+  <div class="dash-footer">
+    <a href="/">← Back to BUET Tees</a> &nbsp;·&nbsp; © 2025 BUET Tees
+  </div>
+</div><!-- /screen-dashboard -->
+
+<script>
+const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI3OTQ3NiwiZXhwIjoyMDkwODU1NDc2fQ.PZPPhiL66ryCOcMnkBAUSSSeafzPNXOVcoEG_pxdmhY";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentAffiliate = null;
+let allOrders = [];
+let allPayouts = [];
+let currentFilter = 'all';
+
+const C = '৳';
+const fmt = n => C + (parseFloat(n)||0).toLocaleString('en-BD', {minimumFractionDigits:0});
+
+// ── LOGIN ──
+async function doLogin() {
+  const phone = document.getElementById('inp-phone').value.trim();
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  if (!phone || !code) { showErr('Please enter both your phone number and affiliate code.'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  try {
+    const { data, error } = await sb
+      .from('affiliates')
+      .select('*')
+      .eq('code', code)
+      .single();
+
+    if (error || !data) { showErr('Affiliate code not found. Please check and try again.'); return; }
+
+    // Normalise phone: strip spaces and leading 0 variants for flexible matching
+    const normalize = p => p.replace(/\s+/g,'').replace(/^\+880/,'0').replace(/^880/,'0');
+    const enteredNorm = normalize(phone);
+    const storedNorm = normalize(data.whatsapp || '');
+
+    if (!storedNorm || enteredNorm !== storedNorm) {
+      showErr('Phone number does not match this affiliate code. Please try again.');
+      return;
+    }
+
+    currentAffiliate = data;
+    openDashboard();
+  } catch(e) {
+    showErr('Something went wrong. Please try again.');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Access Dashboard';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.classList.add('on');
+}
+function clearErr() {
+  document.getElementById('login-err').classList.remove('on');
+}
+
+// ── OPEN DASHBOARD ──
+async function openDashboard() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-dashboard').style.display = 'block';
+
+  const a = currentAffiliate;
+  const initials = (a.full_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('d-avatar').textContent = initials;
+  document.getElementById('d-name').textContent = a.full_name || '—';
+  document.getElementById('d-code').textContent = a.code;
+  document.getElementById('d-code-big').textContent = a.code;
+
+  const statusEl = document.getElementById('d-status');
+  statusEl.textContent = a.status || 'active';
+  statusEl.className = 'dash-status-badge ' + (a.status === 'active' ? 'active' : 'inactive');
+
+  // Load orders + payouts
+  document.getElementById('dash-loading').style.display = 'block';
+  document.getElementById('dash-content').style.display = 'none';
+
+  try {
+    const [ordRes, payRes] = await Promise.all([
+      sb.from('orders').select('id,name,phone,items_json,items,subtotal,total,discount_pct,discount_amt,status,created_at,delivered_at,affiliate_code').eq('affiliate_code', a.code).order('created_at', {ascending: false}),
+      sb.from('affiliate_payouts').select('*').eq('affiliate_code', a.code).order('paid_at', {ascending: false})
+    ]);
+    allOrders = ordRes.data || [];
+    allPayouts = payRes.data || [];
+  } catch(e) {
+    allOrders = [];
+    allPayouts = [];
+  }
+
+  document.getElementById('dash-loading').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+
+  renderAll();
+}
+
+// ── RENDER ──
+function commissionForOrder(order) {
+  const a = currentAffiliate;
+  const items = order.items_json || [];
+  if (Array.isArray(items) && items.length > 0) {
+    return items.reduce((sum, item) => {
+      const cat = (item.category || '').toLowerCase();
+      const qty = parseInt(item.qty) || 1;
+      let comm = parseFloat(a.commission_regular) || 20;
+      if (cat.includes('drop')) comm = parseFloat(a.commission_drop) || 25;
+      else if (cat.includes('hoodie')) comm = parseFloat(a.commission_hoodie) || 35;
+      return sum + comm * qty;
+    }, 0);
+  }
+  // Fallback: use minimum commission
+  return parseFloat(a.commission_regular) || 20;
+}
+
+function renderAll() {
+  const a = currentAffiliate;
+
+  // Delivered orders = earned
+  const deliveredOrders = allOrders.filter(o => o.status === 'Delivered' || o.status === 'Returned');
+  const totalEarned = deliveredOrders.reduce((s, o) => s + commissionForOrder(o), 0);
+  const totalPaid = parseFloat(a.total_paid) || 0;
+  const pending = Math.max(0, totalEarned - totalPaid);
+
+  document.getElementById('d-total-orders').textContent = allOrders.length;
+  document.getElementById('d-total-earned').textContent = fmt(totalEarned);
+  document.getElementById('d-total-paid').textContent = fmt(totalPaid);
+  document.getElementById('d-pending').textContent = fmt(pending);
+  document.getElementById('d-discount-pct').textContent = (a.discount_pct || 0) + '%';
+
+  // Commission rates
+  const ratesHtml = [
+    { label: 'Regular Tee', amt: a.commission_regular || 20 },
+    { label: 'Drop Shoulder', amt: a.commission_drop || 25 },
+    { label: 'Hoodie', amt: a.commission_hoodie || 35 },
+  ].map(r => `
+    <div class="rate-chip">
+      <div class="rate-chip-type">${r.label}</div>
+      <div class="rate-chip-amt">${fmt(r.amt)}</div>
+      <div class="rate-chip-discount">per piece sold</div>
+    </div>`).join('');
+  document.getElementById('d-rates-row').innerHTML = ratesHtml;
+
+  // Orders table
+  renderOrders();
+
+  // Payouts
+  renderPayouts();
+
+  // Account info
+  const infoItems = [
+    { label: 'Hall', val: a.hall || '—' },
+    { label: 'Student ID', val: a.student_id || '—' },
+    { label: 'Email', val: a.email || '—' },
+    { label: 'Payment Method', val: a.payment_method || '—' },
+    { label: 'Payment Details', val: a.payment_details || '—' },
+    { label: 'Joined', val: a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—' },
+  ];
+  document.getElementById('d-info-grid').innerHTML = infoItems.map(i =>
+    `<div class="info-cell"><div class="info-cell-label">${i.label}</div><div class="info-cell-val">${i.val}</div></div>`
+  ).join('');
+}
+
+function renderOrders() {
+  const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
+  const tbody = document.getElementById('ord-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty">No orders found</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(o => {
+    const comm = commissionForOrder(o);
+    const isEarned = (o.status === 'Delivered');
+    const items = o.items_json ? (Array.isArray(o.items_json) ? o.items_json : []) : [];
+    const itemsStr = items.length > 0
+      ? items.map(i => `${i.name||''} ${i.category||''} ${i.size||''} ×${i.qty||1}`).join(', ')
+      : (o.items || '—');
+    const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
+    return `<tr>
+      <td class="ord-id">${o.id}</td>
+      <td class="ord-name">${o.name || '—'}</td>
+      <td class="ord-item" style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${itemsStr}">${itemsStr}</td>
+      <td class="ord-total">${fmt(o.total)}</td>
+      <td class="ord-comm" style="${!isEarned?'color:rgba(255,255,255,0.3);':''}">${fmt(comm)}${!isEarned?'*':''}</td>
+      <td><span class="status-chip status-${o.status||'Pending'}">${o.status||'Pending'}</span></td>
+      <td class="ord-date">${dateStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterOrders(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.tbl-pill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderOrders();
+}
+
+function renderPayouts() {
+  const list = document.getElementById('payout-list');
+  if (!allPayouts.length) {
+    list.innerHTML = `<div class="payout-empty">No payouts recorded yet</div>`;
+    return;
+  }
+  list.innerHTML = allPayouts.map(p => {
+    const dateStr = p.paid_at ? new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<div class="payout-row">
+      <div>
+        <div class="payout-date">${dateStr}</div>
+        <div class="payout-method">${p.method || 'bKash'}</div>
+        ${p.note ? `<div class="payout-note">${p.note}</div>` : ''}
+      </div>
+      <div class="payout-amt">+${fmt(p.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── COPY CODE ──
+function copyCode() {
+  const code = currentAffiliate?.code || '';
+  const msg = `Use my code *${code}* on BUET Tees (buettees.shop) to get ${currentAffiliate?.discount_pct||10}% off your order! 🎽`;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Code'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+// ── LOGOUT ──
+function doLogout() {
+  currentAffiliate = null;
+  allOrders = [];
+  allPayouts = [];
+  document.getElementById('screen-dashboard').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('inp-phone').value = '';
+  document.getElementById('inp-code').value = '';
+  clearErr();
+}
+
+// Auto-uppercase affiliate code input
+document.getElementById('inp-code').addEventListener('input', function() {
+  const pos = this.selectionStart;
+  this.value = this.value.toUpperCase();
+  this.setSelectionRange(pos, pos);
+});
+</script>
+</body>
+</html>

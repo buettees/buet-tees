@@ -319,18 +319,18 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .mbg.on{display:flex;}
 @media(min-width:640px){.mbg{align-items:center;padding:24px;}}
 @keyframes su{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
-.pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow-y:auto;overflow-x:hidden;display:block;animation:su 0.22s ease;border-top:3px solid var(--burg);border-radius:24px 24px 0 0;position:relative;}
-@media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);border-radius:20px;}}
-.pm-img{width:100%;overflow:hidden;background:#111;position:relative;border-radius:20px 20px 0 0;display:block;}
+.pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;animation:su 0.22s ease;border-top:3px solid var(--burg);}
+@media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);}}
+.pm-img{width:100%;overflow:hidden;background:#000;position:relative;border-radius:16px 16px 0 0;}
 .pm-img img{width:100%;height:auto;display:block;}
-.pm-x{position:absolute;top:14px;right:14px;z-index:10;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);color:var(--w);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.pm-x{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.2);color:var(--w);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .pm-x:hover{background:var(--burg);}
-.pm-body{padding:28px 24px 44px;}
-.pm-name{font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);line-height:1.1;margin-bottom:5px;margin-top:8px;}
-.pm-cat{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g2);margin-bottom:18px;}
-.pm-price{font-size:30px;font-weight:800;color:var(--black);line-height:1;margin-bottom:4px;}
-.pm-orig{font-size:13px;color:var(--g2);text-decoration:line-through;margin-bottom:22px;}
-.pm-div{border:none;border-top:1px solid var(--w3);margin:20px 0;}
+.pm-body{padding:22px 22px 36px;overflow-y:auto;flex:1;}
+.pm-name{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);line-height:1.1;margin-bottom:4px;}
+.pm-cat{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:16px;}
+.pm-price{font-size:28px;font-weight:800;color:var(--black);line-height:1;margin-bottom:3px;}
+.pm-orig{font-size:13px;color:var(--g2);text-decoration:line-through;margin-bottom:20px;}
+.pm-div{border:none;border-top:1px solid var(--w3);margin:18px 0;}
 .vlbl{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--g2);margin-bottom:10px;}
 .vopts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
 .vb{padding:9px 18px;border:1px solid var(--w3);background:var(--w);color:var(--black);border-radius:100px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.12s;}
@@ -611,10 +611,10 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .ticker{height:32px;}
   .ticker-t span{font-size:11px;padding:0 16px;}
   /* Product modal */
-  .pm{display:block;max-height:92vh;border-radius:24px 24px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;overflow-y:auto;overflow-x:hidden;}
-  .pm-img{width:100%;height:auto;border-radius:0;background:#111;overflow:hidden;}
+  .pm{flex-direction:column;max-height:90vh;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;overflow:hidden;}
+  .pm-img{width:100%;height:auto;border-radius:0;background:#000;overflow:hidden;flex-shrink:0;}
   .pm-img img{width:100%;height:auto;display:block;}
-  .pm-body{padding:24px 20px 40px;}
+  .pm-body{flex:1;overflow-y:auto;padding:20px 20px 24px;}
   .pm-x{top:12px;right:12px;}
   /* Cart drawer */
   .cdrawer{width:100%;border-radius:20px 20px 0 0;}
@@ -871,7 +871,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="document.getElementById('affiliate').scrollIntoView({behavior:'smooth'})">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div></div>
 </footer>
@@ -897,7 +897,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
@@ -941,7 +941,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
@@ -994,7 +994,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
     <div><div class="ft-logo">BUET<em>·</em>TEES</div><div class="ft-tag">Wear Your BUET Spirit.<br>Campus delivery free. Within 6 days.<br>BUET Campus, Dhaka, Bangladesh.</div></div>
     <div><div class="ft-ch">Delivery</div><div class="ft-ci">Campus — Free</div><div class="ft-ci">Inside Dhaka — ৳70</div><div class="ft-ci">Outside Dhaka — ৳120</div><div class="ft-ci">Within 6 days</div></div>
     <div><div class="ft-ch">Payment</div><div class="ft-ci">bKash only</div><div class="ft-ci">01782761981</div></div>
-    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div><div class="ft-ci"><a href="affiliate.html" target="_blank">Affiliate Dashboard →</a></div></div>
+    <div><div class="ft-ch">Affiliate</div><div class="ft-ci">Earn by promoting BUET Tees</div><div class="ft-ci"><a onclick="openAffModal()">Register as Affiliate →</a></div><div class="ft-ci"><a onclick="showPage('home');setTimeout(()=>document.getElementById('affiliate')?.scrollIntoView({behavior:'smooth'}),300)">View Commission Rates</a></div></div>
   </div>
   <div class="ft-bot"><div class="ft-copy">© 2025 BUET Tees — All rights reserved</div><div class="ft-bk">bKash <span>01782761981</span></div></div>
 </footer>
@@ -4141,165 +4141,133 @@ function admRenderCosts(){
   }
   if(!_supPayHtml) _supPayHtml='<div class="adm-empty" style="padding:16px;font-size:11px">No payable orders \u2014 payments are due only after delivery with return window closed</div>';
 
-  // DONE orders pending supplier payment
-  const _doneSupOrders=(ADM_DATA.orders||[]).filter(o=>{
-    if(o.status!=='Delivered'||o.supplierPaid)return false;
-    const rw=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
-    const rc=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
-    const delivTs=o.deliveredAt?new Date(o.deliveredAt).getTime():0;
-    const rcTs=rc?new Date(rc).getTime():0;
-    if(rcTs&&delivTs&&delivTs<rcTs)return true;
-    if(rw==='0'||!delivTs)return true;
-    if(rw==='always')return false;
-    const ms=rw==='5s'?5000:(parseInt(rw)||1)*86400000;
-    return (Date.now()-delivTs)>=ms;
-  });
-  if(_doneSupOrders.length>0){
-    const _sup=getSupplier();
-    let _spBanner='<div style="margin-bottom:24px;padding:16px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:10px;">';
-    _spBanner+='<div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin-bottom:14px;">Pending Supplier Payments ('+_doneSupOrders.length+' order'+(_doneSupOrders.length!==1?'s':'')+')</div>';
-    _doneSupOrders.forEach(o=>{
-      _spBanner+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;margin-bottom:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(201,168,76,0.15);border-radius:7px;">`
-        +`<div><span style="font-size:12px;font-weight:700;color:#C9A84C;">${o.orderId}</span>`
-        +`<span style="font-size:10px;color:rgba(255,255,255,0.35);margin-left:10px;">${o.customerName||''}</span>`
-        +`<div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:2px;">${(o.items||'').substring(0,48)}${(o.items||'').length>48?'...':''}</div></div>`
-        +`<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:14px;font-weight:900;color:#2ecc71;">${admFmt(o.supplierCost)}</span>`
-        +`<button onclick="admOpenSupPayModal('${_sup.name||'T-Shirt Hub'}',${o.supplierCost},'bKash','${o.orderId}')" style="background:rgba(39,174,96,0.15);color:#2ecc71;border:1px solid rgba(39,174,96,0.4);border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ${admFmt(o.supplierCost)}</button></div></div>`;
+
+  // ── Unified Supplier Payments table ──────────────────────
+  // Merge: pending orders + pay form + history into one view
+  const _allSupRows = [];
+
+  // Pending (unpaid) delivered orders
+  deliveredPayable.forEach(o => {
+    const dueArr = calcPerOrderDue(o.supplier||'T-Shirt Hub');
+    const dueRow = dueArr.find(r => r.o.orderId === o.orderId);
+    const due = dueRow ? dueRow.remaining : 0;
+    const unconfigured = dueRow ? dueRow.unconfigured : false;
+    _allSupRows.push({
+      _type: 'pending',
+      date: o.deliveredAt || o.confirmedAt || o.timestamp,
+      orderId: o.orderId,
+      supplier: o.supplier||'T-Shirt Hub',
+      items: fmtOrderItems(o),
+      due, unconfigured,
+      o
     });
-    _spBanner+='</div>';
-    document.getElementById('adm-costs').innerHTML+=_spBanner;
-  }
+  });
 
-  document.getElementById("adm-costs").innerHTML+=`
-  <div class="adm-sec" style="margin-top:28px;">Pay Supplier</div>
+  // Payment history rows
+  allHistoryRows.forEach(p => {
+    _allSupRows.push({
+      _type: p._isFault ? 'fault' : 'paid',
+      date: p.paid_at || p.date,
+      id: p.id,
+      supplier: p.supplier||'T-Shirt Hub',
+      amount: parseFloat(p.amount||0),
+      method: p.method,
+      note: p.note,
+      orderId: p.orderId,
+      faultNote: p.faultNote
+    });
+  });
 
-  <!-- ── Payable orders per supplier ── -->
-  ${_supPayHtml}
+  // Sort: pending first (oldest first), then paid (newest first)
+  const _pending = _allSupRows.filter(r=>r._type==='pending').sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const _paid    = _allSupRows.filter(r=>r._type!=='pending').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const _sorted  = [..._pending, ..._paid];
 
-  <!-- Supplier payment form (inline) — shown here, right below the Pay Supplier cards -->
-  <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
-    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px;">Record Supplier Payment</div>
+  const _totalDueAll = _pending.filter(r=>!r.unconfigured).reduce((s,r)=>s+r.due,0);
+
+  document.getElementById("adm-costs").innerHTML += `
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:28px;margin-bottom:14px;">
+    <div class="adm-sec" style="margin:0;">Supplier Payments</div>
+    ${_totalDueAll>0?`<button onclick="admOpenSupPayModal('T-Shirt Hub',${Math.round(_totalDueAll)},null,null)" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:7px;padding:8px 18px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay All Due &middot; ৳${Math.round(_totalDueAll)}</button>`:''}
+  </div>
+
+  <!-- Inline pay form -->
+  <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Record Payment</div>
     <input type="hidden" id="finSupPayOrderId"/>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 3500"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 207"/></div>
       <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
         <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note (auto-filled)</label><input class="adm-fi" id="finSupPayNote" placeholder="e.g. payment for BT-045"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="auto-filled"/></div>
     </div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:8px;">
       <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Confirm Payment</button>
       <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finSupPayModal').style.display='none'">Cancel</button>
     </div>
   </div>
 
-  <!-- ── Payment history ── -->
-  <div class="adm-sec" style="margin-top:24px;margin-bottom:10px;">Payment History</div>
-  <div style="background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:12px;overflow:hidden;margin-bottom:12px;">
-    ${allHistoryRows.length?(()=>{
-      function buildPaymentBreakdown(supName, paymentId){
-        const supOrders=(payableOrdersBySup[supName]||[]).slice()
-          .sort((a,b)=>new Date(a.deliveredAt||a.confirmedAt)-new Date(b.deliveredAt||b.confirmedAt));
-        const supPays=supplierPayments
-          .filter(p=>(p.supplier||'T-Shirt Hub')===supName)
-          .slice().sort((a,b)=>new Date(a.paid_at)-new Date(b.paid_at));
-        const rem=supOrders.map(o=>({
-          orderId:o.orderId, items:fmtOrderItems(o),
-          deliveredAt:o.deliveredAt,
-          remaining:o.supplierCost>0?o.supplierCost:0,
-          unconfigured:!(o.supplierCost>0)
-        }));
-        const coverageByPay={};
-        supPays.forEach(pay=>{
-          const payTs=new Date(pay.paid_at).getTime();
-          let budget=parseFloat(pay.amount||0);
-          coverageByPay[pay.id]=[];
-          for(const r of rem){
-            if(budget<=0)break;
-            if(r.unconfigured)continue;
-            const delivTs=r.deliveredAt?new Date(r.deliveredAt).getTime():0;
-            if(delivTs&&delivTs>payTs)continue;
-            const take=Math.min(r.remaining,budget);
-            if(take>0.01){
-              coverageByPay[pay.id].push({orderId:r.orderId,items:r.items,amount:take,full:take>=r.remaining-0.01,isAdvance:false});
-              r.remaining-=take;
-              budget-=take;
-            }
+  <!-- Unified table -->
+  <div class="adm-tbl-wrap">
+    <div class="adm-tbl-scroll">
+      <table class="adm-tbl">
+        <thead><tr>
+          <th>Date</th><th>Order</th><th>Supplier</th><th>Items</th><th>Due / Paid</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+        ${_sorted.length ? _sorted.map(r => {
+          const dateStr = r.date ? new Date(r.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+
+          if(r._type==='pending'){
+            const dueBadge = r.unconfigured
+              ? `<span style="color:#C9A84C;font-weight:700">⚠ No cost</span>`
+              : `<span style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.due)}</span>`;
+            const actionBtn = r.unconfigured
+              ? `<span style="font-size:9px;color:rgba(255,255,255,0.2)">Set cost first</span>`
+              : `<button onclick="admOpenSupPayModal('${(r.supplier||'').replace(/'/g,"\\'")}',${Math.round(r.due)},null,'${r.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:5px;padding:5px 12px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ৳${Math.round(r.due)}</button>`;
+            return `<tr style="background:rgba(201,168,76,0.03)">
+              <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
+              <td style="font-weight:800;color:#C9A84C">${r.orderId}</td>
+              <td style="color:rgba(255,255,255,0.6)">${r.supplier}</td>
+              <td style="color:rgba(255,255,255,0.35);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
+              <td>${dueBadge}</td>
+              <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PENDING</span></td>
+              <td>${actionBtn}</td>
+            </tr>`;
           }
-          if(budget>0.01) coverageByPay[pay.id].push({orderId:null,items:'Advance / overpayment',amount:budget,full:false,isAdvance:true});
-        });
-        return coverageByPay[paymentId]||[];
-      }
 
-      const breakdownCache={};
-      allHistoryRows.forEach((p,pi)=>{
-        if(!p._isFault&&p.id) breakdownCache[p.id]=buildPaymentBreakdown(p.supplier||'T-Shirt Hub',p.id);
-      });
+          if(r._type==='fault'){
+            return `<tr style="background:rgba(231,76,60,0.04)">
+              <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
+              <td style="color:#e74c3c;font-weight:700">${r.orderId||'—'}</td>
+              <td style="color:#e74c3c">${r.supplier}</td>
+              <td style="color:rgba(255,255,255,0.3)">${r.faultNote||'Supplier fault'}</td>
+              <td style="color:#e74c3c;font-weight:700">−৳${Math.round(r.amount)}</td>
+              <td><span style="background:rgba(231,76,60,0.12);color:#e74c3c;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PENALTY</span></td>
+              <td style="color:rgba(255,255,255,0.2);font-size:10px">Deducted</td>
+            </tr>`;
+          }
 
-      return `
-      <div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;border-bottom:1px solid rgba(255,255,255,0.07);">
-        <div></div>
-        ${['Date','Supplier','Amount','Method','Note',''].map(h=>`<div style="padding:8px 10px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)">${h}</div>`).join('')}
-      </div>
-      ${allHistoryRows.map((p,pi)=>{
-        if(p._isFault){
-          return `<div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;align-items:center;background:rgba(231,76,60,0.06);border-bottom:1px solid rgba(255,255,255,0.04);">
-            <div></div>
-            <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3);white-space:nowrap">${new Date(p.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
-            <div style="padding:11px 10px;font-size:11px;color:#e74c3c;font-weight:600;display:flex;align-items:center;gap:6px"><span style="font-size:13px">⚠</span>${p.supplier}</div>
-            <div style="padding:11px 10px;font-size:12px;color:#e74c3c;font-weight:700">−${admFmt(p.amount)}</div>
-            <div style="padding:11px 10px"><span style="background:rgba(231,76,60,0.15);color:#e74c3c;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700;letter-spacing:1px">PENALTY</span></div>
-            <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3)">${p.orderId}${p.faultNote?' · '+p.faultNote:''}</div>
-            <div style="padding:11px 10px;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px">DEDUCTED</div>
-          </div>`;
-        }
-        const breakdown=breakdownCache[p.id]||[];
-        const hasBreakdown=breakdown.length>0;
-        const detailId='sph-detail-'+pi;
-        const orderCount=breakdown.filter(b=>!b.isAdvance).length;
-        return `
-          <div style="border-bottom:1px solid rgba(255,255,255,0.04);">
-            <div style="display:grid;grid-template-columns:28px 1fr 110px 90px 80px 1fr 90px;align-items:center;cursor:${hasBreakdown?'pointer':'default'};" onclick="${hasBreakdown?`admToggleSupPayDetail('${detailId}')`:``}">
-              <div style="display:flex;align-items:center;justify-content:center;padding:11px 6px">
-                ${hasBreakdown?`<span id="${detailId}-arrow" style="font-size:10px;color:rgba(39,174,96,0.5);display:inline-block;transition:transform 0.18s;">▶</span>`:''}
-              </div>
-              <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.35);white-space:nowrap">${new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
-              <div style="padding:11px 10px;font-size:12px;font-weight:600;color:#fff">${p.supplier||'—'}</div>
-              <div style="padding:11px 10px;font-size:13px;font-weight:700;color:#2ecc71">${admFmt(parseFloat(p.amount||0))}</div>
-              <div style="padding:11px 10px"><span style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);border-radius:4px;padding:2px 8px;font-size:10px">${p.method||'—'}</span></div>
-              <div style="padding:11px 10px;font-size:11px;color:rgba(255,255,255,0.3)">${p.note||'—'}</div>
-              <div style="padding:11px 10px;" onclick="event.stopPropagation()">
-                <button onclick="admRevertSupPay('${p.id}','${(p.supplier||'').replace(/'/g,"\\'")}',${p.amount})" style="background:transparent;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.12s" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.5)';this.style.background='rgba(231,76,60,0.1)'" onmouseout="this.style.color='rgba(255,255,255,0.3)';this.style.borderColor='rgba(255,255,255,0.1)';this.style.background='transparent'">↩ Revert</button>
-              </div>
-            </div>
-            ${hasBreakdown?`<div id="${detailId}" style="display:none;background:rgba(39,174,96,0.03);border-top:1px solid rgba(39,174,96,0.1);padding:12px 16px 14px 40px;">
-              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:10px;">Orders covered · ${orderCount} order${orderCount!==1?'s':''}</div>
-              ${breakdown.map(b=>`
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin-bottom:5px;background:rgba(255,255,255,0.03);border-radius:7px;border:1px solid ${b.isAdvance?'rgba(201,168,76,0.2)':'rgba(255,255,255,0.06)'};border-left:3px solid ${b.isAdvance?'rgba(201,168,76,0.5)':'rgba(39,174,96,0.4)'}">
-                  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-                    ${b.isAdvance
-                      ? `<span style="font-size:11px;color:#C9A84C;font-style:italic">↻ Advance / overpayment</span>`
-                      : `<span style="font-size:12px;font-weight:700;color:#c0394b;flex-shrink:0">${b.orderId}</span>
-                         <span style="font-size:11px;color:rgba(255,255,255,0.3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.items}</span>`
-                    }
-                  </div>
-                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:14px">
-                    <span style="font-size:9px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:4px;background:${b.isAdvance?'rgba(201,168,76,0.12)':b.full?'rgba(39,174,96,0.12)':'rgba(243,156,18,0.12)'};color:${b.isAdvance?'#C9A84C':b.full?'#2ecc71':'#f39c12'}">${b.isAdvance?'ADVANCE':b.full?'FULLY PAID':'PARTIAL'}</span>
-                    <span style="font-size:13px;font-weight:700;color:${b.isAdvance?'#C9A84C':'#2ecc71'}">৳${Math.round(b.amount)}</span>
-                  </div>
-                </div>`).join('')}
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
-                <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;text-transform:uppercase">Total payment</span>
-                <span style="font-size:14px;font-weight:800;color:#2ecc71">৳${Math.round(parseFloat(p.amount||0))}</span>
-              </div>
-            </div>`:''}
-          </div>`;
-      }).join('')}`;
-    })():'<div class="adm-empty" style="padding:20px;font-size:11px">No payments recorded yet</div>'}
+          // paid
+          return `<tr>
+            <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
+            <td style="color:rgba(255,255,255,0.4)">${r.note||'—'}</td>
+            <td style="color:#fff;font-weight:600">${r.supplier}</td>
+            <td style="color:rgba(255,255,255,0.3)">${r.note||'—'}</td>
+            <td style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.amount)}</td>
+            <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PAID</span></td>
+            <td><button onclick="admRevertSupPay('${r.id}','${(r.supplier||'').replace(/'/g,"\\'")}',${r.amount})" style="background:transparent;color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">↩ Revert</button></td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="7" class="adm-empty" style="padding:28px;text-align:center">No supplier payments yet</td></tr>`}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   `;
 }
+
 
 function admToggleCatBlock(cat){
   const cb=document.getElementById('sc-'+cat+'-active');

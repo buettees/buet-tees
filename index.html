@@ -4152,13 +4152,16 @@ function admRenderCosts(){
     const dueRow = dueArr.find(r => r.o.orderId === o.orderId);
     const due = dueRow ? dueRow.remaining : 0;
     const unconfigured = dueRow ? dueRow.unconfigured : false;
+    // If due = 0 and not unconfigured → fully covered by FIFO, move to history
+    const type = (!unconfigured && due <= 0) ? 'covered' : 'pending';
     _allSupRows.push({
-      _type: 'pending',
+      _type: type,
       date: o.deliveredAt || o.confirmedAt || o.timestamp,
       orderId: o.orderId,
       supplier: o.supplier||'T-Shirt Hub',
       items: fmtOrderItems(o),
       due, unconfigured,
+      supplierCost: o.supplierCost,
       o
     });
   });
@@ -4178,7 +4181,7 @@ function admRenderCosts(){
     });
   });
 
-  // Sort: pending first (oldest first), then paid (newest first)
+  // Sort: pending first (oldest first), then covered+paid+fault (newest first)
   const _pending = _allSupRows.filter(r=>r._type==='pending').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const _paid    = _allSupRows.filter(r=>r._type!=='pending').sort((a,b)=>new Date(b.date)-new Date(a.date));
   const _sorted  = [..._pending, ..._paid];
@@ -4234,6 +4237,18 @@ function admRenderCosts(){
               <td>${dueBadge}</td>
               <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PENDING</span></td>
               <td>${actionBtn}</td>
+            </tr>`;
+          }
+
+          if(r._type==='covered'){
+            return `<tr style="background:rgba(39,174,96,0.02)">
+              <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
+              <td style="font-weight:800;color:rgba(255,255,255,0.5)">${r.orderId}</td>
+              <td style="color:rgba(255,255,255,0.4)">${r.supplier}</td>
+              <td style="color:rgba(255,255,255,0.25);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
+              <td style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.supplierCost||0)}</td>
+              <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">COVERED</span></td>
+              <td style="color:rgba(255,255,255,0.2);font-size:10px">Via batch payment</td>
             </tr>`;
           }
 

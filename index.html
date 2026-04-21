@@ -99,7 +99,7 @@ header{position:sticky;top:0;z-index:100;background:var(--black);border-bottom:2
 .pimg img{width:100%;height:100%;object-fit:cover;transition:transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94);}
 .pov{position:absolute;inset:0;background:rgba(109,0,26,0.75);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s;}
 .pov-lbl{font-size:12px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--w);border:1px solid rgba(255,255,255,0.5);padding:10px 24px;}
-.pbadge{position:absolute;top:0;right:0;background:var(--burg);color:var(--w);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 10px;border-radius:0 16px 0 8px;}
+.pbadge{position:absolute;top:0;right:0;background:var(--burg);color:var(--w);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 10px;}
 .pinfo{padding:16px 18px 20px;background:var(--w);border-top:1px solid var(--w3);}
 .pname{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);margin-bottom:3px;}
 .pcat{font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g2);margin-bottom:14px;}
@@ -567,23 +567,23 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .col-title{font-size:clamp(26px,8vw,36px);}
   .col-eyebrow{font-size:11px;letter-spacing:3px;}
   /* Product grid — larger images, minimal gap */
-  .pgrid{grid-template-columns:repeat(2,1fr);gap:1px;background:var(--w3);}
-  .pcard{border-radius:0;box-shadow:none;}
-  .pcard:hover{box-shadow:none;transform:none;}
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:4px;}
+  .pcard{border-radius:0;}
   .pimg{border-radius:0;}
-  .pinfo{padding:9px 10px 12px;background:var(--w);}
+
+  .pinfo{padding:9px 10px 11px;}
   .pname{font-size:11px;letter-spacing:0;}
   .pprice{font-size:15px;}
   .pcat{font-size:10px;letter-spacing:1px;margin-bottom:8px;}
   .view-all-wrap{margin-top:28px;}
   .view-all-btn{padding:13px 24px;font-size:10px;letter-spacing:2px;width:100%;justify-content:center;}
   /* Products page — tight layout, cards fill screen */
-  .prodpage{padding:0 0 48px;}
-  .prodpage .col-hd{flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;padding:16px 12px 0;margin-top:0;}
-  .prodpage .col-title{font-size:clamp(20px,6vw,26px);letter-spacing:-0.5px;}
+  .prodpage{padding:16px 0 48px;}
+  .prodpage .col-hd{flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;margin-bottom:12px;padding-left:12px;padding-right:12px;}
+  .prodpage .col-title{font-size:clamp(22px,7vw,28px);}
   .prodpage .col-eyebrow{display:none;}
-  .prodpage .cat-filters{margin-bottom:8px;gap:6px;padding-left:12px;padding-right:12px;}
-  .col-count{font-size:12px;color:var(--g2);font-weight:600;letter-spacing:1px;align-self:center;white-space:nowrap;}
+  .prodpage .cat-filters{margin-bottom:12px;gap:6px;padding-left:12px;padding-right:12px;}
+  .col-count{font-size:12px;color:var(--g2);font-weight:600;letter-spacing:1px;align-self:flex-end;padding-bottom:3px;}
   /* Category filter pills */
   .cat-filters{gap:6px;}
   .cat-pill{padding:6px 12px;font-size:10px;letter-spacing:1.5px;}

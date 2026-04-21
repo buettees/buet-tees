@@ -4170,6 +4170,8 @@ function admRenderCosts(){
 
   // Payment history rows
   allHistoryRows.forEach(p => {
+    const pOrderId = p.order_id || p.orderId || '';
+    const matchedOrder = pOrderId ? orders.find(o => o.orderId === pOrderId) : null;
     _allSupRows.push({
       _type: p._isFault ? 'fault' : 'paid',
       date: p.paid_at || p.date,
@@ -4178,8 +4180,9 @@ function admRenderCosts(){
       amount: parseFloat(p.amount||0),
       method: p.method,
       note: p.note,
-      orderId: p.orderId,
-      faultNote: p.faultNote
+      orderId: pOrderId,
+      faultNote: p.faultNote,
+      o: matchedOrder || null
     });
   });
 
@@ -4302,15 +4305,23 @@ function admRenderCosts(){
           }
 
           // paid batch row
-          return `<tr>
+          const paidDetail = r.o
+            ? `<div style="padding:14px 16px;background:#091409;border-top:1px solid rgba(39,174,96,0.08)">${_buildBreakdown(r.o)}</div>`
+            : `<div style="padding:14px 16px;background:#091409;border-top:1px solid rgba(39,174,96,0.08);color:rgba(255,255,255,0.3);font-size:10px">Batch payment — no single order breakdown</div>`;
+          const paidClickable = !!r.o;
+          return `<tr style="cursor:${paidClickable?'pointer':'default'}" ${paidClickable?`onclick="admToggleSupPayDetail('${rowId}')"`:''}>
             <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
-            <td style="color:rgba(255,255,255,0.4)">${r.orderId||'\u2014'}</td>
+            <td style="color:rgba(255,255,255,0.5);font-weight:${r.orderId?'700':'400'}">${r.orderId||'—'}</td>
             <td style="color:#fff;font-weight:600">${r.supplier}</td>
-            <td style="color:rgba(255,255,255,0.3)">${r.note||'\u2014'}</td>
-            <td style="font-size:13px;font-weight:800;color:#2ecc71">\u09f3${Math.round(r.amount)}</td>
+            <td style="color:rgba(255,255,255,0.3)">${r.note||'—'}</td>
+            <td style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.amount)}</td>
             <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PAID</span></td>
-            <td><button onclick="admRevertSupPay('${r.id}','${(r.supplier||'').replace(/'/g,"\\'")}',${r.amount})" style="background:transparent;color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">&#8629; Revert</button></td>
-          </tr>`;
+            <td style="display:flex;gap:6px;align-items:center">
+              <button onclick="event.stopPropagation();admRevertSupPay('${r.id}','${(r.supplier||'').replace(/'/g,"\\'")}',${r.amount})" style="background:transparent;color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">&#8629; Revert</button>
+              ${paidClickable?`<span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">▶</span>`:''}
+            </td>
+          </tr>
+          ${paidClickable?`<tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${paidDetail}</td></tr>`:''}`;
         }).join('') : `<tr><td colspan="7" class="adm-empty" style="padding:28px;text-align:center">No supplier payments yet</td></tr>`}
         </tbody>
       </table>

@@ -4153,7 +4153,9 @@ function admRenderCosts(){
     const due = dueRow ? dueRow.remaining : 0;
     const unconfigured = dueRow ? dueRow.unconfigured : false;
     // If due = 0 and not unconfigured → fully covered by FIFO, move to history
-    const type = (!unconfigured && due <= 0) ? 'covered' : 'pending';
+    // But skip if a direct per-order payment row already exists (avoids duplicate rows)
+    const hasDirectPayment = supplierPayments.some(p => p.order_id === o.orderId);
+    const type = (!unconfigured && due <= 0) ? (hasDirectPayment ? 'skip' : 'covered') : 'pending';
     _allSupRows.push({
       _type: type,
       date: o.deliveredAt || o.confirmedAt || o.timestamp,
@@ -4183,7 +4185,7 @@ function admRenderCosts(){
 
   // Sort: pending first (oldest first), then covered+paid+fault (newest first)
   const _pending = _allSupRows.filter(r=>r._type==='pending').sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const _paid    = _allSupRows.filter(r=>r._type!=='pending').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const _paid    = _allSupRows.filter(r=>r._type!=='pending'&&r._type!=='skip').sort((a,b)=>new Date(b.date)-new Date(a.date));
   const _sorted  = [..._pending, ..._paid];
 
   const _totalDueAll = _pending.filter(r=>!r.unconfigured).reduce((s,r)=>s+r.due,0);

@@ -4219,60 +4219,95 @@ function admRenderCosts(){
           <th>Date</th><th>Order</th><th>Supplier</th><th>Items</th><th>Due / Paid</th><th>Status</th><th>Action</th>
         </tr></thead>
         <tbody>
-        ${_sorted.length ? _sorted.map(r => {
-          const dateStr = r.date ? new Date(r.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+        ${_sorted.length ? _sorted.map((r,_ri) => {
+          const dateStr = r.date ? new Date(r.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '\u2014';
+          const rowId = 'suptr-'+_ri;
+
+          function _buildBreakdown(o){
+            if(!o) return '';
+            const _calcFn = ADM_DATA&&ADM_DATA.calcCostDetailed;
+            const _bd = _calcFn ? _calcFn(o.supplier||'T-Shirt Hub', o.detectedCat||'Regular', o.items_json||[]) : null;
+            if(!_bd||!_bd.suborders||!_bd.suborders.length) return '<div style="color:rgba(255,255,255,0.3);font-size:10px">No breakdown available</div>';
+            let html='';
+            _bd.suborders.forEach(so=>{
+              html+=`<div style="margin-bottom:8px"><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">${so.label||so.cat}</div>`;
+              so.lines.forEach(l=>{html+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,0.5);padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span>${l.label}</span><span style="color:#2ecc71;font-weight:600">\u09f3${Math.round(l.amount*100)/100}</span></div>`;});
+              html+=`<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:#fff;padding:4px 0;margin-top:2px"><span>Subtotal</span><span>\u09f3${Math.round(so.subtotal)}</span></div></div>`;
+            });
+            if(_bd.suborders.length>1) html+=`<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#2ecc71;border-top:1px solid rgba(39,174,96,0.3);padding-top:6px;margin-top:4px"><span>Total</span><span>\u09f3${Math.round(_bd.total)}</span></div>`;
+            return html;
+          }
+
+          function _buildPayForm(r,rowId){
+            return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(39,174,96,0.15)">
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px">Record Payment</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px">
+                <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Amount (\u09f3)</label>
+                  <input class="adm-fi" id="isp-amt-${rowId}" type="number" min="1" value="${Math.round(r.due)}" style="font-size:12px;font-weight:700"/></div>
+                <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Method</label>
+                  <select class="adm-fi" id="isp-method-${rowId}"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+                <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Note</label>
+                  <input class="adm-fi" id="isp-note-${rowId}" value="Payment for ${r.orderId||''}"/></div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="admSaveSupPayInline('${(r.supplier||'').replace(/'/g,"\\'")}','${r.orderId||''}','${rowId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">\u2713 Confirm Payment</button>
+                <button onclick="admToggleSupPayDetail('${rowId}')" style="background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:7px 14px;font-size:10px;cursor:pointer;font-family:inherit">Cancel</button>
+              </div>
+            </div>`;
+          }
 
           if(r._type==='pending'){
             const dueBadge = r.unconfigured
-              ? `<span style="color:#C9A84C;font-weight:700">⚠ No cost</span>`
-              : `<span style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.due)}</span>`;
-            const actionBtn = r.unconfigured
-              ? `<span style="font-size:9px;color:rgba(255,255,255,0.2)">Set cost first</span>`
-              : `<button onclick="admOpenSupPayModal('${(r.supplier||'').replace(/'/g,"\\'")}',${Math.round(r.due)},null,'${r.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:5px;padding:5px 12px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;">Pay ৳${Math.round(r.due)}</button>`;
-            return `<tr style="background:rgba(201,168,76,0.03)">
+              ? `<span style="color:#C9A84C;font-weight:700">\u26a0 No cost</span>`
+              : `<span style="font-size:13px;font-weight:800;color:#2ecc71">\u09f3${Math.round(r.due)}</span>`;
+            const detailContent = `<div style="padding:14px 16px;background:#0a180a;border-top:1px solid rgba(39,174,96,0.1)">${_buildBreakdown(r.o)}${!r.unconfigured?_buildPayForm(r,rowId):''}</div>`;
+            return `<tr style="background:rgba(201,168,76,0.03);cursor:pointer" onclick="admToggleSupPayDetail('${rowId}')">
               <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
               <td style="font-weight:800;color:#C9A84C">${r.orderId}</td>
               <td style="color:rgba(255,255,255,0.6)">${r.supplier}</td>
-              <td style="color:rgba(255,255,255,0.35);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
+              <td style="color:rgba(255,255,255,0.35);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
               <td>${dueBadge}</td>
-              <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PENDING</span></td>
-              <td>${actionBtn}</td>
-            </tr>`;
+              <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">DUE</span></td>
+              <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.3);font-size:10px">\u25b6</span></td>
+            </tr>
+            <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
           }
 
           if(r._type==='covered'){
-            return `<tr style="background:rgba(39,174,96,0.02)">
+            const detailContent = `<div style="padding:14px 16px;background:#091409;border-top:1px solid rgba(39,174,96,0.08)">${_buildBreakdown(r.o)}</div>`;
+            return `<tr style="background:rgba(39,174,96,0.02);cursor:pointer" onclick="admToggleSupPayDetail('${rowId}')">
               <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
               <td style="font-weight:800;color:rgba(255,255,255,0.5)">${r.orderId}</td>
               <td style="color:rgba(255,255,255,0.4)">${r.supplier}</td>
-              <td style="color:rgba(255,255,255,0.25);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
-              <td style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.supplierCost||0)}</td>
+              <td style="color:rgba(255,255,255,0.25);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.items}</td>
+              <td style="font-size:13px;font-weight:800;color:#2ecc71">\u09f3${Math.round(r.supplierCost||0)}</td>
               <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">COVERED</span></td>
-              <td style="color:rgba(255,255,255,0.2);font-size:10px">Via batch payment</td>
-            </tr>`;
+              <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">\u25b6</span></td>
+            </tr>
+            <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
           }
 
           if(r._type==='fault'){
             return `<tr style="background:rgba(231,76,60,0.04)">
               <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
-              <td style="color:#e74c3c;font-weight:700">${r.orderId||'—'}</td>
+              <td style="color:#e74c3c;font-weight:700">${r.orderId||'\u2014'}</td>
               <td style="color:#e74c3c">${r.supplier}</td>
               <td style="color:rgba(255,255,255,0.3)">${r.faultNote||'Supplier fault'}</td>
-              <td style="color:#e74c3c;font-weight:700">−৳${Math.round(r.amount)}</td>
+              <td style="color:#e74c3c;font-weight:700">\u2212\u09f3${Math.round(r.amount)}</td>
               <td><span style="background:rgba(231,76,60,0.12);color:#e74c3c;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PENALTY</span></td>
               <td style="color:rgba(255,255,255,0.2);font-size:10px">Deducted</td>
             </tr>`;
           }
 
-          // paid
+          // paid batch row
           return `<tr>
             <td style="color:rgba(255,255,255,0.3);white-space:nowrap">${dateStr}</td>
-            <td style="color:rgba(255,255,255,0.4)">${r.note||'—'}</td>
+            <td style="color:rgba(255,255,255,0.4)">${r.orderId||'\u2014'}</td>
             <td style="color:#fff;font-weight:600">${r.supplier}</td>
-            <td style="color:rgba(255,255,255,0.3)">${r.note||'—'}</td>
-            <td style="font-size:13px;font-weight:800;color:#2ecc71">৳${Math.round(r.amount)}</td>
+            <td style="color:rgba(255,255,255,0.3)">${r.note||'\u2014'}</td>
+            <td style="font-size:13px;font-weight:800;color:#2ecc71">\u09f3${Math.round(r.amount)}</td>
             <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">PAID</span></td>
-            <td><button onclick="admRevertSupPay('${r.id}','${(r.supplier||'').replace(/'/g,"\\'")}',${r.amount})" style="background:transparent;color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">↩ Revert</button></td>
+            <td><button onclick="admRevertSupPay('${r.id}','${(r.supplier||'').replace(/'/g,"\\'")}',${r.amount})" style="background:transparent;color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit" onmouseover="this.style.color='#e74c3c';this.style.borderColor='rgba(231,76,60,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.25)';this.style.borderColor='rgba(255,255,255,0.08)'">&#8629; Revert</button></td>
           </tr>`;
         }).join('') : `<tr><td colspan="7" class="adm-empty" style="padding:28px;text-align:center">No supplier payments yet</td></tr>`}
         </tbody>
@@ -5600,6 +5635,30 @@ function admOpenSupPayModal(supplier, owed, method, orderId){
   if(method){const sel=document.getElementById('finSupPayMethod');if(sel)sel.value=method;}
   document.getElementById('finSupPayModal').style.display='block';
   document.getElementById('finSupPayModal').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function admSaveSupPayInline(supplier, orderId, rowId){
+  const amt=parseFloat(document.getElementById('isp-amt-'+rowId)?.value||0);
+  const method=document.getElementById('isp-method-'+rowId)?.value||'bKash';
+  const note=(document.getElementById('isp-note-'+rowId)?.value||'').trim();
+  if(!amt||amt<=0){toast('Enter a valid amount');return;}
+  try{
+    const{error}=await sbAdmin.from('supplier_payments').insert({
+      supplier,amount:amt,method,note:note||null,
+      order_id:orderId||null
+    });
+    if(error)throw error;
+    if(orderId) await sbAdmin.from('orders').update({supplier_paid:true}).eq('id',orderId);
+    await sbAdmin.from('transactions').insert({
+      date:new Date().toISOString().slice(0,10),
+      type:'Money Out',owner:null,amount:amt,
+      description:(note||('Payment to '+supplier+(orderId?' for '+orderId:'')))+' [auto-logged]',
+      category:'Supplier Payment'
+    });
+    if(orderId) await notifySupplierPaymentSent(supplier,amt,orderId,method);
+    toast('Supplier payment recorded \u2713');
+    admLoadData();
+  }catch(e){toast('Failed: '+e.message);}
 }
 
 async function admSaveSupPay(){

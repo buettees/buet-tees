@@ -319,9 +319,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .mbg.on{display:flex;}
 @media(min-width:640px){.mbg{align-items:center;padding:24px;}}
 @keyframes su{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
-.pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;animation:su 0.22s ease;border-top:3px solid var(--burg);border-radius:24px 24px 0 0;position:relative;}
+.pm{background:var(--w);width:100%;max-width:460px;max-height:92vh;overflow-y:auto;overflow-x:hidden;display:block;animation:su 0.22s ease;border-top:3px solid var(--burg);border-radius:24px 24px 0 0;position:relative;}
 @media(min-width:640px){.pm{border-top:none;border-left:3px solid var(--burg);border-radius:20px;}}
-.pm-img{width:100%;overflow:hidden;background:#111;position:relative;border-radius:20px 20px 0 0;}
+.pm-img{width:100%;overflow:hidden;background:#111;position:relative;border-radius:20px 20px 0 0;display:block;}
 .pm-img img{width:100%;height:auto;display:block;}
 .pm-x{position:absolute;top:14px;right:14px;z-index:10;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.25);color:var(--w);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
 .pm-x:hover{background:var(--burg);}
@@ -611,7 +611,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .ticker{height:32px;}
   .ticker-t span{font-size:11px;padding:0 16px;}
   /* Product modal */
-  .pm{flex-direction:column;max-height:92vh;border-radius:24px 24px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;overflow-y:auto;overflow-x:hidden;}
+  .pm{display:block;max-height:92vh;border-radius:24px 24px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;overflow-y:auto;overflow-x:hidden;}
   .pm-img{width:100%;height:auto;border-radius:0;background:#111;overflow:hidden;}
   .pm-img img{width:100%;height:auto;display:block;}
   .pm-body{padding:24px 20px 40px;}

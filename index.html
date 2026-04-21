@@ -2563,7 +2563,106 @@ async function admLoadData(){
   }
 }
 
-async function admExportFinanceXLSX(){
+// ── Finance Export Modal ────────────────────────────────────────────────────
+function admOpenExportModal(){
+  if(!ADM_DATA){toast('No data loaded yet');return;}
+  // Build month list from orders
+  const monthly=ADM_DATA.monthly||[];
+  const monthOpts=monthly.map(m=>`<option value="${m.month}">${m.month}</option>`).join('');
+  // Inject modal if not present
+  let modal=document.getElementById('finExportModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='finExportModal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`
+    <div style="background:#141414;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:28px 28px 24px;width:100%;max-width:420px;font-family:'Montserrat',sans-serif;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;">⬇ Download Finance Report</div>
+        <button onclick="document.getElementById('finExportModal').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;line-height:1">✕</button>
+      </div>
+
+      <!-- Mode selector -->
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+
+        <label style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:12px 14px;cursor:pointer;" onclick="admExportModeSelect('all')">
+          <input type="radio" name="expMode" value="all" id="expAll" checked style="accent-color:#C9A84C;width:16px;height:16px;flex-shrink:0"/>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">Full Report — All Time</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px">Everything from day 1 to right now. All 7 sheets.</div>
+          </div>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:12px 14px;cursor:pointer;" onclick="admExportModeSelect('month')">
+          <input type="radio" name="expMode" value="month" id="expMonth" style="accent-color:#C9A84C;width:16px;height:16px;flex-shrink:0"/>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">Monthly Report</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px">Pick a specific month to export.</div>
+            <select id="expMonthSel" style="margin-top:8px;width:100%;background:#111;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 10px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px;display:none" onclick="event.stopPropagation()">
+              ${monthOpts||'<option>No months yet</option>'}
+            </select>
+          </div>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:12px 14px;cursor:pointer;" onclick="admExportModeSelect('range')">
+          <input type="radio" name="expMode" value="range" id="expRange" style="accent-color:#C9A84C;width:16px;height:16px;flex-shrink:0"/>
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.5px;">Date Range</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px">Pick a start and end date.</div>
+            <div id="expRangeFields" style="display:none;margin-top:8px;display:none;gap:8px;flex-wrap:wrap" onclick="event.stopPropagation()">
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <div style="flex:1"><div style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:1px;margin-bottom:4px">FROM</div><input type="date" id="expDateFrom" style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 8px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px"/></div>
+                <div style="flex:1"><div style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:1px;margin-bottom:4px">TO</div><input type="date" id="expDateTo" style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 8px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:11px"/></div>
+              </div>
+            </div>
+          </div>
+        </label>
+
+      </div>
+
+      <button onclick="admRunExport()" style="width:100%;background:#C9A84C;border:none;color:#000;padding:13px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;cursor:pointer;">⬇ Download Excel</button>
+    </div>
+  `;
+  modal.style.display='flex';
+  // Set today as default end date, first order date as start
+  const allOrders=ADM_DATA.orders||[];
+  const dates=allOrders.map(o=>o.timestamp).filter(Boolean).sort();
+  if(dates.length){
+    const firstDate=dates[0].slice(0,10);
+    const todayDate=new Date().toISOString().slice(0,10);
+    const df=document.getElementById('expDateFrom');
+    const dt=document.getElementById('expDateTo');
+    if(df)df.value=firstDate;
+    if(dt)dt.value=todayDate;
+  }
+}
+
+function admExportModeSelect(mode){
+  document.querySelectorAll('input[name="expMode"]').forEach(r=>r.checked=(r.value===mode));
+  const monthSel=document.getElementById('expMonthSel');
+  const rangeFlds=document.getElementById('expRangeFields');
+  if(monthSel)monthSel.style.display=mode==='month'?'block':'none';
+  if(rangeFlds)rangeFlds.style.display=mode==='range'?'flex':'none';
+}
+
+async function admRunExport(){
+  const mode=document.querySelector('input[name="expMode"]:checked')?.value||'all';
+  const monthVal=document.getElementById('expMonthSel')?.value||'';
+  const dateFrom=document.getElementById('expDateFrom')?.value||'';
+  const dateTo=document.getElementById('expDateTo')?.value||'';
+
+  if(mode==='month'&&!monthVal){toast('Pick a month first');return;}
+  if(mode==='range'&&(!dateFrom||!dateTo)){toast('Pick both dates');return;}
+  if(mode==='range'&&dateFrom>dateTo){toast('Start date must be before end date');return;}
+
+  document.getElementById('finExportModal').style.display='none';
+  await admExportFinanceXLSX(mode,monthVal,dateFrom,dateTo);
+}
+
+async function admExportFinanceXLSX(mode,monthFilter,dateFrom,dateTo){
+  mode=mode||'all';
   if(!ADM_DATA){toast('No data loaded yet');return;}
   const btn=document.getElementById('finExportBtn');
   if(btn){btn.textContent='⏳ Preparing...';btn.disabled=true;}
@@ -2577,71 +2676,125 @@ async function admExportFinanceXLSX(){
       });
     }
     const wb=window.XLSX.utils.book_new();
-    const s=ADM_DATA.summary;
-    const transactions=ADM_DATA.transactions||[];
-    const payouts=ADM_DATA.affiliatePayouts||[];
-    const supplierPayments=ADM_DATA.supplierPayments||[];
-    const owners=ADM_DATA.ownersRaw||[];
-    const affiliates=ADM_DATA.affiliates||[];
-    const orders=ADM_DATA.orders||[];
     const now=new Date();
     const stamp=now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+    // ── Filter helpers ──────────────────────────────────────
+    function inRange(dateStr){
+      if(mode==='all') return true;
+      if(!dateStr) return false;
+      const d=dateStr.slice(0,10);
+      if(mode==='month') return d.slice(0,7)===monthFilter.slice(0,7);
+      if(mode==='range') return d>=dateFrom && d<=dateTo;
+      return true;
+    }
+    function inRangeTx(dateStr){
+      if(mode==='all') return true;
+      if(!dateStr) return false;
+      const d=String(dateStr).slice(0,10);
+      if(mode==='month') return d.slice(0,7)===monthFilter.slice(0,7);
+      if(mode==='range') return d>=dateFrom && d<=dateTo;
+      return true;
+    }
+    // Period label for filename + header
+    let periodLabel='All-Time';
+    if(mode==='month') periodLabel=monthFilter;
+    if(mode==='range') periodLabel=dateFrom+' to '+dateTo;
+
+    // ── Filtered data sets ────────────────────────────────────
+    const allOrders=ADM_DATA.orders||[];
+    const allTransactions=ADM_DATA.transactions||[];
+    const allPayouts=ADM_DATA.affiliatePayouts||[];
+    const allSupPayments=ADM_DATA.supplierPayments||[];
+
+    const orders=allOrders.filter(o=>inRange(o.timestamp));
+    const transactions=allTransactions.filter(t=>inRangeTx(t.date));
+    const payouts=allPayouts.filter(p=>inRange(p.paid_at));
+    const supplierPayments=allSupPayments.filter(p=>inRange(p.paid_at));
+
+    // For filtered summary we recalculate from filtered orders
+    const confirmedOrders=orders.filter(o=>o.isConfirmed);
+    const filteredRevenue=confirmedOrders.reduce((a,o)=>a+parseFloat(o.total||0),0);
+    const filteredSupCost=confirmedOrders.reduce((a,o)=>a+parseFloat(o.supplierCost||0),0);
+    const filteredGross=confirmedOrders.reduce((a,o)=>a+parseFloat(o.grossProfit||0),0);
+    const filteredAffComm=confirmedOrders.reduce((a,o)=>a+parseFloat(o.affCommission||0),0);
+    const filteredExpenses=transactions.filter(t=>t.type==='Expense').reduce((a,t)=>a+parseFloat(t.amount||0),0);
+    const filteredNet=filteredGross-filteredAffComm-filteredExpenses;
+
+    // Cash position uses filtered transactions/payments
+    const owners=ADM_DATA.ownersRaw||[];
+    const affiliates=ADM_DATA.affiliates||[];
     const capitalIn=transactions.filter(t=>t.type==='Capital In').reduce((a,t)=>a+parseFloat(t.amount||0),0);
     const capitalOut=transactions.filter(t=>t.type==='Capital Out').reduce((a,t)=>a+parseFloat(t.amount||0),0);
-    const expensesPaid=transactions.filter(t=>t.type==='Expense').reduce((a,t)=>a+parseFloat(t.amount||0),0);
+    const expensesPaid=filteredExpenses;
     const affPayoutsMade=payouts.reduce((a,p)=>a+parseFloat(p.amount||0),0);
     const supPaidTotal=supplierPayments.reduce((a,p)=>a+parseFloat(p.amount||0),0);
-    const supplierOwed=s.totalSupplierCost-supPaidTotal;
-    const cashBalance=capitalIn+s.totalRevenue-expensesPaid-affPayoutsMade-supPaidTotal-capitalOut;
-    const totalAffOwed=s.totalAffComm-affPayoutsMade;
+    // Owed is always all-time (obligations don't filter by period)
+    const _s=ADM_DATA.summary;
+    const supplierOwed=mode==='all'?(_s.totalSupplierCost-(ADM_DATA.supplierPayments||[]).reduce((a,p)=>a+parseFloat(p.amount||0),0)):null;
+    const totalAffOwed=mode==='all'?(_s.totalAffComm-(ADM_DATA.affiliatePayouts||[]).reduce((a,p)=>a+parseFloat(p.amount||0),0)):null;
+    const cashBalance=capitalIn+filteredRevenue-expensesPaid-affPayoutsMade-supPaidTotal-capitalOut;
     const _reserveSetting=(ADM_DATA.rawSettings||[]).find(r=>r.key==='reserve_amount');
     const RESERVE=_reserveSetting?parseFloat(_reserveSetting.value||0):8000;
-    const safeToExtract=Math.max(0,cashBalance-RESERVE-Math.max(0,supplierOwed)-Math.max(0,totalAffOwed));
+    const safeToExtract=mode==='all'?Math.max(0,cashBalance-RESERVE-Math.max(0,supplierOwed)-Math.max(0,totalAffOwed)):null;
     const ownerWithdrawn={};
     transactions.filter(t=>t.type==='Capital Out'&&t.owner).forEach(t=>{
       ownerWithdrawn[t.owner]=(ownerWithdrawn[t.owner]||0)+parseFloat(t.amount||0);
     });
     // ── Sheet 1: Finance Summary ──
     const summaryRows=[
-      ['BUET TEES — FINANCE SNAPSHOT'],
+      ['BUET TEES — FINANCE REPORT'],
+      ['Period',periodLabel],
       ['Generated',stamp],
       [''],
       ['━━ REVENUE & PROFIT ━━',''],
-      ['Total Revenue (confirmed orders)',s.totalRevenue],
-      ['Total Supplier Cost (accrued)',s.totalSupplierCost],
-      ['Gross Profit',s.totalGrossProfit],
-      ['Affiliate Commissions (owed)',s.totalAffComm],
-      ['Extra Expenses (transactions)',s.totalExtraExpenses],
-      ['Net Profit (earned on paper)',s.totalNetProfit],
-      ['Profit Margin %',s.totalRevenue>0?+(s.totalNetProfit/s.totalRevenue*100).toFixed(2):0],
+      ['Revenue (confirmed orders in period)',filteredRevenue],
+      ['Supplier Cost (accrued in period)',filteredSupCost],
+      ['Gross Profit',filteredGross],
+      ['Affiliate Commissions (owed in period)',filteredAffComm],
+      ['Extra Expenses (in period)',filteredExpenses],
+      ['Net Profit (earned in period)',filteredNet],
+      ['Profit Margin %',filteredRevenue>0?+(filteredNet/filteredRevenue*100).toFixed(2):0],
       [''],
-      ['━━ CASH POSITION ━━',''],
-      ['Capital In (owner injections)',capitalIn],
-      ['Revenue Collected',s.totalRevenue],
+      ['━━ CASH MOVEMENT IN PERIOD ━━',''],
+      ['Capital In',capitalIn],
+      ['Revenue Collected',filteredRevenue],
       ['Expenses Paid',expensesPaid],
       ['Supplier Payments Made',supPaidTotal],
       ['Affiliate Payouts Made',affPayoutsMade],
-      ['Capital Out (owner withdrawals)',capitalOut],
+      ['Capital Out (withdrawals)',capitalOut],
       ['CASH BALANCE',cashBalance],
       [''],
-      ['━━ OBLIGATIONS ━━',''],
-      ['Supplier Still Owed',Math.max(0,supplierOwed)],
-      ['Affiliates Still Owed',Math.max(0,totalAffOwed)],
-      ['Reserve (locked)',RESERVE],
-      ['SAFE TO EXTRACT (owners total)',safeToExtract],
-      [''],
-      ['━━ OWNER SHARES ━━',''],
-      ['Owner','Share %','Net Profit Share (৳)','Withdrawn So Far (৳)','Can Extract Now (৳)'],
-      ...owners.map(o=>{
-        const share=parseFloat(o.share||0);
-        const withdrawn=ownerWithdrawn[o.name]||0;
-        const canExtract=Math.max(0,Math.round((safeToExtract*share/100)-withdrawn));
-        return[o.name,share,+(s.totalNetProfit*share/100).toFixed(2),withdrawn,canExtract];
-      }),
-      [''],
+      ...(mode==='all'?[
+        ['━━ OBLIGATIONS (All-Time) ━━',''],
+        ['Supplier Still Owed',Math.max(0,supplierOwed)],
+        ['Affiliates Still Owed',Math.max(0,totalAffOwed)],
+        ['Reserve (locked)',RESERVE],
+        ['SAFE TO EXTRACT (owners total)',safeToExtract],
+        [''],
+        ['━━ OWNER SHARES ━━',''],
+        ['Owner','Share %','Net Profit Share (৳)','Withdrawn So Far (৳)','Can Extract Now (৳)'],
+        ...owners.map(o=>{
+          const share=parseFloat(o.share||0);
+          const withdrawn=ownerWithdrawn[o.name]||0;
+          const canExtract=Math.max(0,Math.round((safeToExtract*share/100)-withdrawn));
+          return[o.name,share,+(filteredNet*share/100).toFixed(2),withdrawn,canExtract];
+        }),
+        [''],
+      ]:[
+        ['━━ OWNER PROFIT SHARE (Period) ━━',''],
+        ['Owner','Share %','Period Net Profit Share (৳)'],
+        ...owners.map(o=>{
+          const share=parseFloat(o.share||0);
+          return[o.name,share,+(filteredNet*share/100).toFixed(2)];
+        }),
+        [''],
+        ['Note','Cash Balance and Safe-to-Extract shown in All-Time report only',''],
+        [''],
+      ]),
       ['━━ ORDER COUNTS ━━',''],
-      ['Total Confirmed Orders',s.totalOrders],
-      ['Total Orders in Table (all statuses)',orders.length],
+      ['Confirmed Orders in Period',confirmedOrders.length],
+      ['Total Orders in Period (all statuses)',orders.length],
     ];
     const ws1=window.XLSX.utils.aoa_to_sheet(summaryRows);
     ws1['!cols']=[{wch:38},{wch:20},{wch:20},{wch:20},{wch:20}];
@@ -2721,19 +2874,24 @@ async function admExportFinanceXLSX(){
     const ws6=window.XLSX.utils.aoa_to_sheet([affHeaders,...affData]);
     ws6['!cols']=[{wch:14},{wch:18},{wch:10},{wch:14},{wch:8},{wch:20},{wch:20},{wch:18},{wch:12},{wch:14},{wch:12},{wch:14}];
     window.XLSX.utils.book_append_sheet(wb,ws6,'Affiliates');
-    // ── Sheet 7: Monthly Breakdown ──
+    // ── Sheet 7: Monthly Breakdown — built below in Download section ──
+    // ── Monthly sheet — filter if needed ──
     const monthly=ADM_DATA.monthly||[];
+    const filteredMonthly=mode==='all'?monthly:monthly.filter(m=>{
+      if(mode==='month') return m.month===monthFilter;
+      if(mode==='range') return m.month>=dateFrom.slice(0,7)&&m.month<=dateTo.slice(0,7);
+      return true;
+    });
     const mHeaders=['Month','Orders','Revenue (৳)','Supplier Cost (৳)','Gross Profit (৳)','Aff Commission (৳)','Expenses (৳)','Net Profit (৳)'];
-    const mData=monthly.map(m=>[
-      m.month,m.orders,m.revenue,m.supplierCost,m.grossProfit,m.affComm||0,m.expenses||0,m.netProfit
-    ]);
+    const mData=filteredMonthly.map(m=>[m.month,m.orders,m.revenue,m.supplierCost,m.grossProfit,m.affComm||0,m.expenses||0,m.netProfit]);
     const ws7=window.XLSX.utils.aoa_to_sheet([mHeaders,...mData]);
     ws7['!cols']=[{wch:10},{wch:8},{wch:14},{wch:16},{wch:16},{wch:18},{wch:14},{wch:14}];
     window.XLSX.utils.book_append_sheet(wb,ws7,'Monthly Breakdown');
     // ── Download ──
     const dateTag=now.toISOString().slice(0,10);
     const timeTag=now.toTimeString().slice(0,5).replace(':','h');
-    window.XLSX.writeFile(wb,`BUETTEES_Finance_${dateTag}_${timeTag}.xlsx`);
+    const safeLabel=periodLabel.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\-]/g,'');
+    window.XLSX.writeFile(wb,`BUETTEES_Finance_${safeLabel}_${dateTag}_${timeTag}.xlsx`);
     toast('Finance report downloaded ✓');
   }catch(e){
     toast('Export failed: '+e.message);
@@ -5660,7 +5818,7 @@ function admRenderFinance(){
   <!-- ════════════════════════════════════════════════════ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Business Health</div>
-    <button id="finExportBtn" onclick="admExportFinanceXLSX()" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:#C9A84C;padding:8px 18px;border-radius:7px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">⬇ Download Finance Report</button>
+    <button id="finExportBtn" onclick="admOpenExportModal()" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:#C9A84C;padding:8px 18px;border-radius:7px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">⬇ Download Finance Report</button>
   </div>
 
   <!-- Cash balance big card -->

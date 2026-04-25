@@ -480,7 +480,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .pgrid{grid-template-columns:repeat(2,1fr);gap:14px;}.pname{font-size:12px;}.pprice{font-size:17px;}.pinfo{padding:12px 12px 14px;}
   .istrip{grid-template-columns:repeat(2,1fr);}
   footer{padding:36px 20px 28px;}.ft-grid{grid-template-columns:1fr;}
-  .pm{border-radius:20px 20px 0 0;max-height:96vh;}.cdrawer{max-width:100%;}.coin{border-radius:20px 20px 0 0;max-height:96vh;}
+  .pm{border-radius:20px 20px 0 0;max-height:96vh;}.cdrawer{max-width:100%;right:0!important;}.coin{border-radius:20px 20px 0 0;max-height:96vh;}
   .custom-section{padding:44px 16px 52px;}.custom-cards{grid-template-columns:1fr;}
   .custom-fullbox{padding:24px 20px;flex-direction:column;align-items:flex-start;}
   .cm{border-radius:20px 20px 0 0;}
@@ -618,7 +618,7 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
   .pm-body{padding:16px 16px 32px;}
   .pm-x{top:12px;right:12px;}
   /* Cart drawer */
-  .cdrawer{width:100%;border-radius:20px 20px 0 0;}
+  .cdrawer{width:100%;border-radius:20px 20px 0 0;right:0!important;}
   /* Checkout modal */
   .coin{width:100%;max-width:100%;border-radius:20px 20px 0 0;position:fixed;bottom:0;left:0;right:0;max-height:92vh;}
 }
@@ -819,19 +819,17 @@ html, body { max-width: 100vw; overflow-x: hidden; }
     width: 100% !important; 
     max-width: 100% !important; 
     top: auto !important;
-    bottom: 0; 
+    bottom: 0 !important;
     right: 0 !important;
     height: 88vh !important;
     border-radius: 20px 20px 0 0;
     border-left: none;
     border-top: 2px solid var(--burg);
-    transition: transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94) !important;
-    transform: translateY(100%);
-    right: 0 !important;
+    transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94) !important;
+    transform: translateY(110%) !important;
   }
   .cdrawer.on { 
     transform: translateY(0) !important;
-    right: 0 !important;
   }
   .cdhd { padding: 14px 18px; }
   .cdhd-t { font-size: 11px; letter-spacing: 3px; }

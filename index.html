@@ -1493,7 +1493,8 @@ html, body { max-width: 100vw; overflow-x: hidden; }
         <div id="coitems"></div>
         <div class="strows">
           <div class="strow"><span>Subtotal</span><span id="stsub"></span></div>
-          <div class="strow" id="discRow" style="display:none;color:#2e7d32;font-weight:600;"><span id="discLabel">Affiliate Discount</span><span id="stdisc"></span></div>
+          <div class="strow" id="offerDiscRow" style="display:none;color:#2e7d32;font-weight:600;"><span id="offerDiscLabel">Offer Discount</span><span id="stOfferDisc"></span></div>
+          <div class="strow" id="affDiscRow" style="display:none;color:#1565c0;font-weight:600;"><span id="affDiscLabel">Affiliate Discount</span><span id="stAffDisc"></span></div>
           <div class="strow"><span>Delivery</span><span id="stdel"></span></div>
           <div class="stfin"><span class="stfin-l">Total</span><span class="stfin-v" id="sttotal"></span></div>
         </div>
@@ -1928,12 +1929,12 @@ function atc(){
 function rmItem(i){cart.splice(i,1);upd();}
 function coChQty(i,d){
   cart[i].qty=Math.max(1,cart[i].qty+d);
-  upd();openCO();
+  upd();openCO(true);
 }
 function coRmItem(i){
   cart.splice(i,1);
   upd();
-  if(!cart.length){closeCO();}else{openCO();}
+  if(!cart.length){closeCO();}else{openCO(true);}
 }
 function upd(){
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);const cnt=cart.reduce((s,i)=>s+i.qty,0);
@@ -1989,16 +1990,20 @@ function updSum(){
   document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
-  const discRow=document.getElementById("discRow");
-  if(affDiscAmt>0||offerDiscAmt>0){
-    discRow.style.display="";
-    let discLabel='';
-    if(affDiscAmt>0&&offerDiscAmt>0)discLabel=`Affiliate (${discPct}%) + ${offerResult.label||'Offer'}`;
-    else if(affDiscAmt>0)discLabel=`Affiliate Discount (${discPct}%)`;
-    else discLabel=offerResult.label||'Offer Discount';
-    document.getElementById("discLabel").textContent=discLabel;
-    document.getElementById("stdisc").textContent=`-${C} ${totalDisc}`;
-  }else{discRow.style.display="none";}
+  // Offer discount row
+  const offerDiscRow=document.getElementById("offerDiscRow");
+  if(offerDiscAmt>0){
+    offerDiscRow.style.display="";
+    document.getElementById("offerDiscLabel").textContent=offerResult.label||'Offer Discount';
+    document.getElementById("stOfferDisc").textContent=`-${C} ${offerDiscAmt}`;
+  }else{offerDiscRow.style.display="none";}
+  // Affiliate discount row (applied on subtotal after offer)
+  const affDiscRow=document.getElementById("affDiscRow");
+  if(affDiscAmt>0){
+    affDiscRow.style.display="";
+    document.getElementById("affDiscLabel").textContent=`Affiliate Discount (${discPct}%)`;
+    document.getElementById("stAffDisc").textContent=`-${C} ${affDiscAmt}`;
+  }else{affDiscRow.style.display="none";}
 }
 
 async function checkAffCode(ctx){
@@ -2023,11 +2028,10 @@ async function checkAffCode(ctx){
   }catch(e){statusEl.textContent="Could not verify. Try again.";statusEl.className="aff-code-status err";}
 }
 
-function openCO(){
+function openCO(keepAff){
   closeCart();
-  coAffValid=false;affDiscountPct=0;affCodeApplied="";
-  document.getElementById("coAffCode").value="";
-  document.getElementById("coAffStatus").textContent="";
+  if(!keepAff){coAffValid=false;affDiscountPct=0;affCodeApplied="";document.getElementById("coAffCode").value="";document.getElementById("coAffStatus").textContent="";}
+  
   // Build order summary — handle both item types
   document.getElementById("coitems").innerHTML=cart.map(i=>{
     if(i.type==='bothsides'){

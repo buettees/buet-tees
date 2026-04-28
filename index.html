@@ -9,15 +9,27 @@
    <style>
 :root{--burg:#3D000D;--burg2:#5A0018;--w:#FFFFFF;--w2:#F7F5F2;--w3:#EEEBE6;--black:#000000;--black2:#0d0d0d;--black3:#1a1a1a;--g2:#999;}
 /* ── Offer announcement bar ── */
-.offer-topbar{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a,#C9A84C);color:#000;text-align:center;padding:10px 16px;font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;position:relative;z-index:101;}
+.offer-topbar{display:none;background:linear-gradient(90deg,#7a4a00,#C9A84C,#f5d87a,#e8c050,#C9A84C,#7a4a00);background-size:300% 100%;color:#000;text-align:center;padding:11px 16px;font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;position:relative;z-index:101;overflow:hidden;animation:goldShift 3s linear infinite;}
 .offer-topbar.on{display:block;}
-.offer-topbar-inner{display:flex;align-items:center;justify-content:center;gap:12px;}
-.offer-topbar-icon{font-size:16px;}
-.offer-topbar-txt{letter-spacing:4px;}
+/* Animated shimmer sweep */
+.offer-topbar::before{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,0.55) 50%,transparent 100%);animation:shimmerSweep 2.4s ease-in-out infinite;pointer-events:none;}
+/* Bottom fire glow edge */
+.offer-topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ff4500,#ff8c00,#ffd700,#ff8c00,#ff4500);background-size:200% 100%;animation:fireEdge 1.8s linear infinite;}
+.offer-topbar-inner{display:flex;align-items:center;justify-content:center;gap:12px;position:relative;z-index:1;}
+.offer-topbar-icon{font-size:18px;animation:fireWiggle 0.7s ease-in-out infinite alternate;display:inline-block;}
+.offer-topbar-icon:last-child{animation-delay:0.35s;}
+.offer-topbar-txt{letter-spacing:4px;text-shadow:0 0 12px rgba(255,140,0,0.6),0 1px 0 rgba(255,255,255,0.4);animation:txtGlow 2s ease-in-out infinite;}
+/* keyframes */
+@keyframes goldShift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+@keyframes shimmerSweep{0%{left:-60%}60%,100%{left:130%}}
+@keyframes fireEdge{0%{background-position:0% 0}100%{background-position:200% 0}}
+@keyframes fireWiggle{0%{transform:rotate(-12deg) scale(1.0);}100%{transform:rotate(12deg) scale(1.15);}}
+@keyframes txtGlow{0%,100%{text-shadow:0 0 8px rgba(255,140,0,0.5),0 1px 0 rgba(255,255,255,0.4);}50%{text-shadow:0 0 18px rgba(255,100,0,0.9),0 0 30px rgba(255,200,0,0.5),0 1px 0 rgba(255,255,255,0.5);}}
 /* ── Offer pill in header ── */
-.offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#e8c96a);color:#000;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite;}
+.offer-pill{display:none;background:linear-gradient(90deg,#C9A84C,#f5d87a,#C9A84C);background-size:200% 100%;color:#000;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;animation:offerPulse 2s ease-in-out infinite,goldShiftSmall 2.5s linear infinite;}
 .offer-pill.on{display:flex;align-items:center;gap:6px;}
-@keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.85;transform:scale(1.04);}}
+@keyframes offerPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.88;transform:scale(1.05);}}
+@keyframes goldShiftSmall{0%{background-position:0% 50%}100%{background-position:200% 50%}}
 /* ── Search bar ── */
 .srch-wrap{position:relative;display:flex;align-items:center;}
 .srch-input{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:var(--w);padding:8px 38px 8px 14px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;letter-spacing:1px;outline:none;width:0;opacity:0;transition:width 0.3s ease,opacity 0.3s ease;cursor:pointer;}

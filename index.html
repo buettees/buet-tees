@@ -4000,7 +4000,7 @@ function getSupplier(){
     return (raw&&raw[0])||{
       name:'T-Shirt Hub',
       email:'buettees@gmail.com',
-      telegram_token:'7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY',
+      telegram_token:'8698121676:AAGZh3zr_5B36YfYPTqooDrQFztzWI3p_70',
       telegram_chat_id:'-4996642816'
     };
   }catch(e){return{};}
@@ -4221,70 +4221,65 @@ async function notifyAffiliateRegistered(aff){
 
 async function notifyAffiliateActivated(aff){
   if(!aff.email) return;
-  const affName = aff.full_name || aff.name || 'Affiliate';
-  const firstName = affName.trim().split(' ')[0];
+  const firstName=(aff.full_name||aff.name||'there').trim().split(' ')[0];
   const html = emailBase(`
-    <div style="background:linear-gradient(135deg,#6D001A 0%,#9a0026 100%);margin:-32px -32px 32px -32px;padding:40px 32px;text-align:center;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-bottom:12px;">Application Approved ✓</div>
-      <div style="font-size:32px;font-weight:900;color:#ffffff;margin-bottom:8px;">Welcome, ${firstName}! 🎉</div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.7);">You're now an official BUET Tees affiliate.</div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Application Approved</div>
+    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Welcome, ${firstName}! 🎉</div>
+    <div style="font-size:14px;color:#666;margin-bottom:32px;">You're now an official BUET Tees affiliate. Here's everything you need to start earning.</div>
+    ${emailSection('Your Affiliate Code')}
+    <div style="margin-top:14px;background:#6D001A;padding:28px;text-align:center;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:10px;">Share this with buyers</div>
+      <div style="font-size:40px;font-weight:900;letter-spacing:10px;color:#ffffff;">${aff.code}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:10px;">Buyers get <b style="color:#fff;">${aff.discount_pct||10}% off</b> their order when they enter your code at checkout</div>
     </div>
-    <div style="background:#0f0f0f;border-radius:12px;padding:32px;text-align:center;margin-bottom:28px;">
-      <div style="font-size:10px;font-weight:700;letter-spacing:5px;color:#888;text-transform:uppercase;margin-bottom:16px;">Your Affiliate Code</div>
-      <div style="font-size:44px;font-weight:900;letter-spacing:8px;color:#ffffff;font-family:monospace;">${aff.code}</div>
-      <div style="margin-top:16px;display:inline-block;background:#6D001A;color:#fff;font-size:12px;font-weight:700;padding:8px 20px;border-radius:20px;letter-spacing:1px;">Buyers save ${aff.discount_pct||10}% with this code</div>
-    </div>
-    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:14px;">Your Earnings Per Sale</div>
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+    ${emailSection('Your Commission per Sale')}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border:1px solid #e8e4e0;border-radius:4px;overflow:hidden;">
+      <tr style="background:#1a1a1a;">
+        <td style="padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;">Product Type</td>
+        <td style="padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;text-align:right;">You Earn</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0ede8;">
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Regular T-Shirt</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_regular}</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f0ede8;">
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Drop Shoulder</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_drop}</td>
+      </tr>
       <tr>
-        <td width="33%" style="padding-right:8px;">
-          <div style="background:#f7f5f2;border:1px solid #e8e4e0;border-radius:10px;padding:18px;text-align:center;">
-            <div style="font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Regular</div>
-            <div style="font-size:26px;font-weight:900;color:#6D001A;">৳${aff.commission_regular}</div>
-          </div>
-        </td>
-        <td width="33%" style="padding-right:8px;">
-          <div style="background:#f7f5f2;border:2px solid #6D001A;border-radius:10px;padding:18px;text-align:center;">
-            <div style="font-size:10px;color:#6D001A;letter-spacing:1px;text-transform:uppercase;font-weight:700;margin-bottom:8px;">Drop Shoulder</div>
-            <div style="font-size:26px;font-weight:900;color:#6D001A;">৳${aff.commission_drop}</div>
-          </div>
-        </td>
-        <td width="33%">
-          <div style="background:#f7f5f2;border:1px solid #e8e4e0;border-radius:10px;padding:18px;text-align:center;">
-            <div style="font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Hoodie</div>
-            <div style="font-size:26px;font-weight:900;color:#6D001A;">৳${aff.commission_hoodie}</div>
-          </div>
-        </td>
+        <td style="padding:13px 16px;font-size:13px;color:#1a1a1a;">Hoodie</td>
+        <td style="padding:13px 16px;font-size:18px;font-weight:900;color:#6D001A;text-align:right;">৳${aff.commission_hoodie}</td>
       </tr>
     </table>
-    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:14px;">How It Works</div>
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-      <tr><td style="padding:12px 0;border-bottom:1px solid #f0ede8;">
+    ${emailSection('How It Works')}
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+      <tr><td style="padding:10px 0;vertical-align:top;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="padding-right:16px;vertical-align:middle;"><div style="width:32px;height:32px;background:#6D001A;color:#fff;font-size:13px;font-weight:900;text-align:center;line-height:32px;border-radius:50%;">1</div></td>
-          <td style="font-size:13px;color:#333;line-height:1.5;">Share code <b style="color:#6D001A;">${aff.code}</b> with BUET students and on social media.</td>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">1</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">Share your code <b>${aff.code}</b> with BUET students, friends, and on social media.</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:12px 0;border-bottom:1px solid #f0ede8;">
+      <tr><td style="padding:10px 0;vertical-align:top;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="padding-right:16px;vertical-align:middle;"><div style="width:32px;height:32px;background:#6D001A;color:#fff;font-size:13px;font-weight:900;text-align:center;line-height:32px;border-radius:50%;">2</div></td>
-          <td style="font-size:13px;color:#333;line-height:1.5;">They visit <b>buettees.shop</b>, enter your code at checkout — they get <b>${aff.discount_pct||10}% off</b> instantly.</td>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">2</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">They place an order using your code and get <b>${aff.discount_pct||10}% off</b> instantly.</td>
         </tr></table>
       </td></tr>
-      <tr><td style="padding:12px 0;">
+      <tr><td style="padding:10px 0;vertical-align:top;">
         <table cellpadding="0" cellspacing="0"><tr>
-          <td style="padding-right:16px;vertical-align:middle;"><div style="width:32px;height:32px;background:#6D001A;color:#fff;font-size:13px;font-weight:900;text-align:center;line-height:32px;border-radius:50%;">3</div></td>
-          <td style="font-size:13px;color:#333;line-height:1.5;">Order confirmed → you earn commission. Payouts sent directly to your account.</td>
+          <td style="padding-right:14px;vertical-align:top;"><div style="width:26px;height:26px;background:#6D001A;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:26px;border-radius:50%;">3</div></td>
+          <td style="font-size:13px;color:#444;padding-top:3px;">Order confirmed → you earn commission. Payouts sent directly to your account.</td>
         </tr></table>
       </td></tr>
     </table>
-    <div style="text-align:center;margin-bottom:28px;">
-      <a href="https://buettees.shop" style="display:inline-block;background:#6D001A;color:#fff;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:16px 40px;border-radius:6px;text-decoration:none;">Visit buettees.shop →</a>
+    <div style="margin-top:28px;text-align:center;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#444;margin-bottom:14px;">Join our affiliate WhatsApp group for updates &amp; tips:</div>
+      <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen" style="display:inline-block;background:#25D366;color:#fff;font-size:13px;font-weight:800;letter-spacing:1px;padding:16px 36px;border-radius:8px;text-decoration:none;">📲 Join WhatsApp Group →</a>
     </div>
-    <div style="background:#f7f5f2;border-radius:8px;padding:16px;font-size:13px;color:#666;text-align:center;">
+    <div style="margin-top:20px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:14px;font-size:12px;color:#888;text-align:center;">
       Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b>
     </div>`);
-  await sendEmail(aff.email, '🎉 You\'re approved! Your BUET Tees code: '+aff.code, html);
+  await sendEmail(aff.email, '🎉 You\'re approved! Your BUET Tees affiliate code: '+aff.code, html);
 }
 
 async function notifyOrderConfirmed(order){

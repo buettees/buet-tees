@@ -477,7 +477,7 @@ html, body { max-width: 100vw; overflow-x: hidden; }
 
 <script>
 const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI3OTQ3NiwiZXhwIjoyMDkwODU1NDc2fQ.PZPPhiL66ryCOcMnkBAUSSSeafzPNXOVcoEG_pxdmhY";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzk0NzYsImV4cCI6MjA5MDg1NTQ3Nn0.wyJ_V0n_uMcWoohRKjyCEjgySK5JPh8Sushu7e-rxu4";
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -502,26 +502,15 @@ async function doLogin() {
   btn.textContent = 'Checking...';
 
   try {
-    const { data, error } = await sb
-      .from('affiliates')
-      .select('*')
-      .eq('code', code)
-      .single();
+    const { data, error } = await sb.rpc('get_affiliate_dashboard', { p_code: code, p_phone: phone });
 
-    if (error || !data) { showErr('Affiliate code not found. Please check and try again.'); return; }
-
-    // Normalise phone: strip spaces and leading 0 variants for flexible matching
-    const normalize = p => p.replace(/\s+/g,'').replace(/^\+880/,'0').replace(/^880/,'0');
-    const enteredNorm = normalize(phone);
-    const storedNorm = normalize(data.whatsapp || '');
-
-    if (!storedNorm || enteredNorm !== storedNorm) {
-      showErr('Phone number does not match this affiliate code. Please try again.');
+    if (error || !data) {
+      showErr('Code or phone number not recognised. Please check and try again.');
       return;
     }
 
-    currentAffiliate = data;
-    openDashboard();
+    currentAffiliate = data.affiliate;
+    openDashboard(data);
   } catch(e) {
     showErr('Something went wrong. Please try again.');
     console.error(e);
@@ -541,7 +530,7 @@ function clearErr() {
 }
 
 // ── OPEN DASHBOARD ──
-async function openDashboard() {
+function openDashboard(dashData) {
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-dashboard').style.display = 'block';
 
@@ -556,27 +545,14 @@ async function openDashboard() {
   statusEl.textContent = a.status || 'active';
   statusEl.className = 'dash-status-badge ' + (a.status === 'active' ? 'active' : 'inactive');
 
-  // Load orders + payouts + return window setting
-  document.getElementById('dash-loading').style.display = 'block';
-  document.getElementById('dash-content').style.display = 'none';
+  // Data arrived with the RPC call — unpack directly, no second round-trip needed
+  allOrders = dashData.orders || [];
+  allPayouts = dashData.payouts || [];
 
-  try {
-    const [ordRes, payRes, settRes] = await Promise.all([
-      sb.from('orders').select('id,name,phone,items_json,items,subtotal,total,discount_pct,discount_amt,status,created_at,delivered_at,affiliate_code,affiliate_paid').eq('affiliate_code', a.code).order('created_at', {ascending: false}),
-      sb.from('affiliate_payouts').select('*').eq('affiliate_code', a.code).order('paid_at', {ascending: false}),
-      sb.from('settings').select('key,value').in('key', ['return_window','return_window_changed_at'])
-    ]);
-    allOrders = ordRes.data || [];
-    allPayouts = payRes.data || [];
-    // Parse return window
-    const settMap = {};
-    (settRes.data||[]).forEach(s => settMap[s.key] = s.value);
-    returnWindowVal = settMap['return_window'] || '0';
-    returnWindowChangedAt = settMap['return_window_changed_at'] || '';
-  } catch(e) {
-    allOrders = [];
-    allPayouts = [];
-  }
+  const settMap = {};
+  (dashData.settings || []).forEach(s => settMap[s.key] = s.value);
+  returnWindowVal = settMap['return_window'] || '0';
+  returnWindowChangedAt = settMap['return_window_changed_at'] || '';
 
   document.getElementById('dash-loading').style.display = 'none';
   document.getElementById('dash-content').style.display = 'block';

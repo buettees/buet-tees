@@ -2076,8 +2076,9 @@ function updSum(){
   // Both offer and affiliate discounts stack — compute both always
   const offerResult=computeOfferDiscount(cart);
   const offerDiscAmt=offerResult.discAmt||0;
-  const totalDisc=affDiscAmt+offerDiscAmt;
-  const total=sub-totalDisc+fee;
+  // Flat discount is already baked into item prices — don't subtract it again from total
+  const extraDisc=(offerResult.type==='flat'?0:offerDiscAmt)+affDiscAmt;
+  const total=sub-extraDisc+fee;
   document.getElementById("stsub").textContent=`${C} ${origSub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;

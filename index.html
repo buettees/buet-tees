@@ -1091,8 +1091,7 @@ body { max-width: 100vw; overflow-x: clip; }
 </style>
 </head>
 <body>
-<!-- Offer Announcement Bar -->
-<div class="sticky-top">
+<!-- Offer Announcement Bar (not sticky — scrolls away) -->
 <div class="offer-topbar" id="offerTopbar">
   <div class="offer-topbar-inner">
     <span class="offer-topbar-icon">🔥</span>
@@ -1100,6 +1099,7 @@ body { max-width: 100vw; overflow-x: clip; }
     <span class="offer-topbar-icon">🔥</span>
   </div>
 </div>
+<div class="sticky-top">
 <header>
   <button class="ham-btn" id="hamBtn" onclick="toggleMobNav()" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -1558,6 +1558,7 @@ body { max-width: 100vw; overflow-x: clip; }
         <div id="coitems"></div>
         <div class="strows">
           <div class="strow"><span>Subtotal</span><span id="stsub"></span></div>
+          <div class="strow" id="flatDiscRow" style="display:none;color:#2e7d32;font-weight:600;"><span id="flatDiscLabel">Offer Discount</span><span id="stFlatDisc"></span></div>
           <div class="strow" id="offerDiscRow" style="display:none;color:#2e7d32;font-weight:600;"><span id="offerDiscLabel">Offer Discount</span><span id="stOfferDisc"></span></div>
           <div class="strow" id="affDiscRow" style="display:none;color:#1565c0;font-weight:600;"><span id="affDiscLabel">Affiliate Discount</span><span id="stAffDisc"></span></div>
           <div class="strow"><span>Delivery</span><span id="stdel"></span></div>
@@ -1987,7 +1988,8 @@ function atc(){
   const key=`${cur.id}-${catName}-${selSz}-${selCl}-${selSide}`;
   const ex=cart.find(i=>i.key===key);
   const price=cat.discountedPrice||cat.price||0;
-  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,qty,type:'single'});}
+  const basePrice=cat._basePrice||cat.price||0;
+  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,basePrice,qty,type:'single'});}
   upd();closePM();toast(`Added — ${catName} · ${[selSz,selCl].filter(Boolean).join("/")} · ${selSide} print`);
 }
 
@@ -2070,19 +2072,38 @@ function updSum(){
   // Both offer and affiliate discounts stack — compute both always
   const offerResult=computeOfferDiscount(cart);
   const offerDiscAmt=offerResult.discAmt||0;
-  const totalDisc=affDiscAmt+offerDiscAmt;
+  // Flat discount: baked into item prices — compute saving vs original prices
+  let flatDiscAmt=0,flatDiscLabel='';
+  const fd=offersConfig&&offersConfig.flatDiscount;
+  if(fd&&fd.active&&parseFloat(fd.value)>0){
+    flatDiscAmt=cart.reduce((s,i)=>{
+      const base=i.basePrice||i.price;
+      return base>i.price?s+(base-i.price)*i.qty:s;
+    },0);
+    flatDiscLabel=(fd.label||'Offer Discount')+(fd.type==='pct'?` (${fd.value}% off)`:(` (৳${fd.value} off each)`));
+  }
+  const totalDisc=affDiscAmt+offerDiscAmt; // flat already in sub
   const total=sub-totalDisc+fee;
   document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
-  // Offer discount row
+  // Flat discount row (already reflected in prices, shown informational)
+  const flatDiscRow=document.getElementById("flatDiscRow");
+  if(flatDiscRow){
+    if(flatDiscAmt>0){
+      flatDiscRow.style.display="";
+      document.getElementById("flatDiscLabel").textContent=flatDiscLabel||'Offer Discount';
+      document.getElementById("stFlatDisc").textContent=`-${C} ${Math.round(flatDiscAmt).toLocaleString()} ✓`;
+    }else{flatDiscRow.style.display="none";}
+  }
+  // Offer discount row (custom types: buy X get Y etc.)
   const offerDiscRow=document.getElementById("offerDiscRow");
   if(offerDiscAmt>0){
     offerDiscRow.style.display="";
     document.getElementById("offerDiscLabel").textContent=offerResult.label||'Offer Discount';
     document.getElementById("stOfferDisc").textContent=`-${C} ${offerDiscAmt}`;
   }else{offerDiscRow.style.display="none";}
-  // Affiliate discount row (applied on subtotal after offer)
+  // Affiliate discount row
   const affDiscRow=document.getElementById("affDiscRow");
   if(affDiscAmt>0){
     affDiscRow.style.display="";

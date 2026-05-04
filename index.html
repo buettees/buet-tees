@@ -2068,6 +2068,8 @@ function closeCart(){document.getElementById("cdrawer").classList.remove("on");d
 function sz2(z){zone=z;["campus","dhaka","outside"].forEach(x=>document.getElementById("z-"+x).classList.toggle("on",x===z));updSum();}
 
 function updSum(){
+  // originalSub = sum of base (pre-offer) prices; sub = sum of already-discounted prices
+  const originalSub=cart.reduce((s,i)=>s+(i.basePrice||i.price)*i.qty,0);
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   const fee=DF[zone];
   const discPct=coAffValid?affDiscountPct:0;
@@ -2075,19 +2077,17 @@ function updSum(){
   // Both offer and affiliate discounts stack — compute both always
   const offerResult=computeOfferDiscount(cart);
   const offerDiscAmt=offerResult.discAmt||0;
-  // Flat discount: baked into item prices — compute saving vs original prices
+  // Flat discount saving = difference between original and discounted subtotals
   let flatDiscAmt=0,flatDiscLabel='';
   const fd=offersConfig&&offersConfig.flatDiscount;
   if(fd&&fd.active&&parseFloat(fd.value)>0){
-    flatDiscAmt=cart.reduce((s,i)=>{
-      const base=i.basePrice||i.price;
-      return base>i.price?s+(base-i.price)*i.qty:s;
-    },0);
+    flatDiscAmt=originalSub-sub;
     flatDiscLabel=(fd.label||'Offer Discount')+(fd.type==='pct'?` (${fd.value}% off)`:(` (৳${fd.value} off each)`));
   }
-  const totalDisc=affDiscAmt+offerDiscAmt; // flat already in sub
+  const totalDisc=affDiscAmt+offerDiscAmt; // flat already reflected in sub
   const total=sub-totalDisc+fee;
-  document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
+  // Show ORIGINAL subtotal so customer sees: ৳500 → -৳25 → ৳475
+  document.getElementById("stsub").textContent=`${C} ${originalSub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
   // Flat discount row (already reflected in prices, shown informational)

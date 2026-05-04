@@ -1730,8 +1730,6 @@ async function loadProducts(){
 });
     const {data:setting}=await sb.from('settings').select('value').eq('key','affiliate_discount_pct').single();
     if(setting)affDiscountPct=parseFloat(setting.value)||10;
-    // Load offers config
-    await loadOffersConfig();
     // Build supplier lookup by name
     const supByName={};
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
@@ -1762,6 +1760,8 @@ async function loadProducts(){
       })
     })).filter(p=>p.categories&&p.categories.length>0);
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
+    // Load offers config AFTER prods is populated so flat discount can be applied
+    await loadOffersConfig();
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }

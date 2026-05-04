@@ -521,6 +521,9 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .qe-bulk-btn:hover{background:var(--burg2);}
 .qe-bulk-btn.secondary{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);}
 .qe-bulk-btn.secondary:hover{background:rgba(255,255,255,0.1);color:#fff;}
+.qe-cat-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:5px 12px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all 0.12s;white-space:nowrap;}
+.qe-cat-btn:hover{border-color:rgba(255,255,255,0.3);color:#fff;}
+.qe-cat-btn.on{background:var(--burg);border-color:var(--burg);color:#fff;}
 .qe-save-all-btn{background:linear-gradient(135deg,#27ae60,#1e8449);border:none;color:#fff;padding:7px 18px;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;display:inline-flex;align-items:center;gap:6px;opacity:0.45;}
 .qe-save-all-btn.dirty{opacity:1;}
 .qe-save-all-btn:hover{opacity:0.85;}
@@ -5505,45 +5508,32 @@ function admRenderProducts(){
     <!-- ── Quick Edit Table ─────────────────────────────── -->
     <div class="qe-wrap">
       <!-- Bulk action bar -->
-      <div class="qe-toolbar" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 16px;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <span class="qe-toolbar-title" style="flex:none">⚡ Bulk Action</span>
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;">Apply to: </span>
-          <select class="qe-bulk-select" id="qeScope" onchange="qeScopeChange()">
-            <option value="visible">All visible (${filtered.length})</option>
-            <option value="checked">Checked rows only</option>
-            <optgroup label="By Category">
-              <option value="cat:Regular">Regular only</option>
-              <option value="cat:Drop Shoulder">Drop Shoulder only</option>
-              <option value="cat:Hoodie">Hoodie only</option>
-              <option value="cat:Hoodie Back">Hoodie Back only</option>
-            </optgroup>
-          </select>
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;">Action: </span>
-          <select class="qe-bulk-select" id="qeBulkAction" onchange="qeActionChange()">
-            <option value="">— pick action —</option>
-            <optgroup label="Price">
-              <option value="price_set">Set price to ৳</option>
-              <option value="price_pct_up">Raise price by %</option>
-              <option value="price_pct_down">Lower price by %</option>
-            </optgroup>
-            <optgroup label="Discounted Price">
-              <option value="disc_set">Set disc. price to ৳</option>
-              <option value="disc_pct">Set disc. price = price − %</option>
-              <option value="disc_clear">Clear discounted price</option>
-            </optgroup>
-            <optgroup label="Badge">
-              <option value="badge_set">Set badge to…</option>
-              <option value="badge_clear">Clear badge</option>
-            </optgroup>
-            <optgroup label="Visibility">
-              <option value="show_all">Make visible</option>
-              <option value="hide_all">Hide</option>
-            </optgroup>
-          </select>
-          <input class="qe-bulk-input" id="qeBulkValue" type="text" placeholder="value" style="display:none"/>
-          <button class="qe-bulk-btn" onclick="qeApplyBulk()" style="background:var(--burg);min-width:130px">▶ Apply Now</button>
-          <button class="qe-save-all-btn" id="qeSaveAllBtn" onclick="qeSaveAll()">💾 Save Changes</button>
+      <div class="qe-toolbar" style="flex-direction:column;align-items:stretch;gap:8px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="qe-toolbar-title" style="flex:none;margin-right:4px;">⚡ BULK EDIT</span>
+
+          <!-- 1. Change for -->
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Change for:</span>
+          <button class="qe-cat-btn on" data-cat="all"    onclick="qeCatPick(this)">All</button>
+          <button class="qe-cat-btn"     data-cat="Regular"       onclick="qeCatPick(this)">Regular</button>
+          <button class="qe-cat-btn"     data-cat="Drop Shoulder" onclick="qeCatPick(this)">Drop</button>
+          <button class="qe-cat-btn"     data-cat="Hoodie"        onclick="qeCatPick(this)">Hoodie</button>
+          <button class="qe-cat-btn"     data-cat="Hoodie Back"   onclick="qeCatPick(this)">Hoodie Back</button>
+          <input class="qe-bulk-input" id="qeCustomCodes" type="text" placeholder="or type IDs e.g. BT1,BT2" style="width:160px;" title="Comma-separated product IDs to target"/>
+
+          <!-- 2. Price / Disc Price / Badge -->
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;margin-left:6px;">Price ৳</span>
+          <input class="qe-bulk-input" id="qeBulkPrice" type="number" placeholder="e.g. 500" style="width:80px;" title="New price (leave blank to skip)"/>
+
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Disc ৳</span>
+          <input class="qe-bulk-input" id="qeBulkDisc" type="number" placeholder="e.g. 450" style="width:80px;" title="New discounted price (leave blank to skip, 0 to clear)"/>
+
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Badge</span>
+          <input class="qe-bulk-input" id="qeBulkBadge" type="text" placeholder="e.g. Hot" style="width:80px;" title="New badge text (leave blank to skip, clear to remove)" oninput="this.dataset.touched='1'"/>
+
+          <!-- Apply + Save -->
+          <button class="qe-bulk-btn" onclick="qeApplyBulk()" style="background:var(--burg);padding:7px 18px;white-space:nowrap;">▶ Apply</button>
+          <button class="qe-save-all-btn" id="qeSaveAllBtn" onclick="qeSaveAll()">💾 Save</button>
         </div>
         <div id="qeBulkPreview" style="font-size:10px;color:rgba(201,168,76,0.7);letter-spacing:1px;min-height:14px;padding-left:2px;"></div>
       </div>
@@ -5899,114 +5889,91 @@ function qeUpdateSelCount(){
   if(el)el.textContent=qeSelectedIds.size+' checked · '+qeDirtyIds.size+' unsaved change'+(qeDirtyIds.size!==1?'s':'');
 }
 
-// Show/hide value input based on action, update preview text
-function qeActionChange(){
-  const action=document.getElementById('qeBulkAction')?.value||'';
-  const valEl=document.getElementById('qeBulkValue');
-  const needsVal=['price_set','price_pct_up','price_pct_down','disc_set','disc_pct','badge_set'];
-  if(valEl){
-    valEl.style.display=needsVal.includes(action)?'':'none';
-    if(action==='badge_set')valEl.type='text';
-    else valEl.type='text';
-    // set placeholder
-    const ph={'price_set':'e.g. 400','price_pct_up':'e.g. 10','price_pct_down':'e.g. 10','disc_set':'e.g. 360','disc_pct':'e.g. 10','badge_set':'e.g. Hot'};
-    valEl.placeholder=ph[action]||'value';
-  }
-  qeUpdatePreview();
-}
-
-function qeScopeChange(){qeUpdatePreview();}
-
+function qeScopeChange(){}
+function qeActionChange(){}
 function qeUpdatePreview(){
   const prev=document.getElementById('qeBulkPreview');if(!prev)return;
-  const scope=document.getElementById('qeScope')?.value||'visible';
-  const action=document.getElementById('qeBulkAction')?.value||'';
-  const val=document.getElementById('qeBulkValue')?.value||'';
-  const rows=document.querySelectorAll('.qe-tbl tbody tr');
-  let targetIds=[];
-  rows.forEach(tr=>{
-    const id=tr.dataset.id;
-    if(scope==='visible'||qeSelectedIds.has(id)) targetIds.push(id);
-  });
-  if(!action){prev.textContent='';return;}
-  let count=scope==='visible'?rows.length:scope==='checked'?qeSelectedIds.size:[...rows].filter(tr=>tr.dataset.cat===scope.slice(4)).length;
-  const labels={
-    price_set:`Set price → ৳${val||'?'} for ${count} product(s)`,
-    price_pct_up:`Raise all prices by ${val||'?'}% for ${count} product(s)`,
-    price_pct_down:`Lower all prices by ${val||'?'}% for ${count} product(s)`,
-    disc_set:`Set discounted price → ৳${val||'?'} for ${count} product(s)`,
-    disc_pct:`Set discounted price = price − ${val||'?'}% for ${count} product(s)`,
-    disc_clear:`Clear discounted price for ${count} product(s)`,
-    badge_set:`Set badge → "${val||'?'}" for ${count} product(s)`,
-    badge_clear:`Clear badge for ${count} product(s)`,
-    show_all:`Make ${count} product(s) visible`,
-    hide_all:`Hide ${count} product(s)`,
-  };
-  prev.textContent='→ '+( labels[action]||'');
+  const count=qeGetTargetIds().length;
+  const activeCatBtn=document.querySelector('.qe-cat-btn.on');
+  const cat=activeCatBtn?activeCatBtn.textContent:'All';
+  prev.textContent=count?`→ ${count} product(s) will be affected [${cat}]`:'';
 }
 
 function qeGetTargetIds(){
-  const scope=document.getElementById('qeScope')?.value||'visible';
+  // Which category button is active?
+  const activeCatBtn=document.querySelector('.qe-cat-btn.on');
+  const cat=activeCatBtn?activeCatBtn.dataset.cat:'all';
+  // Custom product ID codes field
+  const customRaw=(document.getElementById('qeCustomCodes')?.value||'').trim();
+  const customIds=customRaw?customRaw.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean):[];
   const rows=document.querySelectorAll('.qe-tbl tbody tr');
   const ids=[];
   rows.forEach(tr=>{
     const id=tr.dataset.id;
-    if(scope==='visible') ids.push(id);
-    else if(scope==='checked'&&qeSelectedIds.has(id)) ids.push(id);
-    else if(scope.startsWith('cat:')&&tr.dataset.cat===scope.slice(4)) ids.push(id);
+    if(!id)return;
+    // If custom IDs entered, match by product name prefix in the row
+    if(customIds.length){
+      const nameEl=tr.querySelector('.qe-name');
+      const name=(nameEl?nameEl.textContent:'').toUpperCase().trim();
+      if(customIds.some(c=>name===c||name.startsWith(c))) ids.push(id);
+      return;
+    }
+    // Otherwise filter by category
+    if(cat==='all') ids.push(id);
+    else if(tr.dataset.cat===cat) ids.push(id);
   });
   return ids;
 }
 
 function qeApplyBulk(){
-  const action=document.getElementById('qeBulkAction')?.value||'';
-  const val=document.getElementById('qeBulkValue')?.value.trim()||'';
-  if(!action){toast('Pick an action first');return;}
-
+  const newPrice=(document.getElementById('qeBulkPrice')?.value||'').trim();
+  const newDisc=(document.getElementById('qeBulkDisc')?.value||'').trim();
+  const newBadge=document.getElementById('qeBulkBadge')?.value??'__SKIP__';
+  const badgeInput=document.getElementById('qeBulkBadge');
+  const badgeChanged=badgeInput&&badgeInput.value!==undefined&&document.activeElement!==badgeInput;
+  // At least one field must have a value
+  if(!newPrice&&newDisc===''&&!badgeInput?.dataset.touched){
+    // check if any field was interacted with
+  }
   const targetIds=qeGetTargetIds();
-  if(!targetIds.length){toast('No rows to apply to');return;}
-
+  if(!targetIds.length){toast('No matching rows found');return;}
+  let changed=0;
   targetIds.forEach(id=>{
     const priceEl=document.getElementById('qe-price-'+id);
     const discEl=document.getElementById('qe-disc-'+id);
     const badgeEl=document.getElementById('qe-badge-'+id);
-    const visEl=document.getElementById('qe-vis-'+id);
     if(!priceEl)return;
-
-    if(action==='price_set'){
-      const n=parseFloat(val);if(isNaN(n))return;
-      priceEl.value=Math.round(n);
-    }else if(action==='price_pct_up'){
-      const pct=parseFloat(val);if(isNaN(pct))return;
-      const np=Math.round(parseFloat(priceEl.value||0)*(1+pct/100));
-      priceEl.value=np;
-      if(discEl&&discEl.value) discEl.value=Math.round(parseFloat(discEl.value)*(1+pct/100));
-    }else if(action==='price_pct_down'){
-      const pct=parseFloat(val);if(isNaN(pct))return;
-      const np=Math.round(parseFloat(priceEl.value||0)*(1-pct/100));
-      priceEl.value=np;
-      if(discEl&&discEl.value) discEl.value=Math.round(parseFloat(discEl.value)*(1-pct/100));
-    }else if(action==='disc_set'){
-      const n=parseFloat(val);if(isNaN(n))return;
-      if(discEl)discEl.value=Math.round(n);
-    }else if(action==='disc_pct'){
-      const pct=parseFloat(val);if(isNaN(pct))return;
-      const base=parseFloat(priceEl.value||0);
-      if(discEl)discEl.value=Math.round(base*(1-pct/100));
-    }else if(action==='disc_clear'){
-      if(discEl)discEl.value='';
-    }else if(action==='badge_set'){
-      if(badgeEl)badgeEl.value=val;
-    }else if(action==='badge_clear'){
-      if(badgeEl)badgeEl.value='';
-    }else if(action==='show_all'){
-      if(visEl)visEl.checked=true;
-    }else if(action==='hide_all'){
-      if(visEl)visEl.checked=false;
+    let dirty=false;
+    // Price
+    if(newPrice!==''){
+      const n=parseFloat(newPrice);
+      if(!isNaN(n)){priceEl.value=Math.round(n);dirty=true;}
     }
-    qeMarkDirty(id);
+    // Disc price (empty string = skip, '0' or number = set, explicit clear via typing 0)
+    if(newDisc!==''){
+      const n=parseFloat(newDisc);
+      if(!isNaN(n)){
+        if(discEl) discEl.value=n===0?'':Math.round(n);
+        dirty=true;
+      }
+    }
+    // Badge (only apply if the badge input has been touched/has value)
+    if(badgeInput&&badgeInput.dataset.touched==='1'){
+      if(badgeEl){badgeEl.value=badgeInput.value;dirty=true;}
+    }
+    if(dirty){qeMarkDirty(id);changed++;}
   });
-  toast(`Applied to ${targetIds.length} product(s) — click Save to commit ✓`);
+  if(!changed){toast('Nothing to apply — fill in at least one field');return;}
+  toast(`Applied to ${changed} product(s) — click 💾 Save ✓`);
+}
+
+function qeCatPick(btn){
+  document.querySelectorAll('.qe-cat-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  // Clear custom codes when a category button is clicked
+  const cc=document.getElementById('qeCustomCodes');
+  if(cc)cc.value='';
+  qeUpdatePreview();
 }
 
 async function qeSaveAll(){

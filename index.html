@@ -2199,7 +2199,7 @@ async function place(){
   const affDiscAmt=discPct>0?Math.round(sub*discPct/100):0;
   const offerResult=computeOfferDiscount(cart);
   const offerDiscAmt=offerResult.discAmt||0;
-  const discAmt=affDiscAmt+offerDiscAmt;
+  const discAmt=affDiscAmt+(offerResult.type==='flat'?0:offerDiscAmt);
   const fee=DF[zone],total=sub-discAmt+fee;
   const items=buildItemsString();
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";

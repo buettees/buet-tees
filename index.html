@@ -1092,7 +1092,6 @@ body { max-width: 100vw; overflow-x: clip; }
 </head>
 <body>
 <!-- Offer Announcement Bar -->
-<div class="sticky-top">
 <div class="offer-topbar" id="offerTopbar">
   <div class="offer-topbar-inner">
     <span class="offer-topbar-icon">🔥</span>
@@ -1100,11 +1099,12 @@ body { max-width: 100vw; overflow-x: clip; }
     <span class="offer-topbar-icon">🔥</span>
   </div>
 </div>
+<div class="sticky-top">
 <header>
   <button class="ham-btn" id="hamBtn" onclick="toggleMobNav()" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
-  <div class="logo">buettees</div>
+  <div class="logo" onclick="showPage('home');window.scrollTo({top:0,behavior:'smooth'});" style="cursor:pointer;">buettees</div>
   <nav class="nav-mid">
     <span class="nav-a active-page" id="nav-home" onclick="showPage('home')">Home</span>
     <span class="nav-a" id="nav-products" onclick="showPage('products')">Products</span>

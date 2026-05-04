@@ -5450,6 +5450,7 @@ function admRenderProducts(){
       <td class="qe-td-img">${img}</td>
       <td class="qe-td-name"><div class="qe-name">${r.products?.name||r.product_id}</div><div class="qe-cat">${r.category}</div></td>
       <td><input class="qe-fi" id="qe-price-${r.id}" type="number" value="${r.price||''}" placeholder="Price" oninput="qeMarkDirty('${r.id}')"></td>
+      <td><input class="qe-fi qe-fi-badge" id="qe-badge-${r.id}" type="text" value="${r.badge||''}" placeholder="Badge" oninput="qeMarkDirty('${r.id}')"></td>
 
       <td><input class="qe-toggle" type="checkbox" id="qe-vis-${r.id}" ${active?'checked':''} title="${active?'Visible':'Hidden'}" onchange="qeMarkDirty('${r.id}')"></td>
       <td><span class="qe-dirty-dot" id="qe-dot-${r.id}" title="Unsaved"></span></td>
@@ -5520,9 +5521,11 @@ function admRenderProducts(){
           <button class="qe-cat-btn"     data-cat="Hoodie Back"   onclick="qeCatPick(this)">Hoodie Back</button>
           <input class="qe-bulk-input" id="qeCustomCodes" type="text" placeholder="or type IDs e.g. BT1,BT2" style="width:160px;" title="Comma-separated product IDs to target"/>
 
-          <!-- 2. Price only -->
+          <!-- 2. Price + Badge -->
           <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;margin-left:6px;">Price ৳</span>
-          <input class="qe-bulk-input" id="qeBulkPrice" type="number" placeholder="e.g. 500" style="width:90px;" title="Set new price for all targeted rows"/>
+          <input class="qe-bulk-input" id="qeBulkPrice" type="number" placeholder="e.g. 500" style="width:90px;" title="Set new price (leave blank to skip)"/>
+          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Badge</span>
+          <input class="qe-bulk-input" id="qeBulkBadge" type="text" placeholder="e.g. Hot" style="width:80px;" title="Set badge text (leave blank to skip, type space to clear)" oninput="this.dataset.touched='1'"/>
 
           <!-- Apply + Save -->
           <button class="qe-bulk-btn" onclick="qeApplyBulk()" style="background:var(--burg);padding:7px 18px;white-space:nowrap;">▶ Apply</button>
@@ -5537,6 +5540,7 @@ function admRenderProducts(){
             <th></th>
             <th>Product</th>
             <th>Price (৳)</th>
+            <th>Badge</th>
             <th>Visible</th>
             <th></th>
             <th></th>
@@ -5920,19 +5924,30 @@ function qeApplyBulk(){
   const newPrice=(document.getElementById('qeBulkPrice')?.value||'').trim();
   const targetIds=qeGetTargetIds();
   if(!targetIds.length){toast('No matching rows found');return;}
-  if(!newPrice){toast('Enter a price to apply');return;}
-  const n=parseFloat(newPrice);
-  if(isNaN(n)){toast('Invalid price value');return;}
+  const badgeInput=document.getElementById('qeBulkBadge');
+  const badgeTouched=badgeInput&&badgeInput.dataset.touched==='1';
+  if(!newPrice&&!badgeTouched){toast('Enter a price or badge to apply');return;}
   let changed=0;
   targetIds.forEach(id=>{
     const priceEl=document.getElementById('qe-price-'+id);
+    const badgeEl=document.getElementById('qe-badge-'+id);
     if(!priceEl)return;
-    priceEl.value=Math.round(n);
-    qeMarkDirty(id);
-    changed++;
+    let dirty=false;
+    if(newPrice!==''){
+      const n=parseFloat(newPrice);
+      if(!isNaN(n)){priceEl.value=Math.round(n);dirty=true;}
+    }
+    if(badgeTouched&&badgeEl){
+      badgeEl.value=badgeInput.value.trim();
+      dirty=true;
+    }
+    if(dirty){qeMarkDirty(id);changed++;}
   });
   if(!changed){toast('No matching rows found');return;}
-  toast(`Price set to ৳${Math.round(n)} for ${changed} product(s) — click 💾 Save ✓`);
+  const parts=[];
+  if(newPrice)parts.push('price');
+  if(badgeTouched)parts.push('badge');
+  toast(`Updated ${parts.join(' & ')} for ${changed} product(s) — click 💾 Save ✓`);
 }
 
 function qeCatPick(btn){
@@ -5964,7 +5979,11 @@ async function qeSaveAll(){
 
     if(isNaN(price)){errors++;continue;}
     try{
-      const{error}=await sbAdmin.from('product_categories').update({price}).eq('id',id);
+      const badgeEl2=document.getElementById('qe-badge-'+id);
+      const badge=badgeEl2?badgeEl2.value.trim()||null:undefined;
+      const updateObj={price};
+      if(badge!==undefined)updateObj.badge=badge;
+      const{error}=await sbAdmin.from('product_categories').update(updateObj).eq('id',id);
       if(error)throw error;
       if(pid) visByPid[pid]=active;
       qeDirtyIds.delete(id);

@@ -1991,7 +1991,8 @@ function atc(){
   const key=`${cur.id}-${catName}-${selSz}-${selCl}-${selSide}`;
   const ex=cart.find(i=>i.key===key);
   const price=cat.discountedPrice||cat.price||0;
-  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,qty,type:'single'});}
+  const originalPrice=cat._offerApplied?(cat._basePrice||cat.price):price;
+  if(ex){ex.qty+=qty;}else{cart.push({key,id:cur.id,name:cur.name,image:cat.image||"",category:catName,size:selSz,color:selCl,side:selSide,price,originalPrice,qty,type:'single'});}
   upd();closePM();toast(`Added — ${catName} · ${[selSz,selCl].filter(Boolean).join("/")} · ${selSide} print`);
 }
 
@@ -2068,6 +2069,7 @@ function sz2(z){zone=z;["campus","dhaka","outside"].forEach(x=>document.getEleme
 
 function updSum(){
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const origSub=cart.reduce((s,i)=>s+(i.originalPrice||i.price)*i.qty,0);
   const fee=DF[zone];
   const discPct=coAffValid?affDiscountPct:0;
   const affDiscAmt=discPct>0?Math.round(sub*discPct/100):0;
@@ -2076,7 +2078,7 @@ function updSum(){
   const offerDiscAmt=offerResult.discAmt||0;
   const totalDisc=affDiscAmt+offerDiscAmt;
   const total=sub-totalDisc+fee;
-  document.getElementById("stsub").textContent=`${C} ${sub.toLocaleString()}`;
+  document.getElementById("stsub").textContent=`${C} ${origSub.toLocaleString()}`;
   document.getElementById("stdel").textContent=fee===0?"Free":`${C} ${fee}`;
   document.getElementById("sttotal").textContent=`${C} ${total.toLocaleString()}`;
   // Offer discount row
@@ -6131,8 +6133,9 @@ function computeOfferDiscount(cart){
   const totalQty=cart.reduce((s,i)=>s+i.qty,0);
   const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
   if(o.source==='flat'){
-    // Already applied to product prices; no extra checkout deduction needed
-    return{discAmt:0,label:'',type:'flat_in_price'};
+    const discAmt=cart.reduce((s,i)=>s+((i.originalPrice||i.price)-i.price)*i.qty,0);
+    const label=o.label||(o.type==='pct'?`${o.value}% off all products`:`৳${o.value} off all products`);
+    return{discAmt:Math.round(discAmt),label,type:'flat'};
   }
   // Custom offer types
   if(o.type==='buy_x_get_y_free'){

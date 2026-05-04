@@ -5450,8 +5450,7 @@ function admRenderProducts(){
       <td class="qe-td-img">${img}</td>
       <td class="qe-td-name"><div class="qe-name">${r.products?.name||r.product_id}</div><div class="qe-cat">${r.category}</div></td>
       <td><input class="qe-fi" id="qe-price-${r.id}" type="number" value="${r.price||''}" placeholder="Price" oninput="qeMarkDirty('${r.id}')"></td>
-      <td><input class="qe-fi" id="qe-disc-${r.id}" type="number" value="${r.discounted_price||''}" placeholder="Disc. price" oninput="qeMarkDirty('${r.id}')"></td>
-      <td><input class="qe-fi qe-fi-badge" id="qe-badge-${r.id}" type="text" value="${r.badge||''}" placeholder="Badge" oninput="qeMarkDirty('${r.id}')"></td>
+
       <td><input class="qe-toggle" type="checkbox" id="qe-vis-${r.id}" ${active?'checked':''} title="${active?'Visible':'Hidden'}" onchange="qeMarkDirty('${r.id}')"></td>
       <td><span class="qe-dirty-dot" id="qe-dot-${r.id}" title="Unsaved"></span></td>
       <td>
@@ -5521,15 +5520,9 @@ function admRenderProducts(){
           <button class="qe-cat-btn"     data-cat="Hoodie Back"   onclick="qeCatPick(this)">Hoodie Back</button>
           <input class="qe-bulk-input" id="qeCustomCodes" type="text" placeholder="or type IDs e.g. BT1,BT2" style="width:160px;" title="Comma-separated product IDs to target"/>
 
-          <!-- 2. Price / Disc Price / Badge -->
+          <!-- 2. Price only -->
           <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;margin-left:6px;">Price ৳</span>
-          <input class="qe-bulk-input" id="qeBulkPrice" type="number" placeholder="e.g. 500" style="width:80px;" title="New price (leave blank to skip)"/>
-
-          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Disc ৳</span>
-          <input class="qe-bulk-input" id="qeBulkDisc" type="number" placeholder="e.g. 450" style="width:80px;" title="New discounted price (leave blank to skip, 0 to clear)"/>
-
-          <span style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;white-space:nowrap;">Badge</span>
-          <input class="qe-bulk-input" id="qeBulkBadge" type="text" placeholder="e.g. Hot" style="width:80px;" title="New badge text (leave blank to skip, clear to remove)" oninput="this.dataset.touched='1'"/>
+          <input class="qe-bulk-input" id="qeBulkPrice" type="number" placeholder="e.g. 500" style="width:90px;" title="Set new price for all targeted rows"/>
 
           <!-- Apply + Save -->
           <button class="qe-bulk-btn" onclick="qeApplyBulk()" style="background:var(--burg);padding:7px 18px;white-space:nowrap;">▶ Apply</button>
@@ -5544,8 +5537,6 @@ function admRenderProducts(){
             <th></th>
             <th>Product</th>
             <th>Price (৳)</th>
-            <th>Disc. Price (৳)</th>
-            <th>Badge</th>
             <th>Visible</th>
             <th></th>
             <th></th>
@@ -5927,44 +5918,21 @@ function qeGetTargetIds(){
 
 function qeApplyBulk(){
   const newPrice=(document.getElementById('qeBulkPrice')?.value||'').trim();
-  const newDisc=(document.getElementById('qeBulkDisc')?.value||'').trim();
-  const newBadge=document.getElementById('qeBulkBadge')?.value??'__SKIP__';
-  const badgeInput=document.getElementById('qeBulkBadge');
-  const badgeChanged=badgeInput&&badgeInput.value!==undefined&&document.activeElement!==badgeInput;
-  // At least one field must have a value
-  if(!newPrice&&newDisc===''&&!badgeInput?.dataset.touched){
-    // check if any field was interacted with
-  }
   const targetIds=qeGetTargetIds();
   if(!targetIds.length){toast('No matching rows found');return;}
+  if(!newPrice){toast('Enter a price to apply');return;}
+  const n=parseFloat(newPrice);
+  if(isNaN(n)){toast('Invalid price value');return;}
   let changed=0;
   targetIds.forEach(id=>{
     const priceEl=document.getElementById('qe-price-'+id);
-    const discEl=document.getElementById('qe-disc-'+id);
-    const badgeEl=document.getElementById('qe-badge-'+id);
     if(!priceEl)return;
-    let dirty=false;
-    // Price
-    if(newPrice!==''){
-      const n=parseFloat(newPrice);
-      if(!isNaN(n)){priceEl.value=Math.round(n);dirty=true;}
-    }
-    // Disc price (empty string = skip, '0' or number = set, explicit clear via typing 0)
-    if(newDisc!==''){
-      const n=parseFloat(newDisc);
-      if(!isNaN(n)){
-        if(discEl) discEl.value=n===0?'':Math.round(n);
-        dirty=true;
-      }
-    }
-    // Badge (only apply if the badge input has been touched/has value)
-    if(badgeInput&&badgeInput.dataset.touched==='1'){
-      if(badgeEl){badgeEl.value=badgeInput.value;dirty=true;}
-    }
-    if(dirty){qeMarkDirty(id);changed++;}
+    priceEl.value=Math.round(n);
+    qeMarkDirty(id);
+    changed++;
   });
-  if(!changed){toast('Nothing to apply — fill in at least one field');return;}
-  toast(`Applied to ${changed} product(s) — click 💾 Save ✓`);
+  if(!changed){toast('No matching rows found');return;}
+  toast(`Price set to ৳${Math.round(n)} for ${changed} product(s) — click 💾 Save ✓`);
 }
 
 function qeCatPick(btn){
@@ -5986,22 +5954,17 @@ async function qeSaveAll(){
 
   for(const id of dirtyArr){
     const priceEl=document.getElementById('qe-price-'+id);
-    const discEl=document.getElementById('qe-disc-'+id);
-    const badgeEl=document.getElementById('qe-badge-'+id);
     const visEl=document.getElementById('qe-vis-'+id);
     const row=document.getElementById('qerow-'+id);
     if(!priceEl)continue;
 
     const price=parseFloat(priceEl.value);
-    const discRaw=discEl?discEl.value.trim():'';
-    const disc=discRaw?parseFloat(discRaw):null;
-    const badge=badgeEl?badgeEl.value.trim()||null:null;
     const active=visEl?visEl.checked:true;
     const pid=row?row.dataset.pid:null;
 
     if(isNaN(price)){errors++;continue;}
     try{
-      const{error}=await sbAdmin.from('product_categories').update({price,discounted_price:disc,badge}).eq('id',id);
+      const{error}=await sbAdmin.from('product_categories').update({price}).eq('id',id);
       if(error)throw error;
       if(pid) visByPid[pid]=active;
       qeDirtyIds.delete(id);

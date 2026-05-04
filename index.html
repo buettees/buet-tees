@@ -71,7 +71,7 @@ header{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32p
 .hero-inner{position:relative;z-index:1;}
 .hero-kicker{display:inline-flex;align-items:center;gap:12px;margin-bottom:22px;}
 .hero-kicker-bar{width:28px;height:1px;background:rgba(255,255,255,0.35);}
-.hero-kicker-txt{font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.5);}
+.hero-kicker-txt{font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.85);}
 .hero-h1{font-size:clamp(52px,10vw,120px);font-weight:900;line-height:0.9;letter-spacing:-2px;text-transform:uppercase;margin-bottom:40px;}
 .hero-h1 .l1{display:block;color:var(--w);}
 .hero-h1 .l2{display:block;color:var(--w);}
@@ -80,12 +80,12 @@ header{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32p
 .hstat{padding:0 24px 0 0;margin-right:24px;border-right:1px solid rgba(255,255,255,0.12);flex-shrink:0;}
 .hstat:last-of-type{border:none;margin:0;}
 .hstat-n{font-size:18px;font-weight:800;color:var(--w);line-height:1;}
-.hstat-l{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-top:4px;}
+.hstat-l{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8);margin-top:4px;}
 .hero-cta{margin-left:auto;background:var(--black);border:none;color:var(--w);padding:15px 34px;cursor:pointer;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;}
 .hero-cta:hover{background:var(--black3);}
 .ticker{background:var(--black);height:36px;overflow:hidden;display:flex;align-items:center;}
 .ticker-t{display:flex;animation:tk 26s linear infinite;white-space:nowrap;}
-.ticker-t span{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);padding:0 24px;}
+.ticker-t span{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.85);padding:0 24px;}
 .ticker-t .sep{color:var(--w);padding:0 4px;}
 @keyframes tk{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .collection{background:var(--w);padding:72px 40px 80px;}
@@ -127,12 +127,12 @@ header{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32p
 .is-item:last-child{border:none;}
 .is-num{font-size:26px;font-weight:800;color:var(--w);line-height:1;}
 .is-num em{font-style:normal;}
-.is-lbl{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-top:6px;}
+.is-lbl{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8);margin-top:6px;}
 .aff-section{background:var(--black);padding:72px 40px 80px;border-top:1px solid rgba(255,255,255,0.06);}
-.aff-eyebrow{font-size:11px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.aff-eyebrow{font-size:11px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
 .aff-eyebrow::before{content:'';width:20px;height:1px;background:rgba(255,255,255,0.25);}
 .aff-title{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-1px;text-transform:uppercase;color:var(--w);line-height:1;margin-bottom:16px;}
-.aff-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.9;max-width:560px;margin-bottom:48px;font-weight:300;}
+.aff-sub{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.9;max-width:560px;margin-bottom:48px;font-weight:300;}
 .aff-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:40px;}
 @media(max-width:640px){.aff-grid{grid-template-columns:1fr;}}
 .aff-card{background:var(--black2);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px 24px;}
@@ -140,7 +140,7 @@ header{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32p
 .aff-card-title{font-size:18px;font-weight:800;text-transform:uppercase;color:var(--w);margin-bottom:16px;}
 .aff-card-rows{display:flex;flex-direction:column;gap:8px;}
 .aff-card-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:8px;}
-.aff-card-item{font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;}
+.aff-card-item{font-size:12px;color:rgba(255,255,255,0.85);font-weight:500;}
 .aff-card-comm{font-size:14px;font-weight:700;color:var(--w);}
 .aff-cta-box{background:var(--burg);border-radius:16px;padding:36px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
 .aff-cta-text .tag{font-size:10px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px;}
@@ -153,14 +153,14 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 @media(max-width:640px){.ft-grid{grid-template-columns:1fr;gap:32px;}}
 .ft-logo{font-size:20px;font-weight:900;letter-spacing:6px;text-transform:lowercase;color:var(--w);margin-bottom:14px;}
 .ft-logo em{font-style:normal;}
-.ft-tag{font-size:11px;color:rgba(255,255,255,0.3);line-height:2.2;font-weight:300;}
+.ft-tag{font-size:11px;color:rgba(255,255,255,0.65);line-height:2.2;font-weight:300;}
 .ft-ch{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--w);margin-bottom:16px;}
-.ft-ci{font-size:11px;color:rgba(255,255,255,0.3);line-height:2.4;font-weight:300;}
-.ft-ci a{color:rgba(61,0,13,0.9);cursor:pointer;text-decoration:none;font-weight:600;}
+.ft-ci{font-size:11px;color:rgba(255,255,255,0.75);line-height:2.4;font-weight:300;}
+.ft-ci a{color:#C9A84C;cursor:pointer;text-decoration:none;font-weight:600;}
 .ft-ci a:hover{color:var(--w);}
 .ft-bot{border-top:1px solid rgba(255,255,255,0.06);padding-top:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
-.ft-copy{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
-.ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);}
+.ft-copy{font-size:11px;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;font-weight:500;}
+.ft-bk{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);}
 .ft-bk span{color:var(--w);}
 /* ══════════════════════════════════════════
    ADMIN PANEL — Redesigned
@@ -716,7 +716,8 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 button, .vb, .cat-pill, .atcbtn, .ordernowbtn { touch-action: manipulation; }
 
 /* ── Prevent horizontal overflow everywhere ── */
-html, body { max-width: 100vw; overflow-x: hidden; }
+html { max-width: 100vw; overflow-x: clip; }
+body { max-width: 100vw; overflow-x: clip; }
 
 /* ══ TABLET (641px – 900px) ══════════════════════════════ */
 @media (min-width: 641px) and (max-width: 900px) {
@@ -2168,7 +2169,7 @@ async function place(){
     document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
-    notifyNewOrder({id:orderId,name,phone,email,items,total,zone:DL[zone],affiliate_code:affCodeApplied||null});
+    notifyNewOrder({id:orderId,name,phone,email,items,items_json:itemsJson,subtotal:sub,delivery_fee:fee,discount_amt:discAmt,discount_pct:discPct,total,trx_id:trx,zone:DL[zone],affiliate_code:affCodeApplied||null});
     cart=[];upd();
   }catch(err){console.error(err);toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
 }
@@ -4015,6 +4016,31 @@ async function sendTelegram(token, chatId, text){
   }catch(e){console.warn('Telegram failed:',e);}
 }
 
+async function sendTelegramPhoto(token, chatId, photoUrl, caption){
+  if(!token||!chatId||!photoUrl) return;
+  try{
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:chatId, photo:photoUrl, caption, parse_mode:'HTML'})
+    });
+    if(!r.ok){ const e=await r.text(); console.warn('Telegram photo warn:',r.status,e); }
+  }catch(e){console.warn('Telegram photo failed:',e);}
+}
+
+async function sendTelegramMediaGroup(token, chatId, mediaArr){
+  // mediaArr: [{type:'photo', media:url, caption:text, parse_mode:'HTML'}, ...]
+  if(!token||!chatId||!mediaArr||!mediaArr.length) return;
+  try{
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMediaGroup`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:chatId, media:mediaArr})
+    });
+    if(!r.ok){ const e=await r.text(); console.warn('Telegram media group warn:',r.status,e); }
+  }catch(e){console.warn('Telegram media group failed:',e);}
+}
+
 async function getOwners(){
   try{
     const {data} = await sbAdmin.from('settings').select('value').eq('key','owners_json').single();
@@ -4218,38 +4244,70 @@ function emailSection(title){
 // ── Trigger functions ────────────────────────────────────
 
 async function notifyNewOrder(order){
-  const tgText = `🛒 <b>New Order — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📦 ${order.items}\n💰 ৳${order.total} · 📍 ${order.zone}${order.affiliate_code?'\n🔗 Affiliate: '+order.affiliate_code:''}`;
-  await notifyOwnersTelegram(tgText);
-  const html = emailBase(`
-    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:6px;">New Order Received</div>
-    <div style="font-size:32px;font-weight:900;color:#6D001A;letter-spacing:3px;margin-bottom:2px;">${order.id}</div>
-    <div style="font-size:12px;color:#bbb;margin-bottom:32px;">${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-    ${emailSection('Customer')}
-    ${emailInfoRow([['Name',order.name],['Phone',order.phone],['Email',order.email||'—'],['Delivery Zone',order.zone],['Affiliate Code',order.affiliate_code||'None']])}
-    ${emailSection('Items Ordered')}
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsFull(order)}</table>
-    ${emailSection('Payment Summary')}
-    ${emailTotals(order)}
-    <div style="margin-top:28px;background:#fffbec;border-left:3px solid #f0c040;padding:14px 16px;font-size:13px;color:#7a6000;">
-      ⚡ <b>Action required</b> — Log in to the admin panel to confirm this order.
-    </div>`);
-  await notifyOwnersEmail('🛒 New Order: '+order.id+' — ৳'+order.total, html);
+  const token = ownerTelegramToken();
+  const owners = await getOwners();
+  const chatIds = [...new Set(owners.map(o=>o.telegram_chat_id).filter(Boolean))];
+  const items = order.items_json || [];
+
+  // ── 1. Summary message (always sent first) ──────────────────
+  const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const summaryText =
+`🛒 <b>NEW ORDER — ${order.id}</b>
+
+👤 <b>${order.name}</b>  📞 ${order.phone}
+📍 <b>Zone:</b> ${order.zone}
+💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+
+📦 <b>${items.length} item(s):</b>
+${items.map((it,i)=>{
+  if(it.type==='bothsides'){
+    return `  ${i+1}. ↔️ Both Sides — <b>${it.shirtType||''}</b>\n      Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+  }
+  const side = it.side ? (it.side==='front'?' 〔front〕':' 〔back〕') : '';
+  return `  ${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+}).join('\n')}
+
+💰 Subtotal: ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`  |  Discount: −৳${order.discount_amt}`:''}
+🚚 Delivery: ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
+✅ <b>Total: ৳${order.total}</b>`;
+
+  for(const cid of chatIds) await sendTelegram(token, cid, summaryText);
+
+  // ── 2. Per-item image messages ───────────────────────────────
+  for(const cid of chatIds){
+    for(let i=0; i<items.length; i++){
+      const it = items[i];
+      if(it.type==='bothsides'){
+        // Both sides: send front + back as media group if both exist, else individually
+        const imgF = it.imageFront;
+        const imgB = it.imageBack;
+        const label = `Item ${i+1} — ↔️ <b>Both Sides</b> — ${it.shirtType||''}\nFront: <b>${it.frontName||'—'}</b> | Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+        if(imgF && imgB){
+          await sendTelegramMediaGroup(token, cid, [
+            {type:'photo', media:imgF, caption:`Item ${i+1} — FRONT: ${it.frontName||'—'}`, parse_mode:'HTML'},
+            {type:'photo', media:imgB, caption:`BACK: ${it.backName||'—'} · ${it.shirtType||''} · Size ${it.size||'?'} · ${it.color||'?'} · Qty ${it.qty||1}`, parse_mode:'HTML'}
+          ]);
+        } else if(imgF){
+          await sendTelegramPhoto(token, cid, imgF, label);
+        } else if(imgB){
+          await sendTelegramPhoto(token, cid, imgB, label);
+        }
+      } else {
+        // Single side
+        const img = it.image;
+        if(img){
+          const side = it.side ? (it.side==='front'?' — Front print':' — Back print') : '';
+          const cap = `Item ${i+1} — <b>${it.name||''}</b> (${it.category||''}${side})\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+          await sendTelegramPhoto(token, cid, img, cap);
+        }
+      }
+    }
+  }
 }
 
 async function notifyAffiliateRegistered(aff){
-  const tgText = `📋 <b>New Affiliate Application</b>\n👤 ${aff.name} · ID: ${aff.student_id}\n🏠 ${aff.hall} · 📞 ${aff.whatsapp}\n💾 ${aff.storage_type}\n🔑 Code (inactive): ${aff.code}`;
+  const tgText = `📋 <b>New Affiliate Application</b>\n👤 ${aff.name} · ID: ${aff.student_id}\n🏠 ${aff.hall} · 📞 ${aff.whatsapp}\n💾 ${aff.storage_type}\n🔑 Code (inactive): <code>${aff.code}</code>`;
   await notifyOwnersTelegram(tgText);
-  const html = emailBase(`
-    <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#aaa;text-transform:uppercase;margin-bottom:6px;">New Application</div>
-    <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:32px;">Affiliate Registration</div>
-    ${emailSection('Applicant Details')}
-    ${emailInfoRow([['Full Name',aff.name],['Student ID',aff.student_id],['Hall',aff.hall],['WhatsApp',aff.whatsapp],['Storage Type',aff.storage_type]])}
-    ${emailSection('Generated Code')}
-    <div style="margin-top:14px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:20px;text-align:center;">
-      <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:#6D001A;">${aff.code}</div>
-      <div style="font-size:11px;color:#aaa;margin-top:6px;letter-spacing:1px;">CURRENTLY INACTIVE — Activate from Admin → Affiliates</div>
-    </div>`);
-  await notifyOwnersEmail('📋 New Affiliate: '+aff.name, html);
 }
 
 async function notifyAffiliateActivated(aff){

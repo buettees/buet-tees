@@ -5442,7 +5442,7 @@ function admRenderProducts(){
     const img = r.image
       ? `<img class="qe-thumb" src="${r.image}" onerror="this.style.display='none'" loading="lazy"/>`
       : `<div class="qe-thumb-ph">—</div>`;
-    return `<tr id="qerow-${r.id}" data-id="${r.id}" data-pid="${r.product_id}">
+    return `<tr id="qerow-${r.id}" data-id="${r.id}" data-pid="${r.product_id}" data-cat="${r.category}">
       <td class="qe-td-check"><input type="checkbox" onchange="qeToggleSelect('${r.id}')"></td>
       <td class="qe-td-img">${img}</td>
       <td class="qe-td-name"><div class="qe-name">${r.products?.name||r.product_id}</div><div class="qe-cat">${r.category}</div></td>
@@ -5512,6 +5512,12 @@ function admRenderProducts(){
           <select class="qe-bulk-select" id="qeScope" onchange="qeScopeChange()">
             <option value="visible">All visible (${filtered.length})</option>
             <option value="checked">Checked rows only</option>
+            <optgroup label="By Category">
+              <option value="cat:Regular">Regular only</option>
+              <option value="cat:Drop Shoulder">Drop Shoulder only</option>
+              <option value="cat:Hoodie">Hoodie only</option>
+              <option value="cat:Hoodie Back">Hoodie Back only</option>
+            </optgroup>
           </select>
           <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;">Action: </span>
           <select class="qe-bulk-select" id="qeBulkAction" onchange="qeActionChange()">
@@ -5923,7 +5929,7 @@ function qeUpdatePreview(){
     if(scope==='visible'||qeSelectedIds.has(id)) targetIds.push(id);
   });
   if(!action){prev.textContent='';return;}
-  const count=scope==='visible'?rows.length:qeSelectedIds.size;
+  let count=scope==='visible'?rows.length:scope==='checked'?qeSelectedIds.size:[...rows].filter(tr=>tr.dataset.cat===scope.slice(4)).length;
   const labels={
     price_set:`Set price → ৳${val||'?'} for ${count} product(s)`,
     price_pct_up:`Raise all prices by ${val||'?'}% for ${count} product(s)`,
@@ -5945,7 +5951,9 @@ function qeGetTargetIds(){
   const ids=[];
   rows.forEach(tr=>{
     const id=tr.dataset.id;
-    if(scope==='visible'||qeSelectedIds.has(id)) ids.push(id);
+    if(scope==='visible') ids.push(id);
+    else if(scope==='checked'&&qeSelectedIds.has(id)) ids.push(id);
+    else if(scope.startsWith('cat:')&&tr.dataset.cat===scope.slice(4)) ids.push(id);
   });
   return ids;
 }

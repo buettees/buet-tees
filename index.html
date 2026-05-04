@@ -1758,6 +1758,9 @@ async function loadProducts(){
         };
       })
     })).filter(p=>p.categories&&p.categories.length>0);
+    // Apply flat discount to newly built prods (offers were loaded before prods were built)
+    applyFlatDiscountToProducts();
+    updateOfferUI();
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
@@ -2093,7 +2096,7 @@ function updSum(){
     if(flatDiscAmt>0){
       flatDiscRow.style.display="";
       document.getElementById("flatDiscLabel").textContent=flatDiscLabel||'Offer Discount';
-      document.getElementById("stFlatDisc").textContent=`-${C} ${Math.round(flatDiscAmt).toLocaleString()} ✓`;
+      document.getElementById("stFlatDisc").textContent=`-${C} ${Math.round(flatDiscAmt).toLocaleString()}`;
     }else{flatDiscRow.style.display="none";}
   }
   // Offer discount row (custom types: buy X get Y etc.)

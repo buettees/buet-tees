@@ -1179,8 +1179,8 @@ body { max-width: 100vw; overflow-x: clip; }
 
 <div class="ticker" id="tickerWrap">
   <div class="ticker-t" id="tickerInner">
-    <span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
-    <span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
+    <span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>Support +880 1515-637637</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
+    <span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>Support +880 1515-637637</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>
   </div>
 </div>
 
@@ -1267,7 +1267,7 @@ body { max-width: 100vw; overflow-x: clip; }
   <div class="is-item"><div class="is-num">FREE</div><div class="is-lbl">Campus Delivery</div></div>
   <div class="is-item"><div class="is-num">6<em> Days</em></div><div class="is-lbl">Delivery Time</div></div>
   <div class="is-item"><div class="is-num"><em>৳</em>70</div><div class="is-lbl">Inside Dhaka</div></div>
-  <div class="is-item"><div class="is-num">01782<em>761981</em></div><div class="is-lbl">bKash Number</div></div>
+  <div class="is-item"><a href="https://wa.me/8801515637637" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:contents;"><div class="is-num" style="font-size:clamp(11px,2vw,16px);">+880 1515<em>-637637</em></div><div class="is-lbl">Support · WhatsApp</div></a></div>
 </div>
 
 <footer class="shared-footer"></footer>
@@ -6129,7 +6129,7 @@ function updateOfferUI(){
   // 3. Ticker — inject offer spans if active, else use default
   const ticker=document.getElementById('tickerInner');
   if(ticker){
-    const base=`<span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>bKash 01782761981</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>`;
+    const base=`<span>buettees</span><span class="sep">◆</span><span>Wear Your BUET Spirit</span><span class="sep">◆</span><span>Campus Delivery Free</span><span class="sep">◆</span><span>Support +880 1515-637637</span><span class="sep">◆</span><span>Inside Dhaka ৳70</span><span class="sep">◆</span><span>Outside Dhaka ৳120</span><span class="sep">◆</span><span>Delivery Within 6 Days</span><span class="sep">◆</span><span>100% Cotton</span><span class="sep">◆</span>`;
     const offerSpan=hasOffer?`<span style="color:#C9A84C;font-weight:900;font-size:13px;letter-spacing:3px">🏷 ${offerTxt}</span><span class="sep">◆</span>`:'';
     const half=offerSpan+base;
     ticker.innerHTML=half+half;
@@ -7425,7 +7425,7 @@ loadProducts();upd();
   </div>
   <div class="ft-bot">
     <div class="ft-copy">© 2025 buettees — All rights reserved</div>
-    <div class="ft-bk">bKash <span>01782761981</span><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div>
+    <div class="ft-bk">Support <a href="https://wa.me/8801515637637" target="_blank" rel="noopener" style="color:inherit;"><span>+880 1515-637637</span></a><span class="admin-trigger" onclick="openAdminLock()" title=""></span></div>
   </div>`;
   document.querySelectorAll('footer.shared-footer').forEach(f=>{f.innerHTML=html;});
 })();

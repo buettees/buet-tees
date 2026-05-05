@@ -1672,17 +1672,70 @@ body { max-width: 100vw; overflow-x: clip; }
 // ══════════════════════════════════════════════════════════
 const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzk0NzYsImV4cCI6MjA5MDg1NTQ3Nn0.wyJ_V0n_uMcWoohRKjyCEjgySK5JPh8Sushu7e-rxu4";
-// IMPORTANT: Admin panel needs the SERVICE ROLE key (never expose in public JS)
-// For admin panel API calls we use a separate admin endpoint or Edge Function
-const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTI3OTQ3NiwiZXhwIjoyMDkwODU1NDc2fQ.PZPPhiL66ryCOcMnkBAUSSSeafzPNXOVcoEG_pxdmhY"; // only used in admin, not exposed to customers
+// Service key removed from frontend — all DB writes and admin reads now go
+// through Supabase Edge Functions (supabase/functions/*).
+const EDGE_BASE = SUPABASE_URL + '/functions/v1';
 
-// One client only — use service key for admin panel
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+// Anon client — used ONLY for Realtime channel subscriptions.
+const sbAnon = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   realtime: { params: { eventsPerSecond: 10 } }
 });
-const sbAdmin = sb; // alias — same client
 
-// Legacy compat (kept so nothing else breaks)
+// Admin password stored after login; cleared on logout.
+let _adminPass = '';
+
+// Calls the admin Edge Function. Requires _adminPass to be set (i.e. admin logged in).
+async function adminFetch(payload) {
+  if (!_adminPass) throw new Error('Not authenticated');
+  const r = await fetch(`${EDGE_BASE}/admin`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _adminPass },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    return { data: null, error: { message: e.error || r.statusText } };
+  }
+  return r.json();
+}
+
+// sbAdmin proxy — mimics the Supabase JS client API but routes every
+// .from() chain through the admin Edge Function. This means all existing
+// admin panel functions (admLoadData, admAddTx, etc.) work unchanged.
+class _AQB {
+  constructor(t){this._t=t;this._a=null;this._s='*';this._d=null;this._eq={};this._like=[];this._ord=[];this._sg=false;this._oc=null;this._id=false;}
+  select(s='*'){this._a='select';this._s=s;return this;}
+  insert(d){this._a='insert';this._d=d;return this;}
+  update(d){this._a='update';this._d=d;return this;}
+  upsert(d,o={}){this._a='upsert';this._d=d;this._oc=o.onConflict||null;this._id=!!o.ignoreDuplicates;return this;}
+  delete(){this._a='delete';return this;}
+  eq(c,v){this._eq[c]=v;return this;}
+  like(c,p){this._like.push([c,p]);return this;}
+  order(c,o={}){this._ord.push({column:c,ascending:o.ascending!==false});return this;}
+  single(){this._sg=true;return this;}
+  then(res,rej){
+    return adminFetch({
+      action:this._a, table:this._t,
+      ...(this._s!=='*' && {select:this._s}),
+      ...(this._d!==null && {data:this._d}),
+      ...(Object.keys(this._eq).length && {eq:this._eq}),
+      ...(this._like.length && {like:this._like}),
+      ...(this._ord.length && {order:this._ord}),
+      ...(this._sg && {single:true}),
+      ...(this._oc && {onConflict:this._oc}),
+      ...(this._id && {ignoreDuplicates:true}),
+    }).then(res,rej);
+  }
+}
+const sbAdmin = {
+  from: t => new _AQB(t),
+  rpc: (fn, p={}) => adminFetch({action:'rpc', fn, params:p}),
+  // Realtime delegates to the anon client (no service key needed for channel API)
+  channel: (...a) => sbAnon.channel(...a),
+  removeChannel: (...a) => sbAnon.removeChannel(...a),
+  realtime: { setAuth: () => {} } // no-op — anon key used for realtime
+};
+
 let U = SUPABASE_URL;
 const C="৳",DF={campus:0,dhaka:70,outside:120},DL={campus:"Campus (Free)",dhaka:"Inside Dhaka",outside:"Outside Dhaka"};
 const SIZE_ORDER=['S','M','L','XL','XXL'];
@@ -1713,30 +1766,25 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 
 async function loadProducts(){
   try{
-    const [{data:products,error:pe}]=await Promise.all([
-      sb.from('products').select('*, product_categories(*)').eq('active',true)
-    ]);
-    if(pe)throw pe;
-    // Fetch suppliers separately — gracefully skip if table missing or CORS
-    let suppliersData=[];
-    try{
-      const {data:sd}=await sb.from('suppliers').select('name,categories').eq('active',true);
-      suppliersData=sd||[];
-    }catch(e){/* suppliers table not accessible via anon key — skip */}
-     (products||[]).sort((a,b)=>{
-  const na=parseInt(a.id.replace(/\D/g,''))||0;
-  const nb=parseInt(b.id.replace(/\D/g,''))||0;
-  return na-nb;
-});
-    const {data:setting}=await sb.from('settings').select('value').eq('key','affiliate_discount_pct').single();
-    if(setting)affDiscountPct=parseFloat(setting.value)||10;
-    // Build supplier lookup by name
+    // All three DB reads (products, suppliers, settings) are handled server-side
+    // by the store-data Edge Function so no service key is needed in the browser.
+    const r=await fetch(`${EDGE_BASE}/store-data`);
+    if(!r.ok)throw new Error('store-data fetch failed: '+r.status);
+    const{products,suppliers:suppliersData,affiliate_discount_pct,offers_config}=await r.json();
+
+    if(affiliate_discount_pct)affDiscountPct=parseFloat(affiliate_discount_pct)||10;
+    if(offers_config)offersConfig=offers_config;
+
+    (products||[]).sort((a,b)=>{
+      const na=parseInt(a.id.replace(/\D/g,''))||0;
+      const nb=parseInt(b.id.replace(/\D/g,''))||0;
+      return na-nb;
+    });
     const supByName={};
     (suppliersData||[]).forEach(s=>{supByName[s.name]=s;});
     prods=(products||[]).map(p=>({
       id:p.id,name:p.name,
       categories:(p.product_categories||[]).sort((a,b)=>a.sort_order-b.sort_order).filter(c=>{
-        // Hide category if supplier has it explicitly marked inactive
         const sup=supByName[c.supplier||'T-Shirt Hub'];
         const catKey=c.category==='Drop Shoulder'?'Drop':c.category==='Hoodie Back'?'Hoodie':c.category;
         const supCat=sup&&sup.categories&&sup.categories[catKey];
@@ -1760,8 +1808,7 @@ async function loadProducts(){
       })
     })).filter(p=>p.categories&&p.categories.length>0);
     document.getElementById("pcount").textContent=prods.length+" piece"+(prods.length!==1?"s":"");
-    // Load offers config AFTER prods is populated so flat discount can be applied
-    await loadOffersConfig();
+    resolveActiveOffer(); // offers_config already loaded from store-data above
     render();
   }catch(e){console.error(e);document.getElementById("pgrid").innerHTML='<div class="lerr">Could not load products.</div>';}
 }
@@ -2106,13 +2153,18 @@ async function checkAffCode(ctx){
   if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
   statusEl.textContent="Checking...";statusEl.className="aff-code-status";
   try{
-    const {data:aff,error}=await sb.from('affiliates').select('discount_pct,status').eq('code',code).single();
-    if(error||!aff||aff.status!=='active'){
+    const r=await fetch(`${EDGE_BASE}/check-aff-code`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code})
+    });
+    const result=await r.json();
+    if(!result.valid){
       statusEl.textContent="✗ Invalid affiliate code.";
       statusEl.className="aff-code-status err";
       if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
     }else{
-      const disc=parseFloat(aff.discount_pct)||10;
+      const disc=parseFloat(result.discount_pct)||10;
       statusEl.textContent=`✓ Code applied! ${disc}% discount on your order.`;
       statusEl.className="aff-code-status ok";
       if(ctx==='co'){coAffValid=true;affDiscountPct=disc;affCodeApplied=code;updSum();}
@@ -2202,25 +2254,30 @@ async function place(){
   const discAmt=affDiscAmt+(offerResult.type==='flat'?0:offerDiscAmt);
   const fee=DF[zone],total=sub-discAmt+fee;
   const items=buildItemsString();
+  const itemsJson=cart.map(i=>({...i}));
   const btn=document.getElementById("pbtn");btn.disabled=true;btn.textContent="Placing order...";
   try{
-    // Get next order ID
-    const {data:seqData}=await sbAdmin.rpc('next_order_id');
-    const orderId=seqData||('BT-'+Date.now());
-    const itemsJson=cart.map(i=>({...i}));
-    const {error:oe}=await sbAdmin.from('orders').insert({
-      id:orderId,name,email,phone,address:addr,
-      zone:DL[zone],items,items_json:itemsJson,
-      subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
-      payment_method:'bKash',trx_id:trx,
-      affiliate_code:affCodeApplied||null,
-      notes:(offerDiscAmt>0?(offerResult.label||'Offer applied'):''),
-      status:'Pending'
+    // Order ID generation and DB insert run in the Edge Function so the
+    // service key never needs to be present in client-side code.
+    const r=await fetch(`${EDGE_BASE}/place-order`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name,phone,email,address:addr,
+        zone:DL[zone],items,items_json:itemsJson,
+        subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
+        trx_id:trx,affiliate_code:affCodeApplied||null,
+        notes:offerDiscAmt>0?(offerResult.label||'Offer applied'):''
+      })
     });
-    if(oe)throw oe;
+    const result=await r.json();
+    if(!r.ok)throw new Error(result.error||'Order failed');
+    const orderId=result.orderId;
     document.getElementById("sucid").textContent=orderId;
     document.getElementById("coform").style.display="none";
     document.getElementById("sucscr").style.display="";
+    // Email notifications are sent client-side via /api/send-email (no secrets).
+    // Telegram to owners is already sent by the Edge Function above.
     notifyNewOrder({id:orderId,name,phone,email,items,items_json:itemsJson,subtotal:sub,delivery_fee:fee,discount_amt:discAmt,discount_pct:discPct,total,trx_id:trx,zone:DL[zone],affiliate_code:affCodeApplied||null});
     cart=[];upd();
   }catch(err){console.error(err);toast("Something went wrong. Try again.");btn.disabled=false;btn.textContent="Place Order";}
@@ -2430,18 +2487,22 @@ async function submitAffReg(){
     const namePart=name.replace(/[.]/g,'').trim().split(/\s+/)[0];
     const idPart=sid.replace(/[^0-9]/g,'').slice(-3);
     const affCode=(namePart+idPart).toUpperCase();
-    const{error}=await sbAdmin.from('affiliates').upsert({
-      code:affCode,
-      full_name:name,whatsapp:wa,student_id:sid,hall,email,
-      storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
-      promotion_method:affSelectedPromos.join(', ')||'Not specified',
-      payment_method:affSelectedPay,payment_details:payDetails,
-      income_goal:affSelectedGoal,status:'inactive',
-      commission_regular:affSelectedType==='storage'?30:20,
-      commission_drop:affSelectedType==='storage'?40:25,
-      commission_hoodie:affSelectedType==='storage'?50:35
-    },{onConflict:'code',ignoreDuplicates:false});
-    if(error)throw error;
+    const regR=await fetch(`${EDGE_BASE}/register-affiliate`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        code:affCode,
+        full_name:name,whatsapp:wa,student_id:sid,hall,email,
+        storage_type:affSelectedType==='storage'?'With Storage':'No Storage',
+        promotion_method:affSelectedPromos.join(', ')||'Not specified',
+        payment_method:affSelectedPay,payment_details:payDetails,
+        income_goal:affSelectedGoal,
+        commission_regular:affSelectedType==='storage'?30:20,
+        commission_drop:affSelectedType==='storage'?40:25,
+        commission_hoodie:affSelectedType==='storage'?50:35
+      })
+    });
+    if(!regR.ok){const e=await regR.json();throw new Error(e.error||'Registration failed');}
     document.getElementById('affForm').style.display='none';
     document.getElementById('affSuccess').style.display='';
     notifyAffiliateRegistered({name,student_id:sid,hall,whatsapp:wa,storage_type:affSelectedType==='storage'?'With Storage':'No Storage',code:affCode});
@@ -2488,6 +2549,7 @@ async function adminLogin(){
   const val=document.getElementById("adminPassInput").value;
   const hash=await sha256(val);
   if(hash===ADMIN_PASS_HASH){
+    _adminPass=val; // store in memory so adminFetch can authenticate each request
     document.getElementById("adminLock").classList.remove("on");
     document.getElementById("adminPanel").classList.add("on");
     admLoadData();
@@ -2500,6 +2562,7 @@ async function adminLogin(){
 }
 
 function closeAdmin(){
+  _adminPass=''; // clear on logout so stale sessions can't make further admin calls
   document.getElementById("adminPanel").classList.remove("on");
   document.getElementById("adminLock").classList.remove("on");
   document.body.style.overflow="";
@@ -2527,7 +2590,10 @@ function _stopRealtime(){
 function _startRealtime(){
   _stopRealtime();
   _setLiveIndicator('connecting');
-  try{sbAdmin.realtime.setAuth(SUPABASE_SERVICE_KEY);}catch(e){console.warn('[RT] setAuth:',e);}
+  // Realtime uses the anon client (sbAdmin.channel delegates to sbAnon).
+  // Without the service key, postgres_changes events require RLS policies
+  // allowing anon SELECT on each table. The 30s fallback poll below handles
+  // the case where realtime events don't come through.
   _realtimeChannel=sbAdmin
     .channel('admin-live-'+Date.now(),{config:{broadcast:{self:false}}})
     .on('postgres_changes',{event:'*',schema:'public',table:'orders'},_onRT)
@@ -4094,9 +4160,16 @@ async function sendTelegramMediaGroup(token, chatId, mediaArr){
 }
 
 async function getOwners(){
+  // When the admin is logged in ADM_DATA.rawSettings is populated; read from
+  // it rather than making another round-trip to the edge function.
+  // For customer flows (e.g. order placement), ADM_DATA is null so the
+  // fallback hardcoded values are used for email notifications.
   try{
-    const {data} = await sbAdmin.from('settings').select('value').eq('key','owners_json').single();
-    return JSON.parse(data.value||'[]');
+    if(ADM_DATA&&ADM_DATA.rawSettings){
+      const row=(ADM_DATA.rawSettings||[]).find(s=>s.key==='owners_json');
+      return JSON.parse(row?.value||'[]');
+    }
+    throw new Error('no admin data');
   }catch(e){
     return[
       {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-4899351679'},
@@ -6044,10 +6117,9 @@ let offersConfig={flatDiscount:{active:false,type:'pct',value:0,label:''},custom
 let activeOffer=null; // resolved offer applied to cart at checkout
 
 async function loadOffersConfig(){
-  try{
-    const {data}=await sb.from('settings').select('value').eq('key','offers_config').single();
-    if(data&&data.value){offersConfig=JSON.parse(data.value);}
-  }catch(e){}
+  // offers_config is loaded as part of the store-data Edge Function call in
+  // loadProducts(). This function is kept so any existing call sites still
+  // work, but no extra DB round-trip is needed.
   resolveActiveOffer();
 }
 

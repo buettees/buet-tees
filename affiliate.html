@@ -211,6 +211,55 @@ tr.ord-detail-row.open{display:table-row;}
 .dash-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
 .dash-footer a:hover{color:var(--w);}
 
+/* ── PROFILE CARD ── */
+.profile-card{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px 28px;margin-bottom:32px;}
+.profile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.profile-name{font-size:20px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;}
+.profile-meta{display:flex;flex-direction:column;gap:5px;}
+.profile-meta-row{font-size:11px;color:rgba(255,255,255,0.35);font-weight:600;}
+.profile-meta-row span{color:rgba(255,255,255,0.75);margin-left:6px;}
+.plan-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;}
+.plan-badge.storage{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.3);}
+.plan-badge.non-storage{background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.25);}
+.profile-badges{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+.profile-bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-top:1px solid rgba(255,255,255,0.06);padding-top:18px;}
+.profile-section-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;}
+.plan-desc{font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5;margin-bottom:8px;}
+.rate-inline{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);color:var(--gold);font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;margin:2px 4px 2px 0;}
+.profile-payment-method{font-size:13px;font-weight:800;color:var(--w);margin-bottom:4px;}
+.profile-payment-val{font-size:12px;font-weight:600;color:rgba(255,255,255,0.55);}
+
+/* ── PAID SECTION ── */
+.paid-banner{background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:20px 24px;margin-bottom:32px;}
+.paid-banner-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.paid-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(34,197,94,0.6);margin-bottom:6px;}
+.paid-amt{font-size:32px;font-weight:900;color:var(--green);letter-spacing:-1px;line-height:1;}
+.paid-sub{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;font-weight:600;}
+.paid-orders-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(34,197,94,0.4);margin-bottom:10px;}
+.paid-orders-list{border-top:1px solid rgba(34,197,94,0.12);padding-top:12px;}
+.paid-order-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:12px;}
+.paid-order-row:last-child{border:none;}
+.paid-order-id{color:var(--gold);font-weight:800;font-size:12px;}
+.paid-order-items{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.paid-order-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.paid-order-amt{color:var(--green);font-weight:800;font-size:13px;white-space:nowrap;}
+.paid-order-date{font-size:9px;color:rgba(255,255,255,0.2);font-weight:600;white-space:nowrap;}
+
+@media(max-width:640px){
+  .profile-bottom{grid-template-columns:1fr;}
+  .profile-card{padding:18px 20px;}
+  .profile-name{font-size:17px;}
+  .paid-banner{padding:16px 18px;}
+  .paid-amt{font-size:26px;}
+}
+@media(max-width:500px){
+  .profile-card{padding:14px 16px;}
+  .profile-name{font-size:15px;}
+  .paid-banner{padding:14px 16px;}
+  .paid-amt{font-size:22px;}
+  .paid-order-items{max-width:160px;}
+}
+
 /* ══ AFFILIATE DASHBOARD — MOBILE RESPONSIVE ══ */
 * { -webkit-tap-highlight-color: transparent; }
 html, body { max-width: 100vw; overflow-x: hidden; }
@@ -384,6 +433,9 @@ html, body { max-width: 100vw; overflow-x: hidden; }
     <div id="dash-loading"><div class="loading-spin"></div></div>
     <div id="dash-content" style="display:none;">
 
+      <!-- PROFILE CARD -->
+      <div class="profile-card" id="d-profile-card"></div>
+
       <!-- CODE SHARE CARD -->
       <div class="code-card">
         <div class="code-card-left">
@@ -394,40 +446,10 @@ html, body { max-width: 100vw; overflow-x: hidden; }
         <button class="code-copy-btn" id="copy-btn" onclick="copyCode()">Copy Code</button>
       </div>
 
-      <!-- KPI ROW -->
-      <div class="kpi-grid">
-        <div class="kpi">
-          <div class="kpi-label">Total Orders</div>
-          <div class="kpi-val white" id="d-total-orders">0</div>
-          <div class="kpi-sub">via your code</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Total Earned</div>
-          <div class="kpi-val gold" id="d-total-earned">৳0</div>
-          <div class="kpi-sub">from delivered orders</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Already Paid Out</div>
-          <div class="kpi-val green" id="d-total-paid">৳0</div>
-          <div class="kpi-sub">received so far</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Pending Balance</div>
-          <div class="kpi-val gold" id="d-pending">৳0</div>
-          <div class="kpi-sub">yet to be paid</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-label">Discount Given</div>
-          <div class="kpi-val white" id="d-discount-pct">0%</div>
-          <div class="kpi-sub">to buyers using your code</div>
-        </div>
-      </div>
+      <!-- PAYMENTS RECEIVED -->
+      <div id="paid-section"></div>
 
-      <!-- COMMISSION RATES -->
-      <div class="sec-title">Your Commission Rates</div>
-      <div class="rates-row" id="d-rates-row"></div>
-
-      <!-- DUE PAYMENT SECTION -->
+      <!-- PENDING PAYMENTS DUE -->
       <div id="due-section" style="display:none;margin-bottom:32px;"></div>
 
       <!-- ORDERS TABLE -->
@@ -461,15 +483,11 @@ html, body { max-width: 100vw; overflow-x: hidden; }
         <div style="padding:10px 22px 14px;font-size:10px;color:rgba(255,255,255,0.2);">&#9660; Click any row to see full commission breakdown &amp; linked payouts</div>
       </div>
 
-      <!-- PAYOUTS -->
+      <!-- PAYOUT HISTORY -->
       <div class="sec-title">Payout History</div>
       <div class="tbl-wrap" id="payout-wrap">
         <div id="payout-list"></div>
       </div>
-
-      <!-- ACCOUNT INFO -->
-      <div class="sec-title">Account Details</div>
-      <div class="info-grid" id="d-info-grid"></div>
 
     </div><!-- /dash-content -->
   </div><!-- /dash-main -->
@@ -651,43 +669,114 @@ function payoutsForOrder(orderId, payoutCoverage) {
 }
 
 function renderAll() {
-  const a = currentAffiliate;
   const { remaining, payoutCoverage } = buildFIFOMap();
-
-  const deliveredOrders = allOrders.filter(o => o.status === 'Delivered');
-  const totalEarned = deliveredOrders.reduce((s, o) => s + commissionForOrder(o), 0);
-  const totalPaid = allPayouts.reduce((s, p) => s + parseFloat(p.amount||0), 0);
-  const pending = Math.max(0, totalEarned - totalPaid);
-
-  document.getElementById('d-total-orders').textContent = allOrders.length;
-  document.getElementById('d-total-earned').textContent = fmt(totalEarned);
-  document.getElementById('d-total-paid').textContent = fmt(totalPaid);
-  document.getElementById('d-pending').textContent = fmt(pending);
-  document.getElementById('d-discount-pct').textContent = (a.discount_pct || 0) + '%';
-
-  // Commission rates
-  document.getElementById('d-rates-row').innerHTML = [
-    { label: 'Regular Tee', amt: a.commission_regular || 20 },
-    { label: 'Drop Shoulder', amt: a.commission_drop || 25 },
-    { label: 'Hoodie', amt: a.commission_hoodie || 35 },
-  ].map(r => `<div class="rate-chip">
-    <div class="rate-chip-type">${r.label}</div>
-    <div class="rate-chip-amt">${fmt(r.amt)}</div>
-    <div class="rate-chip-discount">per piece sold</div>
-  </div>`).join('');
-
+  renderProfile();
+  renderPaidSection(payoutCoverage);
   renderDueSection(remaining);
   renderOrders(payoutCoverage);
   renderPayouts(payoutCoverage);
+}
 
-  document.getElementById('d-info-grid').innerHTML = [
-    { label: 'Hall', val: a.hall || '—' },
-    { label: 'Student ID', val: a.student_id || '—' },
-    { label: 'Email', val: a.email || '—' },
-    { label: 'Payment Method', val: a.payment_method || '—' },
-    { label: 'Payment Details', val: a.payment_details || '—' },
-    { label: 'Joined', val: a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—' },
-  ].map(i => `<div class="info-cell"><div class="info-cell-label">${i.label}</div><div class="info-cell-val">${i.val}</div></div>`).join('');
+function renderProfile() {
+  const a = currentAffiliate;
+  const storageRaw = (a.storage_type || '').toLowerCase().trim();
+  const isStorage = storageRaw.includes('storage') && !storageRaw.includes('non');
+  const isNonStorage = storageRaw.includes('non');
+  const planLabel = isNonStorage ? 'Non-Storage' : isStorage ? 'Storage' : (a.storage_type || 'Standard');
+  const planClass = isNonStorage ? 'non-storage' : 'storage';
+  const planDesc = isNonStorage
+    ? 'You manage your own stock and handle packaging & delivery yourself.'
+    : isStorage
+      ? 'We store your shirts, handle packaging & dispatch on your behalf.'
+      : '';
+  const joinedStr = a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const rates = [
+    { label: 'Regular', amt: a.commission_regular || 20 },
+    { label: 'Drop Shoulder', amt: a.commission_drop || 25 },
+    { label: 'Hoodie', amt: a.commission_hoodie || 35 },
+  ].map(r => `<span class="rate-inline">${r.label} ${fmt(r.amt)}</span>`).join('');
+
+  document.getElementById('d-profile-card').innerHTML = `
+    <div class="profile-top">
+      <div style="flex:1;min-width:0;">
+        <div class="profile-name">${a.full_name || '—'}</div>
+        <div class="profile-meta">
+          ${a.student_id ? `<div class="profile-meta-row">Student ID<span>${a.student_id}</span></div>` : ''}
+          ${a.hall ? `<div class="profile-meta-row">Hall<span>${a.hall}</span></div>` : ''}
+          ${a.email ? `<div class="profile-meta-row">Email<span>${a.email}</span></div>` : ''}
+          <div class="profile-meta-row">Joined<span>${joinedStr}</span></div>
+        </div>
+      </div>
+      <div class="profile-badges">
+        <span class="dash-status-badge ${a.status === 'active' ? 'active' : 'inactive'}">${a.status || 'active'}</span>
+        ${planLabel ? `<span class="plan-badge ${planClass}">${planLabel}</span>` : ''}
+      </div>
+    </div>
+    <div class="profile-bottom">
+      <div>
+        <div class="profile-section-label">Plan Perks</div>
+        ${planDesc ? `<div class="plan-desc">${planDesc}</div>` : ''}
+        <div style="margin-bottom:6px;">${rates}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;">Buyers get <strong style="color:rgba(255,255,255,0.65)">${a.discount_pct || 0}% discount</strong> using your code</div>
+      </div>
+      <div>
+        <div class="profile-section-label">Payment Details</div>
+        <div class="profile-payment-method">${a.payment_method || '—'}</div>
+        <div class="profile-payment-val">${a.payment_details || '—'}</div>
+      </div>
+    </div>`;
+}
+
+function renderPaidSection(payoutCoverage) {
+  const sec = document.getElementById('paid-section');
+  const totalPaid = allPayouts.reduce((s, p) => s + parseFloat(p.amount||0), 0);
+
+  if (!allPayouts.length) {
+    sec.innerHTML = '';
+    return;
+  }
+
+  // Build flat list: which orders got (partially/fully) paid, and how much
+  const paidMap = {}; // orderId -> { amountPaid, date }
+  allPayouts.forEach(p => {
+    const dateStr = p.paid_at ? new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    (payoutCoverage[p.id] || []).forEach(c => {
+      if (!paidMap[c.orderId]) paidMap[c.orderId] = { amountPaid: 0, date: dateStr };
+      paidMap[c.orderId].amountPaid += c.amount;
+    });
+  });
+
+  const paidEntries = Object.entries(paidMap); // [[orderId, {amountPaid, date}], ...]
+  const orderRowsHtml = paidEntries.map(([orderId, info]) => {
+    const o = allOrders.find(x => x.id === orderId);
+    return `<div class="paid-order-row">
+      <div style="min-width:0;">
+        <div class="paid-order-id">${orderId}</div>
+        <div class="paid-order-items">${o ? itemsLabel(o) : '—'}</div>
+      </div>
+      <div class="paid-order-right">
+        <span class="paid-order-date">${info.date}</span>
+        <span class="paid-order-amt">+${fmt(info.amountPaid)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  sec.innerHTML = `
+    <div class="sec-title">Payments Received</div>
+    <div class="paid-banner">
+      <div class="paid-banner-top">
+        <div>
+          <div class="paid-eyebrow">Total Received</div>
+          <div class="paid-amt">${fmt(totalPaid)}</div>
+          <div class="paid-sub">${allPayouts.length} payout${allPayouts.length!==1?'s':''} · ${paidEntries.length} order${paidEntries.length!==1?'s':''} covered</div>
+        </div>
+        <span style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25);border-radius:6px;padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;">Paid</span>
+      </div>
+      ${paidEntries.length ? `<div class="paid-orders-list">
+        <div class="paid-orders-label">Orders Covered</div>
+        ${orderRowsHtml}
+      </div>` : ''}
+    </div>`;
 }
 
 // ── DUE PAYMENT SECTION ──

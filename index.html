@@ -2611,6 +2611,9 @@ function _startRealtime(){
       if(status==='SUBSCRIBED'){
         _rtConnected=true;_setLiveIndicator('live');
         if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
+        // Postgres_changes requires anon SELECT RLS policy — not set for security.
+        // Use 10s polling as primary refresh mechanism regardless of realtime status.
+        _realtimeFallbackTimer=setInterval(()=>admLoadData(),10000);
       } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
         _rtConnected=false;_setLiveIndicator('fallback');
         if(!_realtimeFallbackTimer){
@@ -2618,7 +2621,7 @@ function _startRealtime(){
             admLoadData();
             clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;
             setTimeout(_startRealtime,1000);
-          },30000);
+          },10000);
         }
       }
     });
@@ -2667,25 +2670,21 @@ let ADM_DATA=null;
 async function admLoadData(){
   document.getElementById("admUpdated").textContent="Loading...";
   try{
-    // Fetch all data in parallel
-    const [ordRes,affRes,txRes,settRes,supRes,payoutRes,supPayRes,prodCatRes]=await Promise.all([
-      sbAdmin.from('orders').select('*').order('created_at',{ascending:false}),
-      sbAdmin.from('affiliates').select('*').order('created_at',{ascending:false}),
-      sbAdmin.from('transactions').select('*').order('date',{ascending:false}),
-      sbAdmin.from('settings').select('*'),
-      sbAdmin.from('suppliers').select('*').order('created_at',{ascending:true}),
-      sbAdmin.from('affiliate_payouts').select('*').order('paid_at',{ascending:false}),
-      sbAdmin.from('supplier_payments').select('*').order('paid_at',{ascending:false}),
-      sbAdmin.from('product_categories').select('product_id,category,design_w,design_h,products(name)')
-    ]);
-    const orders=ordRes.data||[];
-    const affiliates=affRes.data||[];
-    const transactions=txRes.data||[];
-    const settingsArr=settRes.data||[];
+    // Single call to admin-load-all — 1 network round trip instead of 8
+    if(!_adminPass)throw new Error('Not authenticated');
+    const r=await fetch(`${EDGE_BASE}/admin-load-all`,{
+      headers:{'Authorization':'Bearer '+_adminPass}
+    });
+    if(!r.ok)throw new Error('Load failed: '+r.status);
+    const _all=await r.json();
+    const orders=_all.orders||[];
+    const affiliates=_all.affiliates||[];
+    const transactions=_all.transactions||[];
+    const settingsArr=_all.settings||[];
     const cfg={};settingsArr.forEach(s=>cfg[s.key]=s.value);
-    const suppliersTableData=supRes.data||[];
-    const supplierPaymentsData=supPayRes.data||[];
-    const prodCatData=prodCatRes.data||[];
+    const suppliersTableData=_all.suppliers||[];
+    const supplierPaymentsData=_all.supplier_payments||[];
+    const prodCatData=_all.product_categories||[];
     // Build map: "product_id|Category" -> {design_w, design_h}
     // Keyed by product_id (e.g. "BT0025") AND by display name if available
     const designSizeMap={};
@@ -2886,7 +2885,7 @@ async function admLoadData(){
 
     // Compute per-order profit
     const confirmedStatuses=['Confirmed','Dispatched','Delivered'];
-    const affiliatePayouts=payoutRes.data||[];
+    const affiliatePayouts=_all.affiliate_payouts||[];
     const enrichedOrders=orders.map(o=>{
       const isConfirmed=confirmedStatuses.includes(o.status);
       // Determine supplier cost — use stored value if set, else compute from config
@@ -4655,37 +4654,36 @@ async function admUpdateOrderStatus(orderId,newStatus){
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
-    // If reverting a confirmation, remove the auto-logged customer payment transaction
-    if(newStatus==='Pending'){
-      await sbAdmin.from('transactions').delete()
-        .eq('category','Customer Payment')
-        .like('description','%'+orderId+'%[auto-logged]%');
-    }
-    // Fetch full order for notifications + stock deduction
-    const{data:ord}=await sbAdmin.from('orders').select('*').eq('id',orderId).single();
-    if(ord){
-      if(newStatus==='Confirmed'){
-        notifyOrderConfirmed(ord);
-        await invDeductStock(ord); // auto-deduct stock
-        // Auto-log customer payment to transactions
-        await sbAdmin.from('transactions').insert({
-          date:new Date().toISOString().slice(0,10),
-          type:'Money In',owner:null,
-          amount:parseFloat(ord.total||0),
-          description:'Customer payment — '+orderId+' ('+ord.name+') via '+(ord.payment_method||'bKash')+' [auto-logged]',
-          category:'Customer Payment'
-        });
+    admLoadData(); // refresh immediately — don't wait for side effects
+    // Side effects run in background (fire-and-forget)
+    ;(async()=>{
+      if(newStatus==='Pending'){
+        await sbAdmin.from('transactions').delete()
+          .eq('category','Customer Payment')
+          .like('description','%'+orderId+'%[auto-logged]%');
       }
-      else if(newStatus==='Dispatched') notifyOrderDispatched(ord);
-      else if(newStatus==='Delivered'){
-        notifyOrderDelivered(ord);
-        // If no affiliate, auto-mark affiliate_paid so revert lock works cleanly
-        if(!ord.affiliate_code){
-          await sbAdmin.from('orders').update({affiliate_paid:true}).eq('id',orderId);
+      const{data:ord}=await sbAdmin.from('orders').select('*').eq('id',orderId).single();
+      if(ord){
+        if(newStatus==='Confirmed'){
+          notifyOrderConfirmed(ord);
+          invDeductStock(ord);
+          sbAdmin.from('transactions').insert({
+            date:new Date().toISOString().slice(0,10),
+            type:'Money In',owner:null,
+            amount:parseFloat(ord.total||0),
+            description:'Customer payment — '+orderId+' ('+ord.name+') via '+(ord.payment_method||'bKash')+' [auto-logged]',
+            category:'Customer Payment'
+          }).then(()=>admLoadData()).catch(()=>{});
+        }
+        else if(newStatus==='Dispatched') notifyOrderDispatched(ord);
+        else if(newStatus==='Delivered'){
+          notifyOrderDelivered(ord);
+          if(!ord.affiliate_code){
+            sbAdmin.from('orders').update({affiliate_paid:true}).eq('id',orderId).then(()=>{}).catch(()=>{});
+          }
         }
       }
-    }
-    admLoadData();
+    })();
   }catch(e){toast('Failed: '+e.message);}
 }
 
@@ -7453,7 +7451,7 @@ function closeMobNav(){
 }
 loadProducts();upd();
 // Warm up edge functions to avoid cold-start latency on first user action
-['place-order','check-aff-code','register-affiliate'].forEach(fn=>{fetch(`${EDGE_BASE}/${fn}`,{method:'OPTIONS'}).catch(()=>{});});
+['place-order','check-aff-code','register-affiliate','admin-load-all'].forEach(fn=>{fetch(`${EDGE_BASE}/${fn}`,{method:'OPTIONS'}).catch(()=>{});});
 
 // ── Shared Footer Injection ──────────────────────────────
 // Edit footer content HERE only — it applies to ALL pages automatically.

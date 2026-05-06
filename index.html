@@ -3927,7 +3927,7 @@ function admRenderAffiliates(){
           <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">DUE</span></td>
           <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.3);font-size:10px">\u25b6</span></td>
         </tr>
-        <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
+        <tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
       }
 
       if(r._type === 'covered'){
@@ -3941,7 +3941,7 @@ function admRenderAffiliates(){
           <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">COVERED</span></td>
           <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">\u25b6</span></td>
         </tr>
-        <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
+        <tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
       }
 
       // paid payout row
@@ -3960,7 +3960,7 @@ function admRenderAffiliates(){
             ${paidClickable?`<span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">\u25b6</span>`:''}
           </td>
         </tr>
-        ${paidClickable?`<tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${paidDetail}</td></tr>`:''}`;
+        ${paidClickable?`<tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${paidDetail}</td></tr>`:''}`;
     }).join('') : `<tr><td colspan="7" class="adm-empty" style="padding:28px;text-align:center">No affiliate commissions yet</td></tr>`}
     </tbody>
   </table></div></div>`;
@@ -5196,7 +5196,7 @@ function admRenderCosts(){
               <td><span style="background:rgba(201,168,76,0.12);color:#C9A84C;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">DUE</span></td>
               <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.3);font-size:10px">\u25b6</span></td>
             </tr>
-            <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
+            <tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
           }
 
           if(r._type==='covered'){
@@ -5210,7 +5210,7 @@ function admRenderCosts(){
               <td><span style="background:rgba(39,174,96,0.12);color:#2ecc71;border-radius:4px;padding:2px 8px;font-size:9px;font-weight:700;letter-spacing:1px">COVERED</span></td>
               <td><span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">\u25b6</span></td>
             </tr>
-            <tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
+            <tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${detailContent}</td></tr>`;
           }
 
           if(r._type==='fault'){
@@ -5242,7 +5242,7 @@ function admRenderCosts(){
               ${paidClickable?`<span id="${rowId}-arrow" style="display:inline-block;transition:transform 0.2s;color:rgba(255,255,255,0.2);font-size:10px">▶</span>`:''}
             </td>
           </tr>
-          ${paidClickable?`<tr id="${rowId}" style="display:none"><td colspan="7" style="padding:0">${paidDetail}</td></tr>`:''}`;
+          ${paidClickable?`<tr id="${rowId}" style="display:${_admOpenRows.has(rowId)?'table-row':'none'}"><td colspan="7" style="padding:0">${paidDetail}</td></tr>`:''}`;
         }).join('') : `<tr><td colspan="7" class="adm-empty" style="padding:28px;text-align:center">No supplier payments yet</td></tr>`}
         </tbody>
       </table>
@@ -7198,7 +7198,7 @@ function admRenderCRM(){
           ${affList?`<span class="adm-badge adm-badge-gray" style="margin-top:3px;display:block;font-size:8px">${affList}</span>`:''}
         </td>
       </tr>
-      <tr id="${detailKey}" style="display:none">
+      <tr id="${detailKey}" style="display:${_admOpenRows.has(detailKey)?'table-row':'none'}">
         <td colspan="7" style="padding:0">
           <div style="background:rgba(255,255,255,0.02);border-left:3px solid #C9A84C;padding:6px 0 6px 0">
             <div style="padding:8px 20px 6px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)">Order History</div>
@@ -7220,7 +7220,10 @@ function admRenderCRM(){
 
 function admToggleCRMDetail(id){
   const el=document.getElementById(id);
-  if(el)el.style.display=el.style.display==='none'?'table-row':'none';
+  if(!el)return;
+  const open=el.style.display==='table-row';
+  el.style.display=open?'none':'table-row';
+  if(open)_admOpenRows.delete(id);else _admOpenRows.add(id);
 }
 
 

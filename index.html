@@ -1780,7 +1780,8 @@ async function loadProducts(){
       _d=await r.json();
       try{localStorage.setItem(_cacheKey,JSON.stringify({ts:Date.now(),data:_d}));}catch(e){}
     }
-    const{products,suppliers:suppliersData,affiliate_discount_pct,offers_config}=_d;
+    const{products,suppliers:suppliersData,affiliate_discount_pct,offers_config,affiliates:affCodes}=_d;
+    if(affCodes)window._affCodes=affCodes;
 
     if(affiliate_discount_pct)affDiscountPct=parseFloat(affiliate_discount_pct)||10;
     if(offers_config)offersConfig=offers_config;
@@ -2161,25 +2162,18 @@ async function checkAffCode(ctx){
   const code=document.getElementById(inputId).value.trim().toUpperCase();
   const statusEl=document.getElementById(statusId);
   if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
-  statusEl.textContent="Checking...";statusEl.className="aff-code-status";
-  try{
-    const r=await fetch(`${EDGE_BASE}/check-aff-code`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({code})
-    });
-    const result=await r.json();
-    if(!result.valid){
-      statusEl.textContent="✗ Invalid affiliate code.";
-      statusEl.className="aff-code-status err";
-      if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
-    }else{
-      const disc=parseFloat(result.discount_pct)||10;
-      statusEl.textContent=`✓ Code applied! ${disc}% discount on your order.`;
-      statusEl.className="aff-code-status ok";
-      if(ctx==='co'){coAffValid=true;affDiscountPct=disc;affCodeApplied=code;updSum();}
-    }
-  }catch(e){statusEl.textContent="Could not verify. Try again.";statusEl.className="aff-code-status err";}
+  // Instant client-side lookup — codes loaded with store-data, no network call needed
+  const match=(window._affCodes||[]).find(a=>a.code===code);
+  if(!match){
+    statusEl.textContent="✗ Invalid affiliate code.";
+    statusEl.className="aff-code-status err";
+    if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
+  }else{
+    const disc=parseFloat(match.discount_pct)||10;
+    statusEl.textContent=`✓ Code applied! ${disc}% discount on your order.`;
+    statusEl.className="aff-code-status ok";
+    if(ctx==='co'){coAffValid=true;affDiscountPct=disc;affCodeApplied=code;updSum();}
+  }
 }
 
 function openCO(keepAff){

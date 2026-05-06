@@ -4979,19 +4979,28 @@ function admRenderCosts(){
     // Build mutable remaining per order
     // If supplierCost is 0 (no cost config), mark as unconfigured
     const rem=supOrders.map(o=>({o,remaining:o.supplierCost>0?o.supplierCost:0,unconfigured:!(o.supplierCost>0)}));
-    // Apply payments FIFO, but only against orders delivered before the payment date
+    // Apply payments: if order_id set, apply directly to that order; else FIFO by delivery date
     supPays.forEach(pay=>{
       const payTs=new Date(pay.paid_at).getTime();
       let budget=parseFloat(pay.amount||0);
-      for(const r of rem){
-        if(budget<=0)break;
-        if(r.unconfigured)continue;
-        // Only offset this order if it was delivered before (or on) this payment date
-        const delivTs=r.o.deliveredAt?new Date(r.o.deliveredAt).getTime():0;
-        if(delivTs&&delivTs>payTs)continue; // order delivered after this payment — skip
-        const take=Math.min(r.remaining,budget);
-        r.remaining-=take;
-        budget-=take;
+      if(pay.order_id){
+        // Direct payment: apply only to the specified order
+        const target=rem.find(r=>r.o.orderId===pay.order_id);
+        if(target&&!target.unconfigured){
+          const take=Math.min(target.remaining,budget);
+          target.remaining-=take;
+        }
+      } else {
+        // FIFO: apply against oldest delivered orders first
+        for(const r of rem){
+          if(budget<=0)break;
+          if(r.unconfigured)continue;
+          const delivTs=r.o.deliveredAt?new Date(r.o.deliveredAt).getTime():0;
+          if(delivTs&&delivTs>payTs)continue;
+          const take=Math.min(r.remaining,budget);
+          r.remaining-=take;
+          budget-=take;
+        }
       }
     });
     // Return orders still owing money OR orders with no cost config (need attention)

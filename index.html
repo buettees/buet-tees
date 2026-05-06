@@ -5004,7 +5004,8 @@ function admRenderCosts(){
       }
     });
     // Return orders still owing money OR orders with no cost config (need attention)
-    return rem.filter(r=>r.remaining>0.01||r.unconfigured);
+    // Use Math.round to treat sub-1-taka remainders (float drift) as fully paid
+    return rem.filter(r=>Math.round(r.remaining)>0||r.unconfigured);
   }
 
   // All suppliers that have ANY payable delivered orders (even if fully paid via FIFO)

@@ -7445,6 +7445,8 @@ function closeMobNav(){
   document.body.style.overflow='';
 }
 loadProducts();upd();
+// Warm up edge functions to avoid cold-start latency on first user action
+['place-order','check-aff-code','register-affiliate'].forEach(fn=>{fetch(`${EDGE_BASE}/${fn}`,{method:'OPTIONS'}).catch(()=>{});});
 
 // ── Shared Footer Injection ──────────────────────────────
 // Edit footer content HERE only — it applies to ALL pages automatically.

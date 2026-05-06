@@ -2612,8 +2612,8 @@ function _startRealtime(){
         _rtConnected=true;_setLiveIndicator('live');
         if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
         // Postgres_changes requires anon SELECT RLS policy — not set for security.
-        // Use 10s polling as primary refresh mechanism regardless of realtime status.
-        _realtimeFallbackTimer=setInterval(()=>admLoadData(),10000);
+        // Use 3s polling as primary refresh mechanism regardless of realtime status.
+        _realtimeFallbackTimer=setInterval(()=>admLoadData(),3000);
       } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
         _rtConnected=false;_setLiveIndicator('fallback');
         if(!_realtimeFallbackTimer){
@@ -2621,7 +2621,7 @@ function _startRealtime(){
             admLoadData();
             clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;
             setTimeout(_startRealtime,1000);
-          },10000);
+          },3000);
         }
       }
     });
@@ -4644,18 +4644,28 @@ async function notifyAffiliatePaymentSent(aff, amount, orderId, method){
 
 async function admUpdateOrderStatus(orderId,newStatus){
   if(newStatus==='Cancelled'&&!confirm(`Cancel order ${orderId}? This cannot be undone easily.`))return;
+  const now=new Date().toISOString();
+  // Optimistic update — instant UI feedback before any network call
+  const order=ADM_DATA&&ADM_DATA.orders&&ADM_DATA.orders.find(o=>o.orderId===orderId);
+  const prevSnap=order?{status:order.status,confirmedAt:order.confirmedAt,dispatchedAt:order.dispatchedAt,deliveredAt:order.deliveredAt,notes:order.notes}:null;
+  if(order){
+    order.status=newStatus;
+    if(newStatus==='Confirmed')order.confirmedAt=now;
+    else if(newStatus==='Dispatched')order.dispatchedAt=now;
+    else if(newStatus==='Delivered')order.deliveredAt=now;
+    else if(newStatus==='Returned')order.notes=(order.notes||'')+'[Returned at '+now+']';
+    admRenderOrders();
+  }
   try{
-    const now=new Date().toISOString();
     const update={status:newStatus};
     if(newStatus==='Confirmed')update.confirmed_at=now;
     else if(newStatus==='Dispatched')update.dispatched_at=now;
     else if(newStatus==='Delivered')update.delivered_at=now;
-    else if(newStatus==='Returned')update.notes=(update.notes||'')+'[Returned at '+now+']';
+    else if(newStatus==='Returned')update.notes=(order?.notes||'');
     const{error}=await sbAdmin.from('orders').update(update).eq('id',orderId);
     if(error)throw error;
     toast(orderId+' → '+newStatus+' ✓');
-    admLoadData(); // refresh immediately — don't wait for side effects
-    // Side effects run in background (fire-and-forget)
+    // Side effects + background sync (fire-and-forget)
     ;(async()=>{
       if(newStatus==='Pending'){
         await sbAdmin.from('transactions').delete()
@@ -4683,8 +4693,13 @@ async function admUpdateOrderStatus(orderId,newStatus){
           }
         }
       }
+      admLoadData();
     })();
-  }catch(e){toast('Failed: '+e.message);}
+  }catch(e){
+    // Revert optimistic update on failure
+    if(order&&prevSnap){Object.assign(order,prevSnap);admRenderOrders();}
+    toast('Failed: '+e.message);
+  }
 }
 
 async function admToggleAffiliate(code,currentStatus){

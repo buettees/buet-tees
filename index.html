@@ -4199,6 +4199,11 @@ function getSupplier(){
 
 function ownerTelegramToken(){ return '8698121676:AAGZh3zr_5B36YfYPTqooDrQFztzWI3p_70'; }
 
+// Print group — @buettees_supplier_bot in "buettees Print" group
+const PRINT_BOT_TOKEN = '7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY';
+const PRINT_GROUP_CHAT_ID = '-4996642816';
+async function notifyPrintGroup(text){ try{ await sendTelegram(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, text); }catch(e){ console.error('Print group notify failed:',e); } }
+
 async function notifyOwnersTelegram(text){
   const owners = await getOwners();
   const chatIds = [...new Set(owners.map(o=>o.telegram_chat_id).filter(Boolean))];
@@ -4520,6 +4525,7 @@ async function notifyOrderConfirmed(order){
   const sup = getSupplier();
   const tgText = `✅ <b>Order Confirmed — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📍 ${order.address} (${order.zone})\n📦 ${order.items}${order.notes?'\n📝 '+order.notes:''}`;
   await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
+  await notifyPrintGroup(tgText);
 
   // Supplier email — no prices, just fulfillment details
   if(sup.email){
@@ -4604,6 +4610,7 @@ async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
     const amtStr='৳'+Math.round(amount).toLocaleString();
     const tgText=`💸 Payment Sent\n\nOrder: ${orderId}\nAmount: ${amtStr}\nMethod: ${method}\n\nThank you for your service!`;
     await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
+    await notifyPrintGroup(tgText);
     if(sup.email){
       const html=emailBase(`
         <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Payment Sent</div>

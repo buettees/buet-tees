@@ -1771,7 +1771,7 @@ function cmChQ(d){cmQty=Math.max(1,cmQty+d);document.getElementById('cmQval').te
 
 async function loadProducts(){
   try{
-    const _cacheKey='bt_sd_v1';
+    const _cacheKey='bt_sd_v2';
     let _d=null;
     try{const _c=localStorage.getItem(_cacheKey);if(_c){const _p=JSON.parse(_c);if(Date.now()-_p.ts<300000)_d=_p.data;}}catch(e){}
     if(!_d){

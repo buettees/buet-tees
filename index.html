@@ -4652,7 +4652,27 @@ async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
   try{
     const sup=getSupplier();
     const amtStr='৳'+Math.round(amount).toLocaleString();
-    const tgText=`💸 Payment Sent\n\nOrder: ${orderId}\nAmount: ${amtStr}\nMethod: ${method}\n\nThank you for your service!`;
+
+    // Build cost breakdown from order data
+    let breakdownText = '';
+    try{
+      const {data:ord} = await sbAdmin.from('orders').select('*').eq('id',orderId).single();
+      const calcFn = ADM_DATA&&ADM_DATA.calcCostDetailed;
+      if(ord && calcFn){
+        const bd = calcFn(supplierName, ord.detected_cat||ord.category||'', ord.items_json||[]);
+        if(bd&&bd.suborders&&bd.suborders.length){
+          breakdownText = '\n\n📋 <b>Cost Breakdown:</b>\n';
+          bd.suborders.forEach((so,si)=>{
+            breakdownText += `\n<b>Sub-order ${si+1} · ${so.label}</b>\n`;
+            so.lines.forEach(l=>{ breakdownText += `  ${l.label}: ৳${Math.round(l.amount*10)/10}\n`; });
+            breakdownText += `  <b>Subtotal: ৳${Math.round(so.subtotal*10)/10}</b>\n`;
+          });
+          if(bd.suborders.length>1) breakdownText += `\n<b>Total Supplier Cost: ৳${Math.round(bd.total*10)/10}</b>`;
+        }
+      }
+    }catch(e){ console.warn('Breakdown fetch failed:',e); }
+
+    const tgText=`💸 <b>Payment Sent — ${orderId}</b>\n\nAmount: ${amtStr}\nMethod: ${method}${breakdownText}\n\nThank you for your service!`;
     await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
     await notifyPrintGroup(tgText);
     if(sup.email){

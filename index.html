@@ -5541,26 +5541,6 @@ function admRenderProducts(){
     `<button class="adm-prod-filter-btn ${admProdFilter===f?'on':''}" onclick="admSetProdFilter('${f}')">${f==='all'?'All':f}</button>`
   ).join('');
 
-  // ── Quick-edit table rows ──────────────────────────────────
-  const qeRows = filtered.map(r=>{
-    const active = r.products?.active !== false;
-    const img = r.image
-      ? `<img class="qe-thumb" src="${r.image}" onerror="this.style.display='none'" loading="lazy"/>`
-      : `<div class="qe-thumb-ph">—</div>`;
-    return `<tr id="qerow-${r.id}" data-id="${r.id}" data-pid="${r.product_id}" data-cat="${r.category}">
-      <td class="qe-td-check"><input type="checkbox" onchange="qeToggleSelect('${r.id}')"></td>
-      <td class="qe-td-img">${img}</td>
-      <td class="qe-td-name"><div class="qe-name">${r.products?.name||r.product_id}</div><div class="qe-cat">${r.category}</div></td>
-      <td><input class="qe-fi" id="qe-price-${r.id}" type="number" value="${r.price||''}" placeholder="Price" oninput="qeMarkDirty('${r.id}')"></td>
-      <td><input class="qe-fi qe-fi-badge" id="qe-badge-${r.id}" type="text" value="${r.badge||''}" placeholder="Badge" oninput="qeMarkDirty('${r.id}')"></td>
-      <td><input class="qe-toggle" type="checkbox" id="qe-vis-${r.id}" ${active?'checked':''} title="${active?'Visible':'Hidden'}" onchange="qeMarkDirty('${r.id}')"></td>
-      <td><span class="qe-dirty-dot" id="qe-dot-${r.id}" title="Unsaved"></span></td>
-      <td>
-        <button class="adm-prod-btn adm-prod-btn-edit" style="font-size:8px;padding:5px 10px" onclick="admProdOpenEdit('${r.id}')">Full Edit</button>
-      </td>
-    </tr>`;
-  }).join('');
-
   const cards=filtered.length===0?'<div class="adm-empty">No products in this category</div>':filtered.map(r=>{
     const active=r.products?.active!==false;
     const imgHtml=r.image
@@ -5606,59 +5586,6 @@ function admRenderProducts(){
     </div>
     <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active variants · ${activeProductCount} active design${activeProductCount!==1?'s':''}</div>
 
-    <!-- ── Quick Edit Table ─────────────────────────────── -->
-    <div class="qe-wrap">
-      <!-- Bulk control bar -->
-      <div class="qe-toolbar" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 16px;">
-        <!-- Row 1: Target selection -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span class="qe-toolbar-title" style="flex:none">⚡ Bulk Edit</span>
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">TARGET:</span>
-          <button class="qe-scope-btn on" id="qesc-all"      onclick="qeSetScope('all',this)">All</button>
-          <button class="qe-scope-btn"    id="qesc-Regular"  onclick="qeSetScope('Regular',this)">Regular</button>
-          <button class="qe-scope-btn"    id="qesc-Drop"     onclick="qeSetScope('Drop Shoulder',this)">Drop Shoulder</button>
-          <button class="qe-scope-btn"    id="qesc-Hoodie"   onclick="qeSetScope('Hoodie',this)">Hoodie</button>
-          <button class="qe-scope-btn"    id="qesc-HoodieB"  onclick="qeSetScope('Hoodie Back',this)">Hoodie Back</button>
-          <input class="qe-bulk-input" id="qeCodeFilter" type="text" placeholder="or codes: BT01, BT05…" style="flex:1;min-width:150px;width:auto;" oninput="qeSetScope('codes',null)"/>
-        </div>
-        <!-- Row 2: Actions -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">PRICE ৳</span>
-          <input class="qe-bulk-input" id="qePriceVal" type="number" min="0" placeholder="e.g. 450" style="width:88px;"/>
-          <button class="qe-bulk-btn" onclick="qeApplyPrice()">Set Price</button>
-          <div class="qe-act-sep"></div>
-          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">BADGE</span>
-          <input class="qe-bulk-input" id="qeBadgeVal" type="text" placeholder="e.g. Hot" style="width:100px;"/>
-          <button class="qe-bulk-btn" onclick="qeApplyBadge()" style="background:rgba(201,168,76,0.15);color:#C9A84C;border:1px solid rgba(201,168,76,0.25);">Set Badge</button>
-          <button class="qe-bulk-btn" onclick="qeClearBadge()" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.08);">Clear</button>
-          <div class="qe-act-sep"></div>
-          <button class="qe-bulk-btn" onclick="qeApplyVis(true)"  style="background:rgba(39,174,96,0.12);color:#27ae60;border:1px solid rgba(39,174,96,0.2);">Show</button>
-          <button class="qe-bulk-btn" onclick="qeApplyVis(false)" style="background:rgba(192,57,43,0.12);color:#c0392b;border:1px solid rgba(192,57,43,0.2);">Hide</button>
-          <div style="flex:1;"></div>
-          <button class="qe-save-all-btn" id="qeSaveAllBtn" onclick="qeSaveAll()">💾 Save Changes</button>
-        </div>
-        <div id="qeBulkPreview" style="font-size:10px;color:rgba(201,168,76,0.7);letter-spacing:1px;min-height:14px;padding-left:2px;"></div>
-      </div>
-      <div class="qe-tbl-scroll">
-        <table class="qe-tbl">
-          <thead><tr>
-            <th><input type="checkbox" id="qeCheckAll" onchange="qeToggleAll(this.checked)" title="Check/uncheck all visible rows"></th>
-            <th></th>
-            <th>Product</th>
-            <th>Price (৳)</th>
-            <th>Badge</th>
-            <th>Visible</th>
-            <th></th>
-            <th></th>
-          </tr></thead>
-          <tbody>${qeRows}</tbody>
-        </table>
-      </div>
-      <div class="qe-actions-row">
-        <span class="qe-sel-count" id="qeSelCount">0 checked · 0 unsaved changes</span>
-        <button class="qe-bulk-btn" onclick="qeSaveAll()" style="background:rgba(39,174,96,0.15);color:#27ae60;border:1px solid rgba(39,174,96,0.2)">💾 Save All Changes</button>
-      </div>
-    </div>
     <!-- ── Card Grid ─────────────────────────────────────── -->
     <div class="adm-prod-grid">${cards}</div>`+
     `<div class="adm-prod-modal-bg" id="admProdModalBg" onclick="if(event.target===this)admProdCloseModal()">

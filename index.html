@@ -2668,6 +2668,7 @@ function admJumpToOrder(orderId){
 
 let ADM_DATA=null;
 let _admLoadInProgress=false;
+const _admOpenRows=new Set();
 async function admLoadData(){
   if(_admLoadInProgress)return;
   _admLoadInProgress=true;
@@ -3670,7 +3671,7 @@ function admRenderOrders(){
         <td><span class="adm-badge ${statusColor}">${o.status}</span></td>
         <td style="white-space:nowrap" onclick="event.stopPropagation()">${actionBtns}</td>
       </tr>
-      <tr id="ord-detail-${o.orderId}" style="display:none">
+      <tr id="ord-detail-${o.orderId}" style="display:${_admOpenRows.has('ord-detail-'+o.orderId)?'table-row':'none'}">
         <td colspan="10" style="padding:0">
           <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
             ${detailHtml}
@@ -3739,7 +3740,7 @@ function admRenderAffiliates(){
         <button class="adm-status-btn" style="background:rgba(180,20,20,0.25);color:#ff6b6b;border:1px solid rgba(180,20,20,0.4);" onclick="admRemoveAffiliate('${a.code}','${a.name||a.code}')">✕ Remove</button>
       </td>
     </tr>
-    <tr id="aff-detail-${a.code}" style="display:none">
+    <tr id="aff-detail-${a.code}" style="display:${_admOpenRows.has('aff-detail-'+a.code)?'table-row':'none'}">
       <td colspan="8" style="padding:0">
         <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${a.email||'—'}</div>
@@ -6104,13 +6105,21 @@ async function qeSaveAll(){
 }
 
 function admToggleAffDetail(code){
-  const r=document.getElementById('aff-detail-'+code);
-  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
+  const elId='aff-detail-'+code;
+  const r=document.getElementById(elId);
+  if(!r)return;
+  const open=r.style.display==='table-row';
+  r.style.display=open?'none':'table-row';
+  if(open)_admOpenRows.delete(elId);else _admOpenRows.add(elId);
 }
 
 function admToggleOrderDetail(id){
-  const r=document.getElementById('ord-detail-'+id);
-  if(r) r.style.display=r.style.display==='none'?'table-row':'none';
+  const elId='ord-detail-'+id;
+  const r=document.getElementById(elId);
+  if(!r)return;
+  const open=r.style.display==='table-row';
+  r.style.display=open?'none':'table-row';
+  if(open)_admOpenRows.delete(elId);else _admOpenRows.add(elId);
 }
 
 function admUnlockOwners(){
@@ -6793,6 +6802,7 @@ function admToggleSupPayDetail(id){
   const isTr=el.tagName==="TR";
   const visible=el.style.display!=="none"&&el.style.display!=="";
   el.style.display=visible?"none":(isTr?"table-row":"block");
+  if(visible)_admOpenRows.delete(id);else _admOpenRows.add(id);
   const arrow=document.getElementById(id+'-arrow');
   if(arrow) arrow.style.transform=visible?'rotate(0deg)':'rotate(90deg)';
 }

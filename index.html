@@ -5586,6 +5586,37 @@ function admRenderProducts(){
     </div>
     <div class="adm-prod-count">${filtered.length} variant${filtered.length!==1?'s':''} shown · ${totalActive} active variants · ${activeProductCount} active design${activeProductCount!==1?'s':''}</div>
 
+    <!-- ── Bulk Edit Toolbar ────────────────────────────── -->
+    <div class="qe-wrap">
+      <div class="qe-toolbar" style="flex-direction:column;align-items:stretch;gap:10px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="qe-toolbar-title" style="flex:none">⚡ Bulk Edit</span>
+          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">TARGET:</span>
+          <button class="qe-scope-btn on" id="qesc-all"      onclick="qeSetScope('all',this)">All</button>
+          <button class="qe-scope-btn"    id="qesc-Regular"  onclick="qeSetScope('Regular',this)">Regular</button>
+          <button class="qe-scope-btn"    id="qesc-Drop"     onclick="qeSetScope('Drop Shoulder',this)">Drop Shoulder</button>
+          <button class="qe-scope-btn"    id="qesc-Hoodie"   onclick="qeSetScope('Hoodie',this)">Hoodie</button>
+          <button class="qe-scope-btn"    id="qesc-HoodieB"  onclick="qeSetScope('Hoodie Back',this)">Hoodie Back</button>
+          <input class="qe-bulk-input" id="qeCodeFilter" type="text" placeholder="or codes: BT01, BT05…" style="flex:1;min-width:150px;width:auto;" oninput="qeSetScope('codes',null)"/>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">PRICE ৳</span>
+          <input class="qe-bulk-input" id="qePriceVal" type="number" min="0" placeholder="e.g. 450" style="width:88px;"/>
+          <button class="qe-bulk-btn" onclick="qeApplyPrice()">Set Price</button>
+          <div class="qe-act-sep"></div>
+          <span style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;flex:none">BADGE</span>
+          <input class="qe-bulk-input" id="qeBadgeVal" type="text" placeholder="e.g. Hot" style="width:100px;"/>
+          <button class="qe-bulk-btn" onclick="qeApplyBadge()" style="background:rgba(201,168,76,0.15);color:#C9A84C;border:1px solid rgba(201,168,76,0.25);">Set Badge</button>
+          <button class="qe-bulk-btn" onclick="qeClearBadge()" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.08);">Clear</button>
+          <div class="qe-act-sep"></div>
+          <button class="qe-bulk-btn" onclick="qeApplyVis(true)"  style="background:rgba(39,174,96,0.12);color:#27ae60;border:1px solid rgba(39,174,96,0.2);">Show</button>
+          <button class="qe-bulk-btn" onclick="qeApplyVis(false)" style="background:rgba(192,57,43,0.12);color:#c0392b;border:1px solid rgba(192,57,43,0.2);">Hide</button>
+          <div style="flex:1;"></div>
+          <button class="qe-save-all-btn" id="qeSaveAllBtn" onclick="qeSaveAll()">💾 Save Changes</button>
+        </div>
+        <div id="qeBulkPreview" style="font-size:10px;color:rgba(201,168,76,0.7);letter-spacing:1px;min-height:14px;padding-left:2px;"></div>
+      </div>
+    </div>
     <!-- ── Card Grid ─────────────────────────────────────── -->
     <div class="adm-prod-grid">${cards}</div>`+
     `<div class="adm-prod-modal-bg" id="admProdModalBg" onclick="if(event.target===this)admProdCloseModal()">

@@ -2271,7 +2271,7 @@ async function place(){
         zone:DL[zone],items,items_json:itemsJson,
         subtotal:sub,delivery_fee:fee,discount_pct:discPct,discount_amt:discAmt,total,
         trx_id:trx,affiliate_code:affCodeApplied||null,
-        notes:offerDiscAmt>0?(offerResult.label||'Offer applied'):''
+        notes:[offerDiscAmt>0?(offerResult.label||'Offer applied'):'',`__d${offerDiscAmt}_${affDiscAmt}`].filter(Boolean).join(' ')
       })
     });
     const result=await r.json();
@@ -4342,13 +4342,26 @@ function emailItemRowsSupplier(order){
 
 // Invoice totals block
 function emailTotals(order){
-  const sub = parseFloat(order.subtotal||order.total||0);
+  const origSub = parseFloat(order.subtotal||order.total||0);
   const fee = parseFloat(order.delivery_fee||0);
-  const disc = parseFloat(order.discount_amt||0);
   const total = parseFloat(order.total||0);
+  const affPct = parseFloat(order.discount_pct||0);
+  // Parse encoded discount split from notes: __d{offerAmt}_{affAmt}
+  const dMatch = (order.notes||'').match(/__d(\d+)_(\d+)/);
+  const offerDisc = dMatch ? parseInt(dMatch[1]) : 0;
+  const affDisc = dMatch ? parseInt(dMatch[2]) : (affPct>0 ? Math.round(origSub*affPct/100) : parseFloat(order.discount_amt||0));
+  const postOfferSub = origSub - offerDisc;
+  const offerLabel = (order.notes||'').replace(/ ?__d\d+_\d+/,'').trim()||'Offer Discount';
   const rows = [];
-  rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Subtotal</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">৳${sub.toLocaleString()}</td></tr>`);
-  if(disc>0) rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#2e7d32;">Discount${order.discount_pct?' ('+order.discount_pct+'%)':''}</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#2e7d32;">−৳${disc.toLocaleString()}</td></tr>`);
+  // Original item total (only show separate line if offer was applied)
+  if(offerDisc>0){
+    rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Items Total</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">৳${origSub.toLocaleString()}</td></tr>`);
+    rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#2e7d32;">${offerLabel}</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#2e7d32;">−৳${offerDisc.toLocaleString()}</td></tr>`);
+    rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Subtotal</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">৳${postOfferSub.toLocaleString()}</td></tr>`);
+  } else {
+    rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Subtotal</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">৳${origSub.toLocaleString()}</td></tr>`);
+  }
+  if(affDisc>0) rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#2e7d32;">Affiliate Discount${affPct?' ('+affPct+'%)':''}</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#2e7d32;">−৳${affDisc.toLocaleString()}</td></tr>`);
   rows.push(`<tr><td style="padding:8px 0;font-size:15px;color:#666;">Delivery</td><td style="padding:8px 0;text-align:right;font-size:15px;color:#333;">${fee===0?'Free':'৳'+fee.toLocaleString()}</td></tr>`);
   rows.push(`<tr><td colspan="2" style="padding:0;"><div style="height:1px;background:#1a1a1a;margin:10px 0;"></div></td></tr>`);
   rows.push(`<tr><td style="padding:4px 0 0;font-size:15px;font-weight:800;color:#1a1a1a;letter-spacing:1px;text-transform:uppercase;">Total Paid</td><td style="padding:4px 0 0;text-align:right;font-size:24px;font-weight:900;color:#6D001A;">৳${total.toLocaleString()}</td></tr>`);

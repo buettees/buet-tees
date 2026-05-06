@@ -2612,8 +2612,8 @@ function _startRealtime(){
         _rtConnected=true;_setLiveIndicator('live');
         if(_realtimeFallbackTimer){clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;}
         // Postgres_changes requires anon SELECT RLS policy — not set for security.
-        // Use 3s polling as primary refresh mechanism regardless of realtime status.
-        _realtimeFallbackTimer=setInterval(()=>admLoadData(),3000);
+        // Use 5s polling as primary refresh mechanism regardless of realtime status.
+        _realtimeFallbackTimer=setInterval(()=>admLoadData(),5000);
       } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
         _rtConnected=false;_setLiveIndicator('fallback');
         if(!_realtimeFallbackTimer){
@@ -2621,7 +2621,7 @@ function _startRealtime(){
             admLoadData();
             clearInterval(_realtimeFallbackTimer);_realtimeFallbackTimer=null;
             setTimeout(_startRealtime,1000);
-          },3000);
+          },5000);
         }
       }
     });
@@ -2667,8 +2667,11 @@ function admJumpToOrder(orderId){
 }
 
 let ADM_DATA=null;
+let _admLoadInProgress=false;
 async function admLoadData(){
-  document.getElementById("admUpdated").textContent="Loading...";
+  if(_admLoadInProgress)return;
+  _admLoadInProgress=true;
+  if(!ADM_DATA)document.getElementById("admUpdated").textContent="Loading...";
   try{
     // Single call to admin-load-all — 1 network round trip instead of 8
     if(!_adminPass)throw new Error('Not authenticated');
@@ -3032,9 +3035,11 @@ async function admLoadData(){
       calcCostDetailed:calcSupplierCostDetailed
     };
     document.getElementById("admUpdated").textContent="Updated "+new Date().toLocaleTimeString();
+    _admLoadInProgress=false;
     if(typeof _startRealtime!=="undefined"&&!_rtConnected)_startRealtime();
     admRenderAll();
   }catch(e){
+    _admLoadInProgress=false;
     console.error(e);
     document.getElementById("admUpdated").textContent="Error";
     document.getElementById("adm-overview").innerHTML=`<div class="adm-loading" style="color:#c0392b;">Failed to load: ${e.message}<br><br>Check Supabase config and service role key.</div>`;

@@ -4523,9 +4523,53 @@ async function notifyAffiliateActivated(aff){
 
 async function notifyOrderConfirmed(order){
   const sup = getSupplier();
-  const tgText = `✅ <b>Order Confirmed — ${order.id}</b>\n👤 ${order.name} · 📞 ${order.phone}\n📍 ${order.address} (${order.zone})\n📦 ${order.items}${order.notes?'\n📝 '+order.notes:''}`;
+  const items = order.items_json || [];
+  const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const tgText =
+`✅ <b>Order Confirmed — ${order.id}</b>
+
+👤 <b>${order.name}</b>  📞 ${order.phone}
+📍 <b>Zone:</b> ${order.zone}
+💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+
+📦 <b>${items.length||1} item(s):</b>
+${items.length ? items.map((it,i)=>{
+  if(it.type==='bothsides'){
+    return `  ${i+1}. ↔️ Both Sides — <b>${it.shirtType||''}</b>\n      Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+  }
+  const side = it.side ? (it.side==='front'?' 〔front〕':' 〔back〕') : '';
+  return `  ${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+}).join('\n') : `  ${order.items||'—'}`}
+
+💰 Subtotal: ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`  |  Discount: −৳${order.discount_amt}`:''}
+🚚 Delivery: ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
+✅ <b>Total: ৳${order.total}</b>${order.notes?`\n📝 ${order.notes}`:''}`;
+
   await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
+
+  // Rich print group notification: summary + per-item images
   await notifyPrintGroup(tgText);
+  for(let i=0; i<items.length; i++){
+    const it = items[i];
+    if(it.type==='bothsides'){
+      const imgF = it.imageFront, imgB = it.imageBack;
+      const label = `Item ${i+1} — ↔️ <b>Both Sides</b> — ${it.shirtType||''}\nFront: <b>${it.frontName||'—'}</b> | Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+      if(imgF && imgB){
+        await sendTelegramMediaGroup(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, [
+          {type:'photo', media:imgF, caption:`Item ${i+1} — FRONT: ${it.frontName||'—'}`, parse_mode:'HTML'},
+          {type:'photo', media:imgB, caption:`BACK: ${it.backName||'—'} · ${it.shirtType||''} · Size ${it.size||'?'} · ${it.color||'?'} · Qty ${it.qty||1}`, parse_mode:'HTML'}
+        ]);
+      } else if(imgF){ await sendTelegramPhoto(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, imgF, label); }
+        else if(imgB){ await sendTelegramPhoto(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, imgB, label); }
+    } else {
+      const img = it.image;
+      if(img){
+        const side = it.side ? (it.side==='front'?' — Front print':' — Back print') : '';
+        const cap = `Item ${i+1} — <b>${it.name||''}</b> (${it.category||''}${side})\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+        await sendTelegramPhoto(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, img, cap);
+      }
+    }
+  }
 
   // Supplier email — no prices, just fulfillment details
   if(sup.email){

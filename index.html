@@ -2675,8 +2675,10 @@ async function admLoadData(){
   try{
     // Single call to admin-load-all — 1 network round trip instead of 8
     if(!_adminPass)throw new Error('Not authenticated');
-    const r=await fetch(`${EDGE_BASE}/admin-load-all`,{
-      headers:{'Authorization':'Bearer '+_adminPass}
+    const r=await fetch(`${EDGE_BASE}/admin`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adminPass},
+      body:JSON.stringify({action:'load-all'})
     });
     if(!r.ok){
       let _errBody='';try{const _ej=await r.json();_errBody=_ej.error||JSON.stringify(_ej);}catch(e){try{_errBody=await r.text();}catch(e2){}}

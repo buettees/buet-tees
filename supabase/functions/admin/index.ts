@@ -113,6 +113,31 @@ Deno.serve(async (req: Request) => {
       return json(await sb.rpc(body.fn, body.params ?? {}))
     }
 
+    // ── load-all ─────────────────────────────────────────────
+    if (action === 'load-all') {
+      const [ordRes, affRes, txRes, settRes, supRes, payoutRes, supPayRes, prodCatRes] =
+        await Promise.all([
+          sb.from('orders').select('*').order('created_at', { ascending: false }),
+          sb.from('affiliates').select('*').order('created_at', { ascending: false }),
+          sb.from('transactions').select('*').order('date', { ascending: false }),
+          sb.from('settings').select('*'),
+          sb.from('suppliers').select('*').order('created_at', { ascending: true }),
+          sb.from('affiliate_payouts').select('*').order('paid_at', { ascending: false }),
+          sb.from('supplier_payments').select('*').order('paid_at', { ascending: false }),
+          sb.from('product_categories').select('product_id,category,design_w,design_h,products(name)'),
+        ])
+      return json({
+        orders: ordRes.data ?? [],
+        affiliates: affRes.data ?? [],
+        transactions: txRes.data ?? [],
+        settings: settRes.data ?? [],
+        suppliers: supRes.data ?? [],
+        affiliate_payouts: payoutRes.data ?? [],
+        supplier_payments: supPayRes.data ?? [],
+        product_categories: prodCatRes.data ?? [],
+      })
+    }
+
     return json({ error: `Unknown action: ${action}` }, 400)
   } catch (e: unknown) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500)

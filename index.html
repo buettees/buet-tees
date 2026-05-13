@@ -6890,7 +6890,56 @@ function admRenderFinance(){
     </div>
     <div id="sheetsStatusMsg" style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3);display:none;"></div>
   </div>
+
+  <!-- AI Finance Assistant -->
+  <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-top:18px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.7);margin-bottom:14px;">🤖 AI Finance Assistant</div>
+    <div id="aiChatBox" style="min-height:60px;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input id="aiChatInput" type="text" placeholder="Ask anything… e.g. How much can Ashik withdraw today?" onkeydown="if(event.key==='Enter')admAskFinance()" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:#fff;font-family:'Poppins',sans-serif;font-size:11px;outline:none;" />
+      <button onclick="admAskFinance()" id="btnAskFinance" style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;padding:10px 18px;border-radius:8px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;" onmouseover="this.style.background='rgba(201,168,76,0.25)'" onmouseout="this.style.background='rgba(201,168,76,0.15)'">Ask ↵</button>
+    </div>
+    <div style="margin-top:8px;font-size:9px;color:rgba(255,255,255,0.2);">Powered by Gemini · Free · Data pulled live from database</div>
+  </div>
+  </div>
   `;
+}
+
+async function admAskFinance(){
+  const input=document.getElementById('aiChatInput');
+  const box=document.getElementById('aiChatBox');
+  const btn=document.getElementById('btnAskFinance');
+  const q=(input.value||'').trim();
+  if(!q)return;
+  if(!_adminPass){toast('Not logged in');return;}
+
+  // Append user bubble
+  box.innerHTML+=`<div style="align-self:flex-end;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.2);border-radius:10px 10px 2px 10px;padding:9px 13px;max-width:80%;font-size:11px;color:rgba(255,255,255,0.85);">${q}</div>`;
+  input.value='';
+  btn.disabled=true;btn.textContent='…';
+  box.scrollTop=box.scrollHeight;
+
+  // Thinking bubble
+  const thinkId='ai-think-'+Date.now();
+  box.innerHTML+=`<div id="${thinkId}" style="align-self:flex-start;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px 10px 10px 2px;padding:9px 13px;max-width:80%;font-size:11px;color:rgba(255,255,255,0.35);">Thinking…</div>`;
+  box.scrollTop=box.scrollHeight;
+
+  try{
+    const res=await fetch(EDGE_BASE+'/ask-finance',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adminPass},
+      body:JSON.stringify({question:q})
+    });
+    const data=await res.json();
+    const answer=data.answer||data.error||'No response.';
+    const el=document.getElementById(thinkId);
+    if(el){el.style.color='rgba(255,255,255,0.75)';el.innerHTML=answer.replace(/\n/g,'<br>');}
+  }catch(e){
+    const el=document.getElementById(thinkId);
+    if(el){el.style.color='rgba(231,76,60,0.8)';el.textContent='Error: '+e.message;}
+  }
+  btn.disabled=false;btn.textContent='Ask ↵';
+  box.scrollTop=box.scrollHeight;
 }
 
 function admToggleSupPayDetail(id){

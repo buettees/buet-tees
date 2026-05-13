@@ -6516,10 +6516,21 @@ function admOfferPreview(){
   el.textContent=txt;
 }
 
+function _flashSetBtn(btn,ok){
+  if(!btn)return;
+  const orig=btn._origHtml||btn.innerHTML;
+  btn._origHtml=orig;
+  const origBg=btn.style.background,origBorder=btn.style.borderColor,origColor=btn.style.color;
+  if(ok){btn.innerHTML='✓ SAVED';btn.style.background='rgba(46,204,113,0.18)';btn.style.borderColor='rgba(46,204,113,0.55)';btn.style.color='#2ecc71';}
+  else{btn.innerHTML='✕ FAILED';btn.style.background='rgba(231,76,60,0.18)';btn.style.borderColor='rgba(231,76,60,0.55)';btn.style.color='#e74c3c';}
+  btn.disabled=true;
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background=origBg;btn.style.borderColor=origBorder;btn.style.color=origColor;btn.disabled=false;},1800);
+}
 async function admSaveDefaultAffDisc(){
   const val=document.getElementById('defAffDiscInput')?.value;
   if(val===null||val===undefined||val==='')return;
   const num=Math.min(100,Math.max(0,parseFloat(val)||0));
+  const btn=document.querySelector("button[onclick='admSaveDefaultAffDisc()']");
   try{
     await sbAdmin.from('settings').upsert({key:'affiliate_discount_pct',value:String(num)},{onConflict:'key'});
     if(ADM_DATA.rawSettings){
@@ -6527,20 +6538,23 @@ async function admSaveDefaultAffDisc(){
       if(ex)ex.value=String(num); else ADM_DATA.rawSettings.push({key:'affiliate_discount_pct',value:String(num)});
     }
     affDiscountPct=num;
+    _flashSetBtn(btn,true);
     toast('Default buyer discount set to '+num+'% ✓');
-  }catch(e){toast('Failed: '+e.message);}
+  }catch(e){_flashSetBtn(btn,false);toast('Failed: '+e.message);}
 }
 async function admSaveAffDisc(code){
   const val=document.getElementById('affDiscInput-'+code)?.value;
   if(val===null||val===undefined||val==='')return;
   const num=Math.min(100,Math.max(0,parseFloat(val)||0));
+  const btn=document.querySelector(`button[onclick*="admSaveAffDisc('${code}')"]`);
   try{
     const{error}=await sbAdmin.from('affiliates').update({discount_pct:num}).eq('code',code);
     if(error)throw error;
     const aff=(ADM_DATA.affiliates||[]).find(a=>a.code===code);
     if(aff)aff.discount_pct=num;
+    _flashSetBtn(btn,true);
     toast(code+' buyer discount set to '+num+'% ✓');
-  }catch(e){toast('Failed: '+e.message);}
+  }catch(e){_flashSetBtn(btn,false);toast('Failed: '+e.message);}
 }
 async function admSaveReserve(){
   const val=document.getElementById('reserveInput')?.value;

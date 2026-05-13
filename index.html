@@ -3675,6 +3675,8 @@ function admRenderOrders(){
 }
 
 function admRenderAffiliates(){
+  const _ae=document.activeElement;
+  if(_ae&&(_ae.id==='defAffDiscInput'||(_ae.id&&_ae.id.startsWith('affDiscInput-'))))return;
   const rows=ADM_DATA.affiliates;
   if(!rows.length){document.getElementById("adm-affiliates").innerHTML='<div class="adm-empty">No affiliates yet</div>';return;}
   const active=rows.filter(a=>a.status.toLowerCase()==="active");

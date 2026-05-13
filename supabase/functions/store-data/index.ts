@@ -26,12 +26,13 @@ Deno.serve(async (req: Request) => {
   )
 
   try {
-    const [prodRes, supRes, settRes] = await Promise.all([
+    const [prodRes, supRes, settRes, affRes] = await Promise.all([
       sb.from('products').select('*, product_categories(*)').eq('active', true),
       sb.from('suppliers').select('name,categories').eq('active', true),
       sb.from('settings')
         .select('key,value')
         .in('key', ['affiliate_discount_pct', 'offers_config']),
+      sb.from('affiliates').select('code,discount_pct').eq('status', 'active'),
     ])
 
     const settings: Record<string, string> = {}
@@ -47,6 +48,7 @@ Deno.serve(async (req: Request) => {
       suppliers: supRes.data ?? [],
       affiliate_discount_pct: settings.affiliate_discount_pct ?? '10',
       offers_config,
+      affiliates: affRes.data ?? [],
     })
   } catch (e: unknown) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500)

@@ -10,7 +10,7 @@ export async function appendRows(
   rows: unknown[][],
 ): Promise<void> {
   const range = encodeURIComponent(`${sheetName}!A1`)
-  const url = `${BASE}/${sheetId()}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`
+  const url = `${BASE}/${sheetId()}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=OVERWRITE`
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

@@ -39,13 +39,13 @@ function crSumYTD(acct: string): string {
   return `=SUMPRODUCT((Journal!$H$2:$H$5000="${acct}")*(Journal!$J$2:$J$5000))`
 }
 function crSumMonth(acct: string, month: number): string {
-  return `=SUMPRODUCT((MONTH(Journal!$A$2:$A$5000)=${month})*(Journal!$H$2:$H$5000="${acct}")*(Journal!$J$2:$J$5000))`
+  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$H$2:$H$5000="${acct}")*(Journal!$J$2:$J$5000))`
 }
 function drSumYTD(acct: string): string {
   return `=SUMPRODUCT((Journal!$E$2:$E$5000="${acct}")*(Journal!$G$2:$G$5000))`
 }
 function drSumMonth(acct: string, month: number): string {
-  return `=SUMPRODUCT((MONTH(Journal!$A$2:$A$5000)=${month})*(Journal!$E$2:$E$5000="${acct}")*(Journal!$G$2:$G$5000))`
+  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$E$2:$E$5000="${acct}")*(Journal!$G$2:$G$5000))`
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

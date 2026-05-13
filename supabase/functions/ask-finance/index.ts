@@ -1,6 +1,6 @@
-// ask-finance: AI-powered finance Q&A using Gemini
-// Zero imports = instant cold start
-// POST { question: string } with Bearer <ADMIN_SECRET>
+// ask-finance: AI-powered finance Q&A using Groq
+// Receives pre-computed business snapshot from frontend — no DB queries needed
+// POST { question: string, snapshot: object } with Bearer <ADMIN_SECRET>
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -21,22 +21,8 @@ function isAdmin(req: Request): boolean {
   return req.headers.get('Authorization') === `Bearer ${secret}`
 }
 
-// Direct Supabase REST API — no SDK, no cold start delay
-async function sbSelect(table: string, select = '*'): Promise<Record<string, unknown>[]> {
-  const url = `${Deno.env.get('SUPABASE_URL')}/rest/v1/${table}?select=${encodeURIComponent(select)}`
-  const res = await fetch(url, {
-    headers: {
-      apikey: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!}`,
-      'Content-Type': 'application/json',
-    },
-  })
-  if (!res.ok) throw new Error(`DB fetch [${table}] failed: ${await res.text()}`)
-  return res.json()
-}
-
 function fmt(n: number): string {
-  return '৳' + n.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return '৳' + Math.round(n).toLocaleString('en-BD')
 }
 
 function pf(v: unknown): number { return parseFloat(String(v ?? 0)) || 0 }
@@ -45,109 +31,124 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (!isAdmin(req)) return json({ error: 'Unauthorized' }, 401)
 
-  const { question } = await req.json()
+  const { question, snapshot } = await req.json()
   if (!question) return json({ error: 'No question provided' }, 400)
 
-  // Fetch all tables in parallel — no SDK, pure fetch
-  const [orders, transactions, supplierPayments, affiliatePayouts] = await Promise.all([
-    sbSelect('orders'),
-    sbSelect('transactions'),
-    sbSelect('supplier_payments'),
-    sbSelect('affiliate_payouts'),
-  ])
-
-  // ── Compute metrics ───────────────────────────────────────────────────────
-  const totalSalesRevenue = orders.reduce((s, o) => s + pf(o.total) - pf(o.delivery_fee), 0)
-  const totalDeliveryRevenue = orders.reduce((s, o) => s + pf(o.delivery_fee), 0)
-  const totalRevenue = totalSalesRevenue + totalDeliveryRevenue
-  const totalSupplierCost = supplierPayments.reduce((s, p) => s + pf(p.amount), 0)
-  const grossProfit = totalRevenue - totalSupplierCost
-
-  const marketingExpense = transactions
-    .filter(t => t.category === 'Marketing' && (t.type === 'Money Out' || t.type === 'Expense'))
-    .reduce((s, t) => s + pf(t.amount), 0)
-  const miscExpense = transactions
-    .filter(t => !['Marketing','Supplier Payment','Affiliate Payment'].includes(String(t.category ?? '')) && (t.type === 'Money Out' || t.type === 'Expense'))
-    .reduce((s, t) => s + pf(t.amount), 0)
-  const affiliateExpense = affiliatePayouts.reduce((s, p) => s + pf(p.amount), 0)
-  const totalExpenses = marketingExpense + miscExpense + affiliateExpense
-  const netProfit = grossProfit - totalExpenses
-
-  const ownerFilter = (type: string, name: string) =>
-    transactions.filter(t => t.type === type && String(t.owner ?? '').toLowerCase().includes(name))
-      .reduce((s, t) => s + pf(t.amount), 0)
-
-  const ashikCapitalIn = ownerFilter('Capital In', 'ashik')
-  const kausarCapitalIn = ownerFilter('Capital In', 'kausar')
-  const ashikDrawings = ownerFilter('Capital Out', 'ashik')
-  const kausarDrawings = ownerFilter('Capital Out', 'kausar')
-
-  const totalCashIn = totalRevenue + ashikCapitalIn + kausarCapitalIn
-  const totalCashOut = totalSupplierCost + affiliateExpense + marketingExpense + miscExpense + ashikDrawings + kausarDrawings
-  const bkashBalance = totalCashIn - totalCashOut
-  const reserve = bkashBalance * 0.2
-  const availableToDistribute = Math.max(0, bkashBalance - reserve)
-  const safeToWithdrawEach = availableToDistribute / 2
-
-  const ashikNetEquity = ashikCapitalIn - ashikDrawings + (netProfit * 0.5)
-  const kausarNetEquity = kausarCapitalIn - kausarDrawings + (netProfit * 0.5)
-
   const now = new Date()
-  const cm = now.getMonth() + 1
-  const cy = now.getFullYear()
-  const monthOrders = orders.filter(o => { const d = new Date(String(o.created_at ?? '')); return d.getMonth()+1===cm && d.getFullYear()===cy })
-  const monthRevenue = monthOrders.reduce((s, o) => s + pf(o.total), 0)
+  const s = snapshot ?? {}
 
-  const statusCounts: Record<string, number> = {}
-  for (const o of orders) { const s = String(o.status ?? 'unknown'); statusCounts[s] = (statusCounts[s] ?? 0) + 1 }
+  // ── Summary ───────────────────────────────────────────────────────────────
+  const sum = s.summary ?? {}
 
-  const affiliateSales: Record<string, number> = {}
-  for (const o of orders) { if (o.affiliate_code) affiliateSales[String(o.affiliate_code)] = (affiliateSales[String(o.affiliate_code)] ?? 0) + pf(o.total) }
-  const topAffiliates = Object.entries(affiliateSales).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,a])=>`${c}: ${fmt(a)}`).join(', ')
+  // ── Cash flow ─────────────────────────────────────────────────────────────
+  const transactions: Record<string, unknown>[] = s.transactions ?? []
+  const affiliatePayouts: Record<string, unknown>[] = s.affiliatePayouts ?? []
+  const supplierPayments: Record<string, unknown>[] = s.supplierPayments ?? []
+
+  const capitalIn    = transactions.filter(t => t.type === 'Capital In').reduce((a, t) => a + pf(t.amount), 0)
+  const capitalOut   = transactions.filter(t => t.type === 'Capital Out').reduce((a, t) => a + pf(t.amount), 0)
+  const expensesPaid = transactions.filter(t => t.type === 'Expense' || t.type === 'Money Out').reduce((a, t) => a + pf(t.amount), 0)
+  const affPaid      = affiliatePayouts.reduce((a, p) => a + pf(p.amount), 0)
+  const supPaid      = supplierPayments.reduce((a, p) => a + pf(p.amount), 0)
+  const cashBalance  = capitalIn + pf(sum.totalRevenue) - expensesPaid - affPaid - supPaid - capitalOut
+
+  const reserveSetting = (s.rawSettings ?? []).find((r: Record<string,unknown>) => r.key === 'reserve_amount')
+  const reserve = reserveSetting ? pf(reserveSetting.value) : 8000
+  const supplierOwed = Math.max(0, pf(sum.totalSupplierCost) - supPaid)
+  const affOwed      = Math.max(0, pf(sum.totalAffComm) - affPaid)
+  const safeToExtract = Math.max(0, cashBalance - reserve - supplierOwed - affOwed)
+
+  // ── Per-owner breakdown ───────────────────────────────────────────────────
+  const owners: Record<string, unknown>[] = s.ownersRaw ?? []
+  const ownerWithdrawn: Record<string, number> = {}
+  const ownerInvested: Record<string, number> = {}
+  transactions.filter(t => t.type === 'Capital Out' && t.owner).forEach(t => {
+    const o = String(t.owner); ownerWithdrawn[o] = (ownerWithdrawn[o] ?? 0) + pf(t.amount)
+  })
+  transactions.filter(t => t.type === 'Capital In' && t.owner).forEach(t => {
+    const o = String(t.owner); ownerInvested[o] = (ownerInvested[o] ?? 0) + pf(t.amount)
+  })
+  const ownerLines = owners.map((o: Record<string, unknown>) => {
+    const share = pf(o.share)
+    const withdrawn = ownerWithdrawn[String(o.name)] ?? 0
+    const invested  = ownerInvested[String(o.name)] ?? 0
+    const canWithdraw = Math.max(0, safeToExtract * share / 100 - withdrawn)
+    return `  ${o.name} (${share}%): invested ${fmt(invested)}, withdrawn ${fmt(withdrawn)}, can withdraw now ${fmt(canWithdraw)}`
+  }).join('\n')
+
+  // ── Monthly breakdown ─────────────────────────────────────────────────────
+  const monthly: Record<string, unknown>[] = s.monthly ?? []
+  const monthlyLines = monthly.slice(-12).map((m: Record<string, unknown>) =>
+    `  ${m.month}: ${m.orders} orders, rev ${fmt(pf(m.revenue))}, cost ${fmt(pf(m.supplierCost))}, aff ${fmt(pf(m.affComm))}, net ${fmt(pf(m.netProfit))}`
+  ).join('\n')
+
+  // ── Affiliate breakdown ───────────────────────────────────────────────────
+  const affiliates: Record<string, unknown>[] = s.affiliates ?? []
+  const affLines = affiliates.map((a: Record<string, unknown>) =>
+    `  ${a.name} [${a.code}] status=${a.status} orders=${a.orderCount} commission_earned=${fmt(pf(a.totalCommission))} total_paid=${fmt(pf(a.total_paid ?? 0))} owes=${fmt(Math.max(0, pf(a.totalCommission) - pf(a.total_paid ?? 0)))}`
+  ).join('\n')
+
+  // ── Recent transactions (last 60) ─────────────────────────────────────────
+  const recentTx = transactions.slice(-60).map((t: Record<string, unknown>) =>
+    `  ${t.date} | ${t.type} | ${t.category ?? '-'} | ${fmt(pf(t.amount))} | ${t.owner ?? '-'} | ${t.description ?? ''}`
+  ).join('\n')
+
+  // ── Suppliers ─────────────────────────────────────────────────────────────
+  const suppliers: Record<string, unknown>[] = s.suppliersRaw ?? []
+  const supLines = suppliers.map((sp: Record<string, unknown>) => `  ${sp.name} (active=${sp.active})`).join('\n')
 
   // ── Build context ─────────────────────────────────────────────────────────
   const context = `
-You are the financial assistant for BUET Tees, a Bangladeshi t-shirt business. Two equal partners: Ashik (50%) and Kausar (50%).
-Today: ${now.toISOString().slice(0,10)}. Currency: BDT (৳).
+You are the financial assistant for BUET Tees, a Bangladeshi t-shirt business run by university students.
+Today: ${now.toISOString().slice(0,10)}. Currency: BDT (৳). Answer in same language as question (English or Bangla).
+Be concise. Use only numbers from the data below. Do not guess or hallucinate.
 
-FINANCIALS (all-time):
-Revenue: T-shirt ${fmt(totalSalesRevenue)} + Delivery ${fmt(totalDeliveryRevenue)} = ${fmt(totalRevenue)}
-COGS (supplier): ${fmt(totalSupplierCost)}
-Gross Profit: ${fmt(grossProfit)}
-Expenses: Affiliate ${fmt(affiliateExpense)}, Marketing ${fmt(marketingExpense)}, Misc ${fmt(miscExpense)} = ${fmt(totalExpenses)}
-NET PROFIT: ${fmt(netProfit)}
+=== BUSINESS SUMMARY (all-time) ===
+Total orders: ${sum.totalOrders ?? '?'}
+Revenue: ${fmt(pf(sum.totalRevenue))}
+Supplier cost (COGS): ${fmt(pf(sum.totalSupplierCost))}
+Gross profit: ${fmt(pf(sum.totalGrossProfit))}
+Affiliate commissions accrued: ${fmt(pf(sum.totalAffComm))}
+Other expenses: ${fmt(pf(sum.totalExtraExpenses))}
+Net profit: ${fmt(pf(sum.totalNetProfit))}
 
-CASH (bKash):
-In: ${fmt(totalCashIn)} | Out: ${fmt(totalCashOut)} | Balance: ${fmt(bkashBalance)}
-Reserve 20%: ${fmt(reserve)} | Free: ${fmt(availableToDistribute)}
-SAFE TO WITHDRAW EACH: ${fmt(safeToWithdrawEach)}
+=== CASH POSITION ===
+Cash balance (bKash + hand): ${fmt(cashBalance)}
+  = Capital In ${fmt(capitalIn)} + Revenue ${fmt(pf(sum.totalRevenue))} − Expenses ${fmt(expensesPaid)} − Supplier paid ${fmt(supPaid)} − Aff paid ${fmt(affPaid)} − Withdrawals ${fmt(capitalOut)}
+Reserve (locked): ${fmt(reserve)}
+Supplier still owed: ${fmt(supplierOwed)}
+Affiliates still owed: ${fmt(affOwed)}
+SAFE TO EXTRACT (owners total): ${fmt(safeToExtract)}
 
-PARTNERS:
-Ashik — invested ${fmt(ashikCapitalIn)}, withdrawn ${fmt(ashikDrawings)}, net equity ${fmt(ashikNetEquity)}
-Kausar — invested ${fmt(kausarCapitalIn)}, withdrawn ${fmt(kausarDrawings)}, net equity ${fmt(kausarNetEquity)}
+=== OWNERS ===
+${ownerLines || '  (no owner data)'}
 
-THIS MONTH (${now.toLocaleString('en',{month:'long'})} ${cy}):
-Orders: ${monthOrders.length} | Revenue: ${fmt(monthRevenue)}
+=== MONTHLY TREND (last 12 months) ===
+${monthlyLines || '  (no monthly data)'}
 
-ORDERS: total ${orders.length} | status: ${JSON.stringify(statusCounts)}
-TOP AFFILIATES: ${topAffiliates || 'none'}
+=== AFFILIATES (${affiliates.length} total) ===
+${affLines || '  (none)'}
 
-Answer concisely. Same language as question (English or Bangla). Numbers only from above data.
+=== SUPPLIERS ===
+${supLines || '  (none)'}
+
+=== RECENT TRANSACTIONS (last 60) ===
+${recentTx || '  (none)'}
 `.trim()
 
-  // ── Groq API (OpenAI-compatible) ──────────────────────────────────────────
+  // ── Groq API ──────────────────────────────────────────────────────────────
   const groqKey = Deno.env.get('GROQ_API_KEY')!
   const gRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: context },
         { role: 'user', content: question },
       ],
       temperature: 0.2,
-      max_tokens: 512,
+      max_tokens: 600,
     }),
   })
 

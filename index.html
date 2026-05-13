@@ -6685,6 +6685,9 @@ async function admDeleteCustomOffer(idx){
 // ══════════════════════════════════════════════════════════
 
 function admRenderFinance(){
+  // Preserve AI chat state across re-renders (realtime updates wipe innerHTML)
+  const _prevChatHTML = document.getElementById('aiChatBox')?.innerHTML ?? '';
+  const _prevChatInput = document.getElementById('aiChatInput')?.value ?? '';
   const s=ADM_DATA.summary;
   const transactions=ADM_DATA.transactions||[];
   const payouts=ADM_DATA.affiliatePayouts||[];
@@ -6903,6 +6906,9 @@ function admRenderFinance(){
   </div>
   </div>
   `;
+  // Restore chat state after innerHTML overwrite
+  if(_prevChatHTML){const b=document.getElementById('aiChatBox');if(b)b.innerHTML=_prevChatHTML;}
+  if(_prevChatInput){const i=document.getElementById('aiChatInput');if(i)i.value=_prevChatInput;}
 }
 
 async function admAskFinance(){

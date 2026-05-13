@@ -53,7 +53,7 @@ function supPayToRawRow(r: Record<string, any>): unknown[] {
 
 // deno-lint-ignore no-explicit-any
 function affPayToRawRow(r: Record<string, any>): unknown[] {
-  return [r.created_at ?? '', r.affiliate_code ?? '', r.amount ?? 0, r.method ?? '', r.note ?? '', r.order_id ?? '']
+  return [r.paid_at ?? r.created_at ?? '', r.affiliate_code ?? '', r.amount ?? 0, r.method ?? '', r.note ?? '', r.order_id ?? '']
 }
 
 // ── Style helper: bold+gold specific rows ─────────────────────────────────────
@@ -101,7 +101,7 @@ async function backfill(token: string) {
     sb.from('orders').select('*').order('created_at', { ascending: true }),
     sb.from('transactions').select('*').order('date', { ascending: true }),
     sb.from('supplier_payments').select('*').order('created_at', { ascending: true }),
-    sb.from('affiliate_payouts').select('*').order('created_at', { ascending: true }),
+    sb.from('affiliate_payouts').select('*').order('paid_at', { ascending: true }),
   ])
 
   const orders = ordRes.data ?? []
@@ -153,9 +153,10 @@ async function backfill(token: string) {
   for (const ap of affPays) {
     const amount = parseFloat(ap.amount ?? 0)
     if (amount <= 0) continue
+    const apTs = ap.paid_at ?? ap.created_at
     journalRows.push(entryToRow({
-      date: new Date(ap.created_at).toISOString().slice(0, 10),
-      time: new Date(ap.created_at).toISOString().slice(11, 19),
+      date: new Date(apTs).toISOString().slice(0, 10),
+      time: new Date(apTs).toISOString().slice(11, 19),
       refId: String(ap.id ?? ''),
       description: `Affiliate payout — ${ap.affiliate_code ?? ''} (Order ${ap.order_id ?? ''})`,
       drCode: '6001', drName: COA['6001'],
@@ -239,9 +240,10 @@ Deno.serve(async (req: Request) => {
       if (spEntry.amount > 0) await appendRows(token, 'Journal', [entryToRow(spEntry)])
     } else if (table === 'affiliate_payouts') {
       await appendRows(token, 'Affiliate Payouts', [affPayToRawRow(record)])
+      const apTs = (record.paid_at ?? record.created_at) as string
       const apEntry: JournalEntry = {
-        date: new Date(record.created_at as string).toISOString().slice(0, 10),
-        time: new Date(record.created_at as string).toISOString().slice(11, 19),
+        date: new Date(apTs).toISOString().slice(0, 10),
+        time: new Date(apTs).toISOString().slice(11, 19),
         refId: String(record.id ?? ''),
         description: `Affiliate payout — ${record.affiliate_code ?? ''} (Order ${record.order_id ?? ''})`,
         drCode: '6001', drName: COA['6001'],

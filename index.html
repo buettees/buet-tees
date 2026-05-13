@@ -6689,7 +6689,7 @@ function admRenderFinance(){
   const _prevChatHTML = document.getElementById('aiChatBox')?.innerHTML ?? '';
   const _prevChatInput = document.getElementById('aiChatInput')?.value ?? '';
   const _chatInputFocused = document.activeElement?.id === 'aiChatInput';
-  const _chatInputCursor = (document.getElementById('aiChatInput') as HTMLInputElement)?.selectionStart ?? null;
+  const _chatInputCursor = document.getElementById('aiChatInput')?.selectionStart ?? null;
   const s=ADM_DATA.summary;
   const transactions=ADM_DATA.transactions||[];
   const payouts=ADM_DATA.affiliatePayouts||[];
@@ -6910,7 +6910,7 @@ function admRenderFinance(){
   `;
   // Restore chat state after innerHTML overwrite
   if(_prevChatHTML){const b=document.getElementById('aiChatBox');if(b)b.innerHTML=_prevChatHTML;}
-  const _restoredInput=document.getElementById('aiChatInput') as HTMLInputElement|null;
+  const _restoredInput=document.getElementById('aiChatInput');
   if(_restoredInput){
     if(_prevChatInput)_restoredInput.value=_prevChatInput;
     if(_chatInputFocused){_restoredInput.focus();if(_chatInputCursor!==null)_restoredInput.setSelectionRange(_chatInputCursor,_chatInputCursor);}

@@ -3674,9 +3674,18 @@ function admRenderOrders(){
     }).join("")}</tbody></table></div></div>`;
 }
 
+let _admAffHash='';
 function admRenderAffiliates(){
   const _ae=document.activeElement;
   if(_ae&&(_ae.id==='defAffDiscInput'||(_ae.id&&_ae.id.startsWith('affDiscInput-'))))return;
+  const _hashSrc=JSON.stringify({
+    a:ADM_DATA.affiliates,
+    s:(ADM_DATA.rawSettings||[]).filter(r=>r.key==='affiliate_discount_pct'||r.key==='return_window'||r.key==='return_window_changed_at'),
+    p:ADM_DATA.affiliatePayouts,
+    o:(ADM_DATA.orders||[]).map(o=>({id:o.orderId,s:o.status,a:o.affiliateCode,d:o.deliveredAt,p:o.affiliatePaid}))
+  });
+  if(_hashSrc===_admAffHash)return;
+  _admAffHash=_hashSrc;
   const rows=ADM_DATA.affiliates;
   if(!rows.length){document.getElementById("adm-affiliates").innerHTML='<div class="adm-empty">No affiliates yet</div>';return;}
   const active=rows.filter(a=>a.status.toLowerCase()==="active");

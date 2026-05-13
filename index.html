@@ -6504,14 +6504,14 @@ async function admSaveReserve(){
 async function admSheetsInit(){
   const btn=document.getElementById('btnSheetsInit');
   const msg=document.getElementById('sheetsStatusMsg');
-  if(!ADM_SECRET){toast('Not logged in');return;}
+  if(!_adminPass){toast('Not logged in');return;}
   if(!confirm('Initialize all Google Sheets tabs and formulas? Existing tab structure will be overwritten.'))return;
   btn.disabled=true;btn.textContent='⚙ Initializing…';
   msg.style.display='block';msg.style.color='rgba(201,168,76,0.8)';msg.textContent='Setting up sheets…';
   try{
     const res=await fetch(EDGE_BASE+'/sync-to-sheets',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ADM_SECRET},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adminPass},
       body:JSON.stringify({action:'init'})
     });
     const data=await res.json();
@@ -6527,14 +6527,14 @@ async function admSheetsInit(){
 async function admSheetsBackfill(){
   const btn=document.getElementById('btnSheetsBackfill');
   const msg=document.getElementById('sheetsStatusMsg');
-  if(!ADM_SECRET){toast('Not logged in');return;}
+  if(!_adminPass){toast('Not logged in');return;}
   if(!confirm('Backfill all historical data to Google Sheets?\n\nThis appends all existing orders, transactions, supplier payments, and affiliate payouts to the sheet. Run this only once after Init (or after manually clearing sheet rows).'))return;
   btn.disabled=true;btn.textContent='↺ Backfilling…';
   msg.style.display='block';msg.style.color='rgba(201,168,76,0.8)';msg.textContent='Syncing all historical data…';
   try{
     const res=await fetch(EDGE_BASE+'/sync-to-sheets',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ADM_SECRET},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+_adminPass},
       body:JSON.stringify({action:'backfill'})
     });
     const data=await res.json();

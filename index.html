@@ -3711,7 +3711,19 @@ function admRenderAffiliates(){
     document.getElementById('adm-affiliates').innerHTML='';
   }
 
+  const _defAffDisc=(ADM_DATA.rawSettings||[]).find(s=>s.key==='affiliate_discount_pct')?.value||'10';
   document.getElementById("adm-affiliates").innerHTML+=`
+    <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:6px;">Default Buyer Discount %</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input id="defAffDiscInput" type="number" min="0" max="100" step="0.5" value="${_defAffDisc}"
+            style="width:90px;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.35);color:#C9A84C;padding:4px 8px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;"/>
+          <button onclick="admSaveDefaultAffDisc()" style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;padding:4px 10px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;">SET</button>
+        </div>
+      </div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.3);max-width:380px;line-height:1.5;">Applied to new affiliates by default. Each affiliate can also have a custom % (edit per-affiliate below).</div>
+    </div>
     <div class="adm-kpi-row" style="margin-bottom:20px;">
       <div class="adm-kpi"><div class="adm-kpi-label">Total Affiliates</div><div class="adm-kpi-val c-white">${rows.length}</div></div>
       <div class="adm-kpi"><div class="adm-kpi-label">Active</div><div class="adm-kpi-val c-green">${active.length}</div></div>
@@ -3743,7 +3755,14 @@ function admRenderAffiliates(){
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Payment</div>${a.payment_method||'—'} — ${a.payment_details||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Promotion</div>${a.promotion_method||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Income Goal</div>${a.income_goal||'—'}</div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Buyer Discount</div>${a.discount_pct||0}%</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Buyer Discount</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input id="affDiscInput-${a.code}" type="number" min="0" max="100" step="0.5" value="${a.discount_pct||0}"
+                style="width:64px;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;padding:3px 6px;border-radius:4px;font-family:inherit;font-size:12px;font-weight:700;" onclick="event.stopPropagation()"/>
+              <span style="font-size:11px;color:rgba(255,255,255,0.4);">%</span>
+              <button onclick="event.stopPropagation();admSaveAffDisc('${a.code}')" style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;padding:3px 8px;border-radius:4px;font-family:inherit;font-size:9px;font-weight:700;letter-spacing:0.5px;cursor:pointer;">SET</button>
+            </div>
+          </div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Commission Rates</div>Regular ৳${a.commission_regular||20} · Drop ৳${a.commission_drop||25} · Hoodie ৳${a.commission_hoodie||35}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Earned / Paid Out</div>৳${a.total_earned||0} / ৳${a.total_paid||0}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Joined</div>${a.created_at?new Date(a.created_at).toLocaleDateString('en-GB'):'—'}</div>
@@ -6486,6 +6505,32 @@ function admOfferPreview(){
   el.textContent=txt;
 }
 
+async function admSaveDefaultAffDisc(){
+  const val=document.getElementById('defAffDiscInput')?.value;
+  if(val===null||val===undefined||val==='')return;
+  const num=Math.min(100,Math.max(0,parseFloat(val)||0));
+  try{
+    await sbAdmin.from('settings').upsert({key:'affiliate_discount_pct',value:String(num)},{onConflict:'key'});
+    if(ADM_DATA.rawSettings){
+      const ex=ADM_DATA.rawSettings.find(r=>r.key==='affiliate_discount_pct');
+      if(ex)ex.value=String(num); else ADM_DATA.rawSettings.push({key:'affiliate_discount_pct',value:String(num)});
+    }
+    affDiscountPct=num;
+    toast('Default buyer discount set to '+num+'% ✓');
+  }catch(e){toast('Failed: '+e.message);}
+}
+async function admSaveAffDisc(code){
+  const val=document.getElementById('affDiscInput-'+code)?.value;
+  if(val===null||val===undefined||val==='')return;
+  const num=Math.min(100,Math.max(0,parseFloat(val)||0));
+  try{
+    const{error}=await sbAdmin.from('affiliates').update({discount_pct:num}).eq('code',code);
+    if(error)throw error;
+    const aff=(ADM_DATA.affiliates||[]).find(a=>a.code===code);
+    if(aff)aff.discount_pct=num;
+    toast(code+' buyer discount set to '+num+'% ✓');
+  }catch(e){toast('Failed: '+e.message);}
+}
 async function admSaveReserve(){
   const val=document.getElementById('reserveInput')?.value;
   if(val===null||val===undefined||val==='')return;

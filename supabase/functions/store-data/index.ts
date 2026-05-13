@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
       sb.from('settings')
         .select('key,value')
         .in('key', ['affiliate_discount_pct', 'offers_config']),
-      sb.from('affiliates').select('code').eq('status', 'active'),
+      sb.from('affiliates').select('code,discount_pct').eq('status', 'active'),
     ])
 
     const settings: Record<string, string> = {}

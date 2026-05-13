@@ -6501,6 +6501,54 @@ async function admSaveReserve(){
     admRenderFinance();
   }catch(e){toast('Failed: '+e.message);}
 }
+async function admSheetsInit(){
+  const btn=document.getElementById('btnSheetsInit');
+  const msg=document.getElementById('sheetsStatusMsg');
+  if(!ADM_SECRET){toast('Not logged in');return;}
+  if(!confirm('Initialize all Google Sheets tabs and formulas? Existing tab structure will be overwritten.'))return;
+  btn.disabled=true;btn.textContent='⚙ Initializing…';
+  msg.style.display='block';msg.style.color='rgba(201,168,76,0.8)';msg.textContent='Setting up sheets…';
+  try{
+    const res=await fetch(EDGE_BASE+'/sync-to-sheets',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ADM_SECRET},
+      body:JSON.stringify({action:'init'})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Failed');
+    msg.style.color='#2ecc71';msg.textContent='Sheets initialized ✓ All tabs and formulas created.';
+    toast('Sheets initialized ✓');
+  }catch(e){
+    msg.style.color='#e74c3c';msg.textContent='Error: '+e.message;
+    toast('Failed: '+e.message);
+  }finally{btn.disabled=false;btn.textContent='⚙ Init Sheets';}
+}
+
+async function admSheetsBackfill(){
+  const btn=document.getElementById('btnSheetsBackfill');
+  const msg=document.getElementById('sheetsStatusMsg');
+  if(!ADM_SECRET){toast('Not logged in');return;}
+  if(!confirm('Backfill all historical data to Google Sheets?\n\nThis appends all existing orders, transactions, supplier payments, and affiliate payouts to the sheet. Run this only once after Init (or after manually clearing sheet rows).'))return;
+  btn.disabled=true;btn.textContent='↺ Backfilling…';
+  msg.style.display='block';msg.style.color='rgba(201,168,76,0.8)';msg.textContent='Syncing all historical data…';
+  try{
+    const res=await fetch(EDGE_BASE+'/sync-to-sheets',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ADM_SECRET},
+      body:JSON.stringify({action:'backfill'})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Failed');
+    const r=data.result||{};
+    msg.style.color='#2ecc71';
+    msg.textContent=`Backfill complete ✓ — ${r.orders||0} orders, ${r.transactions||0} transactions, ${r.supplier_payments||0} supplier payments, ${r.affiliate_payouts||0} affiliate payouts, ${r.journal_entries||0} journal entries.`;
+    toast('Backfill complete ✓');
+  }catch(e){
+    msg.style.color='#e74c3c';msg.textContent='Error: '+e.message;
+    toast('Failed: '+e.message);
+  }finally{btn.disabled=false;btn.textContent='↺ Backfill All Data';}
+}
+
 let _returnWindowTimer=null;
 function _startReturnWindowTimer(val){
   if(_returnWindowTimer){clearInterval(_returnWindowTimer);_returnWindowTimer=null;}
@@ -6824,6 +6872,23 @@ function admRenderFinance(){
         </tr>`).join('')}</tbody>
       </table></div>`:'<div class="adm-empty" style="padding:20px">No payouts yet</div>'}
     </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- SECTION — GOOGLE SHEETS BOOKKEEPING                  -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div style="margin-top:24px;margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Google Sheets Bookkeeping</div>
+  <div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;">
+    <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:16px;line-height:1.7;">
+      Real-time sync: orders, transactions, supplier payments, and affiliate payouts auto-sync to Google Sheets via webhooks.<br>
+      Use <strong style="color:rgba(255,255,255,0.5)">Init Sheets</strong> once to set up all tabs and formulas. Use <strong style="color:rgba(255,255,255,0.5)">Backfill</strong> to re-sync all historical data (clears old Journal rows first).
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button onclick="admSheetsInit()" id="btnSheetsInit" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);color:#C9A84C;padding:9px 20px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(201,168,76,0.22)'" onmouseout="this.style.background='rgba(201,168,76,0.12)'">⚙ Init Sheets</button>
+      <button onclick="admSheetsBackfill()" id="btnSheetsBackfill" style="background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.35);color:#2ecc71;padding:9px 20px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(39,174,96,0.22)'" onmouseout="this.style.background='rgba(39,174,96,0.12)'">↺ Backfill All Data</button>
+      <a href="https://docs.google.com/spreadsheets/d/1UBnEG5JRd91L1jNeFeurbyq3dKGpkm-WmabLq4rj9qE" target="_blank" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:9px 20px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">↗ Open Sheet</a>
+    </div>
+    <div id="sheetsStatusMsg" style="margin-top:12px;font-size:10px;color:rgba(255,255,255,0.3);display:none;"></div>
   </div>
   `;
 }

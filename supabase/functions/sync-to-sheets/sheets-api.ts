@@ -42,6 +42,20 @@ export async function batchUpdate(token: string, requests: unknown[]): Promise<v
   if (!res.ok) throw new Error(`Sheets batchUpdate failed: ${await res.text()}`)
 }
 
+export async function clearSheetData(
+  token: string,
+  sheetName: string,
+): Promise<void> {
+  // Clears rows 2 onwards (preserves header row 1)
+  const range = encodeURIComponent(`${sheetName}!A2:Z10000`)
+  const url = `${BASE}/${sheetId()}/values/${range}:clear`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Sheets clear [${sheetName}] failed: ${await res.text()}`)
+}
+
 export async function getSheets(
   token: string,
 ): Promise<{ title: string; sheetId: number }[]> {

@@ -5,7 +5,7 @@
 //   - POST {action:"backfill", data:{...}} — backfill all existing data (requires ADMIN_SECRET)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getAccessToken } from './google-auth.ts'
-import { appendRows, batchUpdate, getSheets } from './sheets-api.ts'
+import { appendRows, batchUpdate, clearSheetData, getSheets } from './sheets-api.ts'
 import { COA, entryToRow, journalFromOrder, journalFromTransaction, type JournalEntry } from './journal.ts'
 import { initSheets } from './init-sheets.ts'
 
@@ -108,6 +108,15 @@ async function backfill(token: string) {
   const txs = txRes.data ?? []
   const supPays = spRes.data ?? []
   const affPays = apRes.data ?? []
+
+  // Clear all data tabs first (keep headers) — makes backfill safe to re-run
+  await Promise.all([
+    clearSheetData(token, 'Journal'),
+    clearSheetData(token, 'Orders'),
+    clearSheetData(token, 'Transactions'),
+    clearSheetData(token, 'Supplier Payments'),
+    clearSheetData(token, 'Affiliate Payouts'),
+  ])
 
   // Raw tabs
   if (orders.length) await appendRows(token, 'Orders', orders.map(orderToRawRow))

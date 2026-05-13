@@ -38,6 +38,10 @@ Deno.serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
+    const { data: settRow } = await sb.from('settings')
+      .select('value').eq('key', 'affiliate_discount_pct').maybeSingle()
+    const default_discount_pct = parseFloat(settRow?.value ?? '10') || 10
+
     const { error } = await sb.from('affiliates').upsert(
       {
         code, full_name, whatsapp, student_id, hall, email,
@@ -45,6 +49,7 @@ Deno.serve(async (req: Request) => {
         payment_method, payment_details, income_goal,
         status: 'inactive',
         commission_regular, commission_drop, commission_hoodie,
+        discount_pct: default_discount_pct,
       },
       { onConflict: 'code', ignoreDuplicates: false },
     )

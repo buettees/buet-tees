@@ -2486,7 +2486,7 @@ async function submitAffReg(){
     const affCode=(namePart+idPart).toUpperCase();
     const regR=await fetch(`${EDGE_BASE}/register-affiliate`,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
       body:JSON.stringify({
         code:affCode,
         full_name:name,whatsapp:wa,student_id:sid,hall,email,

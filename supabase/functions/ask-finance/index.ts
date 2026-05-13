@@ -135,27 +135,25 @@ TOP AFFILIATES: ${topAffiliates || 'none'}
 Answer concisely. Same language as question (English or Bangla). Numbers only from above data.
 `.trim()
 
-  // ── Gemini API ────────────────────────────────────────────────────────────
-  const geminiKey = Deno.env.get('GEMINI_API_KEY')!
-  const gRes = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: context }] },
-          { role: 'model', parts: [{ text: 'Ready. Ask me anything about BUET Tees finances.' }] },
-          { role: 'user', parts: [{ text: question }] },
-        ],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 512 },
-      }),
-    }
-  )
+  // ── Groq API (OpenAI-compatible) ──────────────────────────────────────────
+  const groqKey = Deno.env.get('GROQ_API_KEY')!
+  const gRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${groqKey}` },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages: [
+        { role: 'system', content: context },
+        { role: 'user', content: question },
+      ],
+      temperature: 0.2,
+      max_tokens: 512,
+    }),
+  })
 
-  if (!gRes.ok) throw new Error(`Gemini error: ${await gRes.text()}`)
+  if (!gRes.ok) throw new Error(`Groq error: ${await gRes.text()}`)
   const gData = await gRes.json()
-  const answer = gData?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No answer returned.'
+  const answer = gData?.choices?.[0]?.message?.content ?? 'No answer returned.'
 
   return json({ ok: true, answer })
 })

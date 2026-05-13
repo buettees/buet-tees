@@ -36,16 +36,16 @@ const HEADERS: Record<string, string[]> = {
 
 // Build SUMPRODUCT formula: sum Cr amounts where Cr account code matches, optionally filtered by month
 function crSumYTD(acct: string): string {
-  return `=SUMPRODUCT((Journal!$H$2:$H$5000="${acct}")*(Journal!$J$2:$J$5000))`
+  return `=SUMPRODUCT((Journal!$H$2:$H$5000=${acct})*(Journal!$J$2:$J$5000))`
 }
 function crSumMonth(acct: string, month: number): string {
-  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$H$2:$H$5000="${acct}")*(Journal!$J$2:$J$5000))`
+  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$H$2:$H$5000=${acct})*(Journal!$J$2:$J$5000))`
 }
 function drSumYTD(acct: string): string {
-  return `=SUMPRODUCT((Journal!$E$2:$E$5000="${acct}")*(Journal!$G$2:$G$5000))`
+  return `=SUMPRODUCT((Journal!$E$2:$E$5000=${acct})*(Journal!$G$2:$G$5000))`
 }
 function drSumMonth(acct: string, month: number): string {
-  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$E$2:$E$5000="${acct}")*(Journal!$G$2:$G$5000))`
+  return `=SUMPRODUCT((IFERROR(MONTH(DATEVALUE(Journal!$A$2:$A$5000)),0)=${month})*(Journal!$E$2:$E$5000=${acct})*(Journal!$G$2:$G$5000))`
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -186,18 +186,18 @@ export async function initSheets(token: string): Promise<void> {
 
   // ── Balance Sheet ──────────────────────────────────────────
   // bKash balance = total DR to 1001 minus total CR from 1001
-  const bkashBal = `=SUMPRODUCT((Journal!$E$2:$E$5000="1001")*(Journal!$G$2:$G$5000))-SUMPRODUCT((Journal!$H$2:$H$5000="1001")*(Journal!$J$2:$J$5000))`
+  const bkashBal = `=SUMPRODUCT((Journal!$E$2:$E$5000=1001)*(Journal!$G$2:$G$5000))-SUMPRODUCT((Journal!$H$2:$H$5000=1001)*(Journal!$J$2:$J$5000))`
   // Net profit = Revenue - COGS - Expenses (retained in business)
   const netProfit = `='P&L'!N17`
-  const ashikEquity = `=SUMPRODUCT((Journal!$H$2:$H$5000="3001")*(Journal!$J$2:$J$5000))-SUMPRODUCT((Journal!$E$2:$E$5000="3003")*(Journal!$G$2:$G$5000))+('P&L'!N17*0.5)`
-  const kausarEquity = `=SUMPRODUCT((Journal!$H$2:$H$5000="3002")*(Journal!$J$2:$J$5000))-SUMPRODUCT((Journal!$E$2:$E$5000="3004")*(Journal!$G$2:$G$5000))+('P&L'!N17*0.5)`
+  const ashikEquity = `=SUMPRODUCT((Journal!$H$2:$H$5000=3001)*(Journal!$J$2:$J$5000))-SUMPRODUCT((Journal!$E$2:$E$5000=3003)*(Journal!$G$2:$G$5000))+('P&L'!N17*0.5)`
+  const kausarEquity = `=SUMPRODUCT((Journal!$H$2:$H$5000=3002)*(Journal!$J$2:$J$5000))-SUMPRODUCT((Journal!$E$2:$E$5000=3004)*(Journal!$G$2:$G$5000))+('P&L'!N17*0.5)`
 
   await updateRange(token, `${TABS.BALANCE_SHEET}!A1`, [
     ['BALANCE SHEET', 'Amount ৳'],
     [''],
     ['ASSETS'],
     ['bKash Balance (1001)', bkashBal],
-    ['Cash in Hand (1002)', `=SUMPRODUCT((Journal!$E$2:$E$5000="1002")*(Journal!$G$2:$G$5000))-SUMPRODUCT((Journal!$H$2:$H$5000="1002")*(Journal!$J$2:$J$5000))`],
+    ['Cash in Hand (1002)', `=SUMPRODUCT((Journal!$E$2:$E$5000=1002)*(Journal!$G$2:$G$5000))-SUMPRODUCT((Journal!$H$2:$H$5000=1002)*(Journal!$J$2:$J$5000))`],
     ['TOTAL ASSETS', '=B4+B5'],
     [''],
     ['EQUITY'],
@@ -212,12 +212,12 @@ export async function initSheets(token: string): Promise<void> {
   await updateRange(token, `${TABS.PARTNER_CAPITAL}!A1`, [
     ['', 'Ashik (50%)', 'Kausar (50%)'],
     ['Capital Contributed',
-      `=SUMPRODUCT((Journal!$H$2:$H$5000="3001")*(Journal!$J$2:$J$5000))`,
-      `=SUMPRODUCT((Journal!$H$2:$H$5000="3002")*(Journal!$J$2:$J$5000))`,
+      `=SUMPRODUCT((Journal!$H$2:$H$5000=3001)*(Journal!$J$2:$J$5000))`,
+      `=SUMPRODUCT((Journal!$H$2:$H$5000=3002)*(Journal!$J$2:$J$5000))`,
     ],
     ['Drawings (withdrawn)',
-      `=SUMPRODUCT((Journal!$E$2:$E$5000="3003")*(Journal!$G$2:$G$5000))`,
-      `=SUMPRODUCT((Journal!$E$2:$E$5000="3004")*(Journal!$G$2:$G$5000))`,
+      `=SUMPRODUCT((Journal!$E$2:$E$5000=3003)*(Journal!$G$2:$G$5000))`,
+      `=SUMPRODUCT((Journal!$E$2:$E$5000=3004)*(Journal!$G$2:$G$5000))`,
     ],
     ['50% of Net Profit', `='P&L'!N17*0.5`, `='P&L'!N17*0.5`],
     ['NET EQUITY', '=B2-B3+B4', '=C2-C3+C4'],
@@ -229,15 +229,15 @@ export async function initSheets(token: string): Promise<void> {
   await updateRange(token, `${TABS.CASH_POSITION}!A1`, [
     ['CASH POSITION (bKash)', 'Amount ৳'],
     [''],
-    ['Capital Invested (in)', `=SUMPRODUCT((Journal!$E$2:$E$5000="1001")*(Journal!$H$2:$H$5000<>"4001")*(Journal!$H$2:$H$5000<>"4002")*(Journal!$G$2:$G$5000))`],
-    ['Revenue Received (in)', `=SUMPRODUCT((Journal!$E$2:$E$5000="1001")*((Journal!$H$2:$H$5000="4001")+(Journal!$H$2:$H$5000="4002"))*(Journal!$G$2:$G$5000))`],
+    ['Capital Invested (in)', `=SUMPRODUCT((Journal!$E$2:$E$5000=1001)*(Journal!$H$2:$H$5000<>4001)*(Journal!$H$2:$H$5000<>4002)*(Journal!$G$2:$G$5000))`],
+    ['Revenue Received (in)', `=SUMPRODUCT((Journal!$E$2:$E$5000=1001)*((Journal!$H$2:$H$5000=4001)+(Journal!$H$2:$H$5000=4002))*(Journal!$G$2:$G$5000))`],
     ['Total Cash In', '=B3+B4'],
     [''],
     ['Supplier Payments (out)', drSumYTD('5001')],
     ['Affiliate Commissions (out)', drSumYTD('6001')],
     ['Marketing (out)', drSumYTD('6002')],
     ['Miscellaneous Expenses (out)', drSumYTD('6003')],
-    ['Owner Withdrawals (out)', `=SUMPRODUCT((Journal!$E$2:$E$5000="3003")*(Journal!$G$2:$G$5000))+SUMPRODUCT((Journal!$E$2:$E$5000="3004")*(Journal!$G$2:$G$5000))`],
+    ['Owner Withdrawals (out)', `=SUMPRODUCT((Journal!$E$2:$E$5000=3003)*(Journal!$G$2:$G$5000))+SUMPRODUCT((Journal!$E$2:$E$5000=3004)*(Journal!$G$2:$G$5000))`],
     ['Total Cash Out', '=B7+B8+B9+B10+B11'],
     [''],
     ['NET CASH (bKash Balance)', '=B5-B12'],

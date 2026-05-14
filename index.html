@@ -4031,7 +4031,7 @@ function admRenderAffiliates(){
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Joined</div>${a.created_at?new Date(a.created_at).toLocaleDateString('en-GB'):'—'}</div>
         </div>
       </td>
-    </tr>`).join("")}</tbody></table></div></div>`;
+    </tr>`;}).join("")}</tbody></table></div></div>`;
 
   // ── PAY AFFILIATES section ──────────────────────────────
   const payouts = ADM_DATA.affiliatePayouts || [];

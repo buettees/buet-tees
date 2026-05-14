@@ -4634,14 +4634,16 @@ ${items.map((it,i)=>{
     for(let i=0; i<items.length; i++){
       const it = items[i];
       if(it.type==='bothsides'){
-        // Both sides: send front + back as media group if both exist, else individually
+        // Both sides: send front + back as media group if both exist, else individually.
+        // Telegram albums only display the caption of the FIRST photo, so all the
+        // shirt details (size/color/qty) must live on that first caption.
         const imgF = it.imageFront;
         const imgB = it.imageBack;
-        const label = `Item ${i+1} — ↔️ <b>Both Sides</b> — ${it.shirtType||''}\nFront: <b>${it.frontName||'—'}</b> | Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+        const label = `Item ${i+1} — ↔️ <b>Both Sides</b> (${it.shirtType||''})\nFront: <b>${it.frontName||'—'}</b> · Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
         if(imgF && imgB){
           await sendTelegramMediaGroup(token, cid, [
-            {type:'photo', media:imgF, caption:`Item ${i+1} — FRONT: ${it.frontName||'—'}`, parse_mode:'HTML'},
-            {type:'photo', media:imgB, caption:`BACK: ${it.backName||'—'} · ${it.shirtType||''} · Size ${it.size||'?'} · ${it.color||'?'} · Qty ${it.qty||1}`, parse_mode:'HTML'}
+            {type:'photo', media:imgF, caption:label, parse_mode:'HTML'},
+            {type:'photo', media:imgB}
           ]);
         } else if(imgF){
           await sendTelegramPhoto(token, cid, imgF, label);
@@ -4761,11 +4763,12 @@ ${items.length ? items.map((it,i)=>{
     const it = items[i];
     if(it.type==='bothsides'){
       const imgF = it.imageFront, imgB = it.imageBack;
-      const label = `Item ${i+1} — ↔️ <b>Both Sides</b> — ${it.shirtType||''}\nFront: <b>${it.frontName||'—'}</b> | Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
+      const label = `Item ${i+1} — ↔️ <b>Both Sides</b> (${it.shirtType||''})\nFront: <b>${it.frontName||'—'}</b> · Back: <b>${it.backName||'—'}</b>\nSize: ${it.size||'?'} · Color: ${it.color||'?'} · Qty: ${it.qty||1}`;
       if(imgF && imgB){
+        // Album caption only renders on first photo — put full details there.
         await sendTelegramMediaGroup(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, [
-          {type:'photo', media:imgF, caption:`Item ${i+1} — FRONT: ${it.frontName||'—'}`, parse_mode:'HTML'},
-          {type:'photo', media:imgB, caption:`BACK: ${it.backName||'—'} · ${it.shirtType||''} · Size ${it.size||'?'} · ${it.color||'?'} · Qty ${it.qty||1}`, parse_mode:'HTML'}
+          {type:'photo', media:imgF, caption:label, parse_mode:'HTML'},
+          {type:'photo', media:imgB}
         ]);
       } else if(imgF){ await sendTelegramPhoto(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, imgF, label); }
         else if(imgB){ await sendTelegramPhoto(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, imgB, label); }

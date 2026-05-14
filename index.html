@@ -2499,11 +2499,37 @@ function updateCMSzChartHighlight() {
 }
 
 function getCMBasePrice(){
+  // Returns the post-discount base shirt price for the selected front design.
+  // Keeps the current summary copy ("Base price") consistent with single-item
+  // product cards while the offers tab determines the actual flat discount.
   if(!cmSelFront||!prods.length)return 0;
   const fp=prods.find(p=>p.name===cmSelFront);
   if(!fp)return 0;
   const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];
   return cat?(cat.discountedPrice||cat.price||0):0;
+}
+
+function getCMOriginalBase(){
+  // Pre-discount base shirt price — used to derive an original-priced unit
+  // (base + surcharge) the offers system can then discount as a whole.
+  if(!cmSelFront||!prods.length)return 0;
+  const fp=prods.find(p=>p.name===cmSelFront);
+  if(!fp)return 0;
+  const cat=fp.categories.find(c=>c.category===cmShirtType)||fp.categories[0];
+  if(!cat)return 0;
+  return (cat._offerApplied?cat._basePrice:cat.price)||cat.price||0;
+}
+
+function applyFlatDiscountToAmount(amt){
+  // Mirror of applyFlatDiscountToProducts but for an arbitrary amount, so
+  // composite items (e.g. both-sides) get the same discount the offers tab
+  // already applies to product prices.
+  const fd=(offersConfig&&offersConfig.flatDiscount)||{};
+  if(!fd.active)return amt;
+  const v=parseFloat(fd.value);
+  if(!v||v<=0)return amt;
+  if(fd.type==='pct')return Math.round(amt*(1-v/100));
+  return Math.max(0,amt-v);
 }
 
 function updateCMSummary(){
@@ -2512,9 +2538,13 @@ function updateCMSummary(){
     el.innerHTML='Select front and back designs to see price summary.';
     return;
   }
-  const base=getCMBasePrice();
-  const itemTotal=base+100;
-  const grandTotal=itemTotal*cmQty;
+  const origBase=getCMOriginalBase();
+  const origUnit=origBase+100;
+  const unit=applyFlatDiscountToAmount(origUnit);
+  const grandTotal=unit*cmQty;
+  const fd=(offersConfig&&offersConfig.flatDiscount)||{};
+  const offerOn=fd.active&&parseFloat(fd.value)>0&&unit<origUnit;
+  const savingsPerUnit=origUnit-unit;
   el.innerHTML=`
     <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
       <span>Front</span><strong>${cmSelFront||'—'}</strong>
@@ -2526,11 +2556,14 @@ function updateCMSummary(){
       <span>Type</span><strong>${cmShirtType}</strong>
     </div>
     <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-      <span>Base price</span><strong>${C} ${base.toLocaleString()}</strong>
+      <span>Base price</span><strong>${C} ${origBase.toLocaleString()}</strong>
     </div>
     <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
       <span>Both sides surcharge</span><strong>+ ${C} 100</strong>
     </div>
+    ${offerOn?`<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#2e7d32;font-weight:600;">
+      <span>${fd.label||(fd.type==='pct'?fd.value+'% off':'৳'+fd.value+' off')}</span><strong>− ${C} ${savingsPerUnit.toLocaleString()}</strong>
+    </div>`:''}
     <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
       <span>Qty</span><strong>× ${cmQty}</strong>
     </div>
@@ -2544,8 +2577,6 @@ function addBothSidesToCart(){
   if(!cmSelFront||!cmSelBack){toast('Please select both front and back designs');return;}
   const size=document.getElementById('cmSize').value;
   const color=document.getElementById('cmColor').value;
-  const base=getCMBasePrice();
-  const unitPrice=base+100;
 
   // Get images for both designs
   const frontProd=prods.find(p=>p.name===cmSelFront);
@@ -2555,10 +2586,11 @@ function addBothSidesToCart(){
   const imageFront=frontCat?frontCat.image:'';
   const imageBack=backCat?backCat.image:'';
 
-  // Record pre-discount original so the flat-discount calc on the checkout
-  // summary counts savings for both-sides items, not just single items.
-  const baseOriginal=frontCat?((frontCat._offerApplied?frontCat._basePrice:frontCat.price)||frontCat.price||0):0;
-  const originalUnit=baseOriginal+100;
+  // Discount applies to the full both-sides unit (shirt + ৳100 surcharge),
+  // matching the offers-tab flat % so the cart math reads as a clean
+  // "5% off everything" rather than "5% off shirt only".
+  const originalUnit=getCMOriginalBase()+100;
+  const unitPrice=applyFlatDiscountToAmount(originalUnit);
 
   // Stable key — same combo+size+color stacks qty
   const key=`bs-${cmSelFront}-${cmSelBack}-${cmShirtType}-${size}-${color}`;

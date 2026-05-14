@@ -467,16 +467,46 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .cm-body{padding:24px 24px 44px;}
 .cm-sec{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin:20px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--w3);}
 .cm-note{font-size:11px;color:var(--g2);line-height:1.7;margin-bottom:16px;padding:12px 14px;background:var(--w2);border-radius:8px;border-left:2px solid var(--burg);}
-.design-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-bottom:16px;}
+.design-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
 .dpick{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;}
 .dpick:hover{border-color:var(--burg);}
 .dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
-.dpick-img{border:1.5px solid var(--w3);border-radius:10px;padding:6px;background:var(--w);cursor:pointer;transition:all 0.12s;text-align:center;font-family:'Poppins',sans-serif;}
-.dpick-img:hover{border-color:var(--burg);}
-.dpick-img.on{border-color:var(--black);box-shadow:0 0 0 2px var(--black) inset;}
-.dpick-img img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;background:var(--w2);display:block;}
-.dpick-img .dpick-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);margin-top:5px;line-height:1.2;}
-.dpick-img.on .dpick-name{color:var(--burg);}
+
+/* Both-sides design slot cards (replaces inline grid) */
+.cm-slot-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.cm-slot{cursor:pointer;border-radius:12px;overflow:hidden;background:var(--w);border:1.5px solid var(--w3);transition:all 0.15s;font-family:'Poppins',sans-serif;}
+.cm-slot:hover{border-color:var(--burg);transform:translateY(-2px);box-shadow:0 8px 22px rgba(109,0,26,0.12);}
+.cm-slot-label{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--g2);padding:10px 12px 6px;display:flex;justify-content:space-between;align-items:center;}
+.cm-slot-label .cm-slot-hint{font-size:8px;color:var(--burg);font-weight:600;letter-spacing:1px;}
+.cm-slot-body{aspect-ratio:1/1;position:relative;background:var(--w2);}
+.cm-slot-body img{width:100%;height:100%;object-fit:cover;display:block;}
+.cm-slot-name{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,0.75));color:var(--w);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:22px 10px 10px;text-align:center;}
+.cm-slot-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--g2);gap:6px;}
+.cm-slot-empty .cm-plus{font-size:38px;font-weight:200;line-height:1;color:var(--burg);}
+.cm-slot-empty .cm-cta{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);}
+.cm-slot-edit{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.65);color:var(--w);border:none;border-radius:50%;width:30px;height:30px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background 0.15s;}
+.cm-slot-edit:hover{background:var(--burg);}
+
+/* Design gallery overlay (sits above both-sides modal) */
+.dg-bg{position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:1200;display:none;align-items:flex-start;justify-content:center;padding:3vh 12px;overflow-y:auto;}
+.dg-bg.on{display:flex;}
+.dg{position:relative;background:var(--w);width:100%;max-width:980px;max-height:94vh;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+.dg-hd{background:var(--black);padding:16px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--burg);position:sticky;top:0;z-index:2;}
+.dg-title{font-size:13px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--w);}
+.dg-sub{font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.dg-body{flex:1;overflow-y:auto;padding:20px;}
+.dg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;}
+.dg-tile{cursor:pointer;border:2px solid var(--w3);border-radius:12px;overflow:hidden;background:var(--w);transition:all 0.15s;text-align:center;font-family:'Poppins',sans-serif;padding:0;}
+.dg-tile:hover{border-color:var(--burg);transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,0.12);}
+.dg-tile.on{border-color:var(--burg);box-shadow:0 0 0 3px var(--burg) inset;}
+.dg-tile img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--w2);}
+.dg-tile .dg-name{padding:9px 6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--black);}
+.dg-tile.on .dg-name{color:var(--burg);}
+@media(max-width:480px){
+  .dg-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .dg-body{padding:14px;}
+  .cm-slot-name{font-size:10px;letter-spacing:1px;padding:18px 6px 8px;}
+}
 /* summary box inside both-sides modal */
 .cm-summary{background:var(--w2);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;color:var(--black);line-height:1.9;}
 .cm-summary strong{font-weight:700;}
@@ -1479,11 +1509,17 @@ body { max-width: 100vw; overflow-x: clip; }
       <div class="cm-sec" style="margin-top:0">Shirt Type</div>
       <div id="cmTypePicker" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
 
-      <div class="cm-sec">Front Design</div>
-      <div class="design-picker" id="cmDesignFront"></div>
-
-      <div class="cm-sec">Back Design</div>
-      <div class="design-picker" id="cmDesignBack"></div>
+      <div class="cm-sec">Designs</div>
+      <div class="cm-slot-row">
+        <div class="cm-slot" id="cmSlotFront" onclick="openDesignGallery('front')">
+          <div class="cm-slot-label"><span>Front</span><span class="cm-slot-hint" id="cmSlotFrontHint">Tap to pick</span></div>
+          <div class="cm-slot-body" id="cmSlotFrontBody"></div>
+        </div>
+        <div class="cm-slot" id="cmSlotBack" onclick="openDesignGallery('back')">
+          <div class="cm-slot-label"><span>Back</span><span class="cm-slot-hint" id="cmSlotBackHint">Tap to pick</span></div>
+          <div class="cm-slot-body" id="cmSlotBackBody"></div>
+        </div>
+      </div>
 
       <div class="cm-sec">Size &amp; Color</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
@@ -1511,6 +1547,19 @@ body { max-width: 100vw; overflow-x: clip; }
         <button class="ordernowbtn" onclick="addBothSidesToCartAndOrder()">Order Now →</button>
       </div>
       <p style="text-align:center;font-size:11px;color:var(--g2);margin-top:12px;letter-spacing:1px;">You can combine this with other items in your cart before checkout.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Design Gallery Overlay (layered above the Both Sides modal) -->
+<div class="dg-bg" id="dgBg" onclick="if(event.target===this)closeDesignGallery()">
+  <div class="dg">
+    <div class="dg-hd">
+      <div><div class="dg-title" id="dgTitle">Choose Design</div><div class="dg-sub" id="dgSub">Pick one</div></div>
+      <button class="cdx" onclick="closeDesignGallery()">&#10005;</button>
+    </div>
+    <div class="dg-body">
+      <div class="dg-grid" id="dgGrid"></div>
     </div>
   </div>
 </div>
@@ -2345,8 +2394,8 @@ function openCustomModal(){
     `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
   ).join('');
 
-  // Build design pickers with thumbnails (image varies per shirt type)
-  renderCMDesignPickers();
+  // Slot cards (Front/Back) — tapping opens the gallery overlay
+  renderCMSlots();
 
   updateCMSizeColor();
   updateCMSummary();
@@ -2361,31 +2410,62 @@ function closeCM(){document.getElementById('cmBg').classList.remove('on');docume
 function cmPickType(type,el){
   document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');cmShirtType=type;
-  // Thumbnails differ by shirt type — re-render design tiles so images match
-  renderCMDesignPickers();
+  // Slot images change per shirt type (each category has its own image)
+  renderCMSlots();
   updateCMSizeColor();updateCMSummary();
 }
 
-function renderCMDesignPickers(){
-  const tileHTML=(side)=>prods.map((p,i)=>{
-    const cat=(p.categories||[]).find(c=>c.category===cmShirtType)||(p.categories||[])[0];
+function renderCMSlots(){
+  const paint=(side,sel)=>{
+    const body=document.getElementById(side==='front'?'cmSlotFrontBody':'cmSlotBackBody');
+    const hint=document.getElementById(side==='front'?'cmSlotFrontHint':'cmSlotBackHint');
+    if(!body)return;
+    if(!sel){
+      body.innerHTML=`<div class="cm-slot-empty"><div class="cm-plus">&#43;</div><div class="cm-cta">Tap to choose</div></div>`;
+      if(hint)hint.textContent='Tap to pick';
+      return;
+    }
+    const p=prods.find(x=>x.name===sel);
+    const cat=p?((p.categories||[]).find(c=>c.category===cmShirtType)||(p.categories||[])[0]):null;
     const img=cat?(cat.image||''):'';
-    const isOn=(side==='front'?cmSelFront:cmSelBack)===p.name;
-    const safeName=p.name.replace(/"/g,'&quot;');
-    return `<button class="dpick-img${isOn?' on':''}" onclick="cmPickDesign('${side}',${i},this)"><img src="${img}" alt="${safeName}" loading="lazy" onerror="this.style.opacity='0.15'"/><div class="dpick-name">${p.name}</div></button>`;
-  }).join('');
-  document.getElementById('cmDesignFront').innerHTML=tileHTML('front');
-  document.getElementById('cmDesignBack').innerHTML=tileHTML('back');
+    const safe=sel.replace(/"/g,'&quot;');
+    body.innerHTML=`<img src="${img}" alt="${safe}" onerror="this.style.opacity='0.15'"/><div class="cm-slot-name">${sel}</div><button class="cm-slot-edit" onclick="event.stopPropagation();openDesignGallery('${side}')" title="Change">&#9998;</button>`;
+    if(hint)hint.textContent='Tap to change';
+  };
+  paint('front',cmSelFront);
+  paint('back',cmSelBack);
 }
 
-function cmPickDesign(side,idx,el){
-  const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick-img').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  const name=prods[idx]?prods[idx].name:el.textContent;
-  if(side==='front'){cmSelFront=name;updateCMSizeColor();}
+// ── Design Gallery Overlay ──────────────────────────────
+let dgSide=null;
+function openDesignGallery(side){
+  dgSide=side;
+  document.getElementById('dgTitle').textContent=side==='front'?'Choose Front Design':'Choose Back Design';
+  document.getElementById('dgSub').textContent=`${prods.length} designs · ${cmShirtType}`;
+  const selected=side==='front'?cmSelFront:cmSelBack;
+  document.getElementById('dgGrid').innerHTML=prods.map((p,i)=>{
+    const cat=(p.categories||[]).find(c=>c.category===cmShirtType)||(p.categories||[])[0];
+    const img=cat?(cat.image||''):'';
+    const isOn=p.name===selected;
+    const safe=p.name.replace(/"/g,'&quot;');
+    return `<button class="dg-tile${isOn?' on':''}" onclick="dgSelect(${i})"><img src="${img}" alt="${safe}" loading="lazy" onerror="this.style.opacity='0.15'"/><div class="dg-name">${p.name}</div></button>`;
+  }).join('');
+  document.getElementById('dgBg').classList.add('on');
+}
+
+function closeDesignGallery(){
+  document.getElementById('dgBg').classList.remove('on');
+  dgSide=null;
+}
+
+function dgSelect(idx){
+  if(!dgSide||!prods[idx])return;
+  const name=prods[idx].name;
+  if(dgSide==='front'){cmSelFront=name;updateCMSizeColor();}
   else{cmSelBack=name;}
+  renderCMSlots();
   updateCMSummary();
+  closeDesignGallery();
 }
 
 function updateCMSizeColor() {

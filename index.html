@@ -2555,6 +2555,11 @@ function addBothSidesToCart(){
   const imageFront=frontCat?frontCat.image:'';
   const imageBack=backCat?backCat.image:'';
 
+  // Record pre-discount original so the flat-discount calc on the checkout
+  // summary counts savings for both-sides items, not just single items.
+  const baseOriginal=frontCat?((frontCat._offerApplied?frontCat._basePrice:frontCat.price)||frontCat.price||0):0;
+  const originalUnit=baseOriginal+100;
+
   // Stable key — same combo+size+color stacks qty
   const key=`bs-${cmSelFront}-${cmSelBack}-${cmShirtType}-${size}-${color}`;
   const existing=cart.find(i=>i.key===key);
@@ -2572,6 +2577,7 @@ function addBothSidesToCart(){
       size,
       color,
       price:unitPrice,
+      originalPrice:originalUnit,
       qty:cmQty
     });
   }

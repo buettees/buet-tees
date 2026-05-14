@@ -3960,22 +3960,56 @@ function admRenderAffiliates(){
       <div class="adm-kpi"><div class="adm-kpi-label">Total Discount Given</div><div class="adm-kpi-val c-red">${admFmt(totalDisc)}</div></div>
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Orders</th><th>Discount Given</th><th>Commission Owed</th><th>Action</th></tr></thead>
-    <tbody>${rows.map(a=>`<tr style="cursor:pointer" onclick="admToggleAffDetail('${a.code}')">
+    <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Due</th><th>Due ৳</th><th>Running</th><th>Total</th><th>Paid ৳</th><th>Since</th><th>Action</th></tr></thead>
+    <tbody>${rows.map(a=>{
+      // Per-affiliate breakdown of order pipeline state.
+      const _rwRawA=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'0';
+      const _rwChangedAtA=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window_changed_at')?.value||'';
+      const _rwChangedTsA=_rwChangedAtA?new Date(_rwChangedAtA).getTime():0;
+      const _withinRWA=(deliveredAt)=>{
+        if(_rwRawA==='0')return false;
+        const t=deliveredAt?new Date(deliveredAt).getTime():0;
+        if(!t)return false;
+        if(_rwChangedTsA&&t<_rwChangedTsA)return false;
+        if(_rwRawA==='always')return true;
+        const days=parseInt(_rwRawA)||1;
+        return (Date.now()-t)<(days*86400000);
+      };
+      const _affOrders=(ADM_DATA.orders||[]).filter(o=>o.affiliateCode===a.code);
+      const _dueOrders=_affOrders.filter(o=>o.status==='Delivered'&&!o.affiliatePaid&&!_withinRWA(o.deliveredAt));
+      const _duePay=_dueOrders.reduce((s,o)=>s+(o.affCommission||0),0);
+      const _runningOrders=_affOrders.filter(o=>{
+        if(['Cancelled','Returned'].includes(o.status))return false;
+        if(o.status==='Delivered')return o.affiliatePaid?false:_withinRWA(o.deliveredAt);
+        return true; // Pending/Confirmed/Dispatched
+      });
+      const _totalCount=_affOrders.length;
+      const _totalPaid=parseFloat(a.total_paid||0);
+      let _sinceStr='—';let _daysSince='';
+      if(a.created_at){
+        const _cd=new Date(a.created_at);
+        if(!isNaN(_cd)){
+          _sinceStr=_cd.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+          _daysSince=Math.max(0,Math.floor((Date.now()-_cd.getTime())/86400000))+'d';
+        }
+      }
+      return `<tr style="cursor:pointer" onclick="admToggleAffDetail('${a.code}')">
       <td class="adm-id">${a.code}</td>
       <td class="adm-white">${a.name||"—"}</td>
-      <td style="font-size:10px;color:rgba(255,255,255,0.3)">${a.type}</td>
       <td><span class="adm-badge ${a.status.toLowerCase()==="active"?"adm-badge-green":"adm-badge-gray"}">${a.status}</span></td>
-      <td class="${a.orderCount>0?"adm-white":""}">${a.orderCount}</td>
-      <td class="${a.totalDiscount>0?"adm-red":""}"> ${a.totalDiscount>0?admFmt(a.totalDiscount):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
-      <td class="${a.totalCommission>0?"adm-gold":""}">${a.totalCommission>0?admFmt(a.totalCommission):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${_dueOrders.length>0?"adm-gold":""}" style="font-weight:${_dueOrders.length>0?'700':'400'}">${_dueOrders.length||`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${_duePay>0?"adm-gold":""}" style="font-weight:${_duePay>0?'700':'400'}">${_duePay>0?admFmt(_duePay):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${_runningOrders.length>0?"adm-white":""}">${_runningOrders.length||`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${_totalCount>0?"adm-white":""}">${_totalCount||`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td class="${_totalPaid>0?"adm-green":""}">${_totalPaid>0?admFmt(_totalPaid):`<span style="color:rgba(255,255,255,0.12)">—</span>`}</td>
+      <td style="font-size:10px;color:rgba(255,255,255,0.4);white-space:nowrap">${_sinceStr}${_daysSince?` <span style="color:rgba(255,255,255,0.2);font-size:9px">(${_daysSince})</span>`:''}</td>
       <td style="display:flex;gap:6px;align-items:center;" onclick="event.stopPropagation()">
         <button class="adm-status-btn ${a.status.toLowerCase()==='active'?'adm-status-cancel':'adm-status-confirm'}" onclick="admToggleAffiliate('${a.code}','${a.status}')">${a.status.toLowerCase()==='active'?'Deactivate':'Activate'}</button>
         <button class="adm-status-btn" style="background:rgba(180,20,20,0.25);color:#ff6b6b;border:1px solid rgba(180,20,20,0.4);" onclick="admRemoveAffiliate('${a.code}','${a.name||a.code}')">✕ Remove</button>
       </td>
     </tr>
     <tr id="aff-detail-${a.code}" style="display:${_admOpenRows.has('aff-detail-'+a.code)?'table-row':'none'}">
-      <td colspan="8" style="padding:0">
+      <td colspan="10" style="padding:0">
         <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${a.email||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">WhatsApp</div>${a.whatsapp||'—'}</div>

@@ -4599,6 +4599,21 @@ function emailSection(title){
 
 // ── Trigger functions ────────────────────────────────────
 
+// Add N working days to a start date, skipping Fridays (BD weekend day used
+// for this shop). Returns a Date object — the caller formats it.
+function addWorkingDays(startDate, n){
+  const d = new Date(startDate);
+  let added = 0;
+  while(added < n){
+    d.setDate(d.getDate() + 1);
+    if(d.getDay() !== 5) added++; // 5 = Friday
+  }
+  return d;
+}
+function formatDeadline(date){
+  return date.toLocaleDateString('en-GB', {weekday:'short', day:'2-digit', month:'short', year:'numeric'});
+}
+
 async function notifyNewOrder(order){
   const token = ownerTelegramToken();
   const owners = await getOwners();
@@ -4607,12 +4622,15 @@ async function notifyNewOrder(order){
 
   // ── 1. Summary message (always sent first) ──────────────────
   const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const dispatchBy = formatDeadline(addWorkingDays(new Date(), 5));
+  const deliverBy = formatDeadline(addWorkingDays(new Date(), 6));
   const summaryText =
 `🛒 <b>NEW ORDER — ${order.id}</b>
 
 👤 <b>${order.name}</b>  📞 ${order.phone}
 📍 <b>Zone:</b> ${order.zone}
 💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+⏰ <b>Dispatch by:</b> ${dispatchBy}  |  <b>Deliver by:</b> ${deliverBy}
 
 📦 <b>${items.length} item(s):</b>
 ${items.map((it,i)=>{
@@ -4735,12 +4753,14 @@ async function notifyOrderConfirmed(order){
   const sup = getSupplier();
   const items = order.items_json || [];
   const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const dispatchBy = formatDeadline(addWorkingDays(new Date(), 5));
   const tgText =
 `✅ <b>Order Confirmed — ${order.id}</b>
 
 👤 <b>${order.name}</b>  📞 ${order.phone}
 📍 <b>Zone:</b> ${order.zone}
 💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+⏰ <b>Dispatch deadline:</b> ${dispatchBy} (5 working days, Fri off)
 
 📦 <b>${items.length||1} item(s):</b>
 ${items.length ? items.map((it,i)=>{
@@ -4793,14 +4813,19 @@ ${items.length ? items.map((it,i)=>{
       ${emailSection('Items to Prepare')}
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">${emailItemRowsSupplier(order)}</table>
       ${order.notes?`<div style="margin-top:16px;background:#fffbec;border-left:3px solid #f0c040;padding:14px 16px;font-size:13px;color:#7a6000;"><b>Note:</b> ${order.notes}</div>`:''}
-      <div style="margin-top:24px;background:#e8f5e9;border-left:3px solid #2e7d32;padding:14px 16px;font-size:13px;color:#1b5e20;">
-        Please prepare and dispatch this order promptly. Thank you!
+      <div style="margin-top:24px;background:#fff3e0;border-left:3px solid #e65100;padding:14px 16px;font-size:14px;color:#bf360c;">
+        ⏰ <b>Dispatch deadline:</b> ${dispatchBy}<br>
+        <span style="font-size:12px;color:#7a3a00;">5 working days from confirmation · Fridays excluded</span>
+      </div>
+      <div style="margin-top:16px;background:#e8f5e9;border-left:3px solid #2e7d32;padding:14px 16px;font-size:13px;color:#1b5e20;">
+        Please prepare and dispatch this order by the deadline above. Thank you!
       </div>`, '#1a1a1a');
     await sendEmail(sup.email, 'Fulfill Order '+order.id+' — buettees', html);
   }
 
   // Customer email — full invoice
   if(order.email){
+    const deliverBy = formatDeadline(addWorkingDays(new Date(), 6));
     const html = emailBase(`
       <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Order Confirmed</div>
       <div style="font-size:26px;font-weight:900;color:#1a1a1a;margin-bottom:8px;">Thank you, ${order.name}!</div>
@@ -4812,7 +4837,7 @@ ${items.length ? items.map((it,i)=>{
       ${emailSection('Payment Summary')}
       ${emailTotals(order)}
       ${emailSection('Delivery')}
-      ${emailInfoRow([['Zone',order.zone],['Address',order.address],['Estimated','Within 6 days']])}
+      ${emailInfoRow([['Zone',order.zone],['Address',order.address],['Delivery deadline',deliverBy+' (6 working days, Fri off)']])}
       <div style="margin-top:28px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:16px;font-size:13px;color:#666;text-align:center;">
         Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b> or visit <b style="color:#1a1a1a;">facebook.com/buettees</b>
       </div>`);

@@ -3652,9 +3652,19 @@ function admRenderOverview(){
     </div>`;
 }
 
+let _admOrdersHash='';
 function admRenderOrders(){
   const rows=ADM_DATA.orders;
   const returnWinVal=(ADM_DATA.rawSettings||[]).find(s=>s.key==='return_window')?.value||'1';
+  // Hash check — skip re-render when nothing visible to the orders table changed.
+  // Background admLoadData() refreshes after a status click otherwise rebuilds the
+  // whole tbody and causes a visible flicker right after the optimistic update.
+  const _h=JSON.stringify({
+    r:rows.map(o=>({i:o.orderId,s:o.status,c:o.confirmedAt,d:o.dispatchedAt,v:o.deliveredAt,sp:o.supplierPaid,ap:o.affiliatePaid,sf:o.supplierFault,n:o.notes,t:o.total,gp:o.grossProfit,np:o.netProfit,sc:o.supplierCost,ac:o.affCommission})),
+    s:(ADM_DATA.rawSettings||[]).filter(x=>x.key==='return_window'||x.key==='return_window_changed_at')
+  });
+  if(_h===_admOrdersHash)return;
+  _admOrdersHash=_h;
   const returnWinLabel={'0':'No Return','1':'1 Day','3':'3 Days','7':'7 Days','14':'14 Days','30':'30 Days','always':'Always','5s':'5 Sec (Test)'}[returnWinVal]||returnWinVal+' Days';
   if(!rows.length){document.getElementById("adm-orders").innerHTML='<div class="adm-empty">No confirmed orders yet</div>';return;}
   // Summary totals row

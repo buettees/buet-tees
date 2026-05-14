@@ -3659,8 +3659,16 @@ function admRenderOrders(){
   // Hash check — skip re-render when nothing visible to the orders table changed.
   // Background admLoadData() refreshes after a status click otherwise rebuilds the
   // whole tbody and causes a visible flicker right after the optimistic update.
+  // Reduce timestamps to date+hour so microsecond drift between the client-side
+  // optimistic update and the database round-trip does not invalidate the hash.
+  const _tslice=ts=>ts?String(ts).slice(0,13):'';
   const _h=JSON.stringify({
-    r:rows.map(o=>({i:o.orderId,s:o.status,c:o.confirmedAt,d:o.dispatchedAt,v:o.deliveredAt,sp:o.supplierPaid,ap:o.affiliatePaid,sf:o.supplierFault,n:o.notes,t:o.total,gp:o.grossProfit,np:o.netProfit,sc:o.supplierCost,ac:o.affCommission})),
+    r:rows.map(o=>({
+      i:o.orderId,s:o.status,
+      c:_tslice(o.confirmedAt),d:_tslice(o.dispatchedAt),v:_tslice(o.deliveredAt),
+      sp:o.supplierPaid,ap:o.affiliatePaid,sf:o.supplierFault,
+      n:o.notes,t:o.total,gp:o.grossProfit,np:o.netProfit,sc:o.supplierCost,ac:o.affCommission
+    })),
     s:(ADM_DATA.rawSettings||[]).filter(x=>x.key==='return_window'||x.key==='return_window_changed_at')
   });
   if(_h===_admOrdersHash)return;

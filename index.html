@@ -1822,12 +1822,17 @@ async function loadProducts(){
   try{
     const _cacheKey='bt_sd_v2';
     let _d=null;
-    try{const _c=localStorage.getItem(_cacheKey);if(_c){const _p=JSON.parse(_c);if(Date.now()-_p.ts<300000)_d=_p.data;}}catch(e){}
-    if(!_d){
+    try{
       const r=await fetch(`${EDGE_BASE}/store-data`,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY}});
       if(!r.ok)throw new Error('store-data fetch failed: '+r.status);
       _d=await r.json();
       try{localStorage.setItem(_cacheKey,JSON.stringify({ts:Date.now(),data:_d}));}catch(e){}
+    }catch(netErr){
+      // Network failed — fall back to whatever's in localStorage so the page
+      // still renders something. Offline browsing keeps working; fresh offers
+      // arrive on the next successful load.
+      try{const _c=localStorage.getItem(_cacheKey);if(_c)_d=JSON.parse(_c).data;}catch(e){}
+      if(!_d)throw netErr;
     }
     const{products,suppliers:suppliersData,affiliate_discount_pct,offers_config,affiliates:affCodes}=_d;
     if(affCodes)window._affCodes=affCodes;

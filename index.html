@@ -3814,6 +3814,27 @@ function admRenderOrders(){
           </div>
         </div>
       </div>`;
+      // Deadline overdue check — supplier dispatch in 5 working days,
+      // delivery to customer in 6 working days, skipping Fridays.
+      const baseTs=o.confirmedAt||o.timestamp||o.created_at||null;
+      let deadlineBadge='';
+      let deadlineDetail='';
+      if(baseTs){
+        const baseDate=new Date(baseTs);
+        if(!isNaN(baseDate)){
+          const dispatchBy=addWorkingDays(baseDate,5);
+          const deliverBy=addWorkingDays(baseDate,6);
+          const nowMs=Date.now();
+          const dispatchedStatuses=['Dispatched','Delivered','Returned','Cancelled'];
+          const deliveredStatuses=['Delivered','Returned','Cancelled'];
+          const dispatchOverdue=!dispatchedStatuses.includes(o.status)&&nowMs>dispatchBy.getTime();
+          const deliveryOverdue=!deliveredStatuses.includes(o.status)&&nowMs>deliverBy.getTime();
+          if(deliveryOverdue) deadlineBadge='<span class="adm-badge adm-badge-red" style="margin-left:6px;font-size:8px;letter-spacing:1px">⚠ DELIVERY OVERDUE</span>';
+          else if(dispatchOverdue) deadlineBadge='<span class="adm-badge adm-badge-red" style="margin-left:6px;font-size:8px;letter-spacing:1px">⚠ DISPATCH OVERDUE</span>';
+          deadlineDetail=`<div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Dispatch deadline</div><span style="color:${dispatchOverdue?'#e74c3c':'rgba(255,255,255,0.7)'};font-weight:${dispatchOverdue?'700':'400'}">${formatDeadline(dispatchBy)}</span></div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Delivery deadline</div><span style="color:${deliveryOverdue?'#e74c3c':'rgba(255,255,255,0.7)'};font-weight:${deliveryOverdue?'700':'400'}">${formatDeadline(deliverBy)}</span></div>`;
+        }
+      }
       const detailHtml=`
         ${pnlBar}
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Phone</div>${o.phone||'—'}</div>
@@ -3829,9 +3850,10 @@ function admRenderOrders(){
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Confirmed At</div>${fmtDt(o.confirmedAt)}</div>
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Dispatched At</div>${fmtDt(o.dispatchedAt)}</div>
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Delivered At</div>${fmtDt(o.deliveredAt)}</div>
+        ${deadlineDetail}
         ${o.notes?`<div style="grid-column:1/-1"><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Notes</div>${o.notes}</div>`:''}`;
       return`<tr style="cursor:pointer" onclick="admToggleOrderDetail('${o.orderId}')">
-        <td class="adm-id">${o.orderId}</td>
+        <td class="adm-id">${o.orderId}${deadlineBadge}</td>
         <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
         <td style="font-size:10px;color:rgba(255,255,255,0.5);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(o.customerName||'').replace(/"/g,"'")}">${o.customerName||'—'}</td>
         <td style="font-size:10px;max-width:140px" title="${o.items.replace(/"/g,"'")}">${short}</td>

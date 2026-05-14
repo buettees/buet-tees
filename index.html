@@ -2155,17 +2155,44 @@ async function checkAffCode(ctx){
   const code=document.getElementById(inputId).value.trim().toUpperCase();
   const statusEl=document.getElementById(statusId);
   if(!code){statusEl.textContent="Please enter a code.";statusEl.className="aff-code-status err";return;}
-  // Instant client-side lookup — codes loaded with store-data, no network call needed
-  const match=(window._affCodes||[]).find(a=>a.code===code);
-  if(!match){
-    statusEl.textContent="✗ Invalid affiliate code.";
-    statusEl.className="aff-code-status err";
-    if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
-  }else{
-    const disc=parseFloat(match.discount_pct)||10;
+
+  const applyValid=(disc)=>{
     statusEl.textContent=`✓ Code applied! ${disc}% discount on your order.`;
     statusEl.className="aff-code-status ok";
     if(ctx==='co'){coAffValid=true;affDiscountPct=disc;affCodeApplied=code;updSum();}
+  };
+  const applyInvalid=()=>{
+    statusEl.textContent="✗ Invalid affiliate code.";
+    statusEl.className="aff-code-status err";
+    if(ctx==='co'){coAffValid=false;affDiscountPct=0;affCodeApplied="";updSum();}
+  };
+
+  // Fast path: client-side lookup against codes loaded with store-data
+  const match=(window._affCodes||[]).find(a=>a.code===code);
+  if(match){applyValid(parseFloat(match.discount_pct)||10);return;}
+
+  // Fallback: cached store-data may be stale (5-min TTL) and miss recently
+  // activated affiliates. Verify against live DB before rejecting.
+  statusEl.textContent="Checking…";
+  statusEl.className="aff-code-status";
+  try{
+    const r=await fetch(`${EDGE_BASE}/check-aff-code`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY},
+      body:JSON.stringify({code}),
+    });
+    const d=await r.json();
+    if(d&&d.valid){
+      const disc=parseFloat(d.discount_pct)||10;
+      // Hydrate local cache so subsequent lookups stay instant
+      window._affCodes=window._affCodes||[];
+      if(!window._affCodes.some(a=>a.code===code))window._affCodes.push({code,discount_pct:disc});
+      applyValid(disc);
+    }else{
+      applyInvalid();
+    }
+  }catch(e){
+    applyInvalid();
   }
 }
 

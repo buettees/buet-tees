@@ -467,10 +467,16 @@ footer{background:var(--black);border-top:3px solid var(--burg);padding:56px 40p
 .cm-body{padding:24px 24px 44px;}
 .cm-sec{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--black);margin:20px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--w3);}
 .cm-note{font-size:11px;color:var(--g2);line-height:1.7;margin-bottom:16px;padding:12px 14px;background:var(--w2);border-radius:8px;border-left:2px solid var(--burg);}
-.design-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.design-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-bottom:16px;}
 .dpick{border:1.5px solid var(--w3);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;text-transform:uppercase;color:var(--black);background:var(--w);cursor:pointer;transition:all 0.12s;}
 .dpick:hover{border-color:var(--burg);}
 .dpick.on{background:var(--black);color:var(--w);border-color:var(--black);}
+.dpick-img{border:1.5px solid var(--w3);border-radius:10px;padding:6px;background:var(--w);cursor:pointer;transition:all 0.12s;text-align:center;font-family:'Poppins',sans-serif;}
+.dpick-img:hover{border-color:var(--burg);}
+.dpick-img.on{border-color:var(--black);box-shadow:0 0 0 2px var(--black) inset;}
+.dpick-img img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px;background:var(--w2);display:block;}
+.dpick-img .dpick-name{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--black);margin-top:5px;line-height:1.2;}
+.dpick-img.on .dpick-name{color:var(--burg);}
 /* summary box inside both-sides modal */
 .cm-summary{background:var(--w2);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:12px;color:var(--black);line-height:1.9;}
 .cm-summary strong{font-weight:700;}
@@ -1480,10 +1486,11 @@ body { max-width: 100vw; overflow-x: clip; }
       <div class="design-picker" id="cmDesignBack"></div>
 
       <div class="cm-sec">Size &amp; Color</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize"></select></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Size</div><select class="fi" id="cmSize" onchange="updateCMSzChartHighlight()"></select></div>
         <div style="flex:1;min-width:120px;"><div class="fl" style="margin-bottom:6px;">Color</div><select class="fi" id="cmColor"></select></div>
       </div>
+      <div id="cmSzChart" style="display:none;margin:0 0 16px;overflow-x:auto"></div>
 
       <div class="cm-summary" id="cmSummary">
         Select front and back designs to see price summary.
@@ -1942,8 +1949,8 @@ function showPage(name){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function renderSzChart(cat,activeSz){
-  const tbl=document.getElementById('szchrt');if(!tbl)return;
+function renderSzChart(cat,activeSz,targetId){
+  const tbl=document.getElementById(targetId||'szchrt');if(!tbl)return;
   const ss=cat.supplierSizes||{};
   const ssKeys=Object.keys(ss);
   // Use supplier sizes only — size buttons and chart always reflect supplier data
@@ -2338,14 +2345,8 @@ function openCustomModal(){
     `<button class="dpick ${i===0?'on':''}" onclick="cmPickType('${t}',this)">${t}</button>`
   ).join('');
 
-  // Build design pickers
-  const names=prods.map(p=>p.name);
-  document.getElementById('cmDesignFront').innerHTML=names.map((n,i)=>
-    `<button class="dpick" onclick="cmPickDesign('front',${i},this)">${n}</button>`
-  ).join('');
-  document.getElementById('cmDesignBack').innerHTML=names.map((n,i)=>
-    `<button class="dpick" onclick="cmPickDesign('back',${i},this)">${n}</button>`
-  ).join('');
+  // Build design pickers with thumbnails (image varies per shirt type)
+  renderCMDesignPickers();
 
   updateCMSizeColor();
   updateCMSummary();
@@ -2360,12 +2361,26 @@ function closeCM(){document.getElementById('cmBg').classList.remove('on');docume
 function cmPickType(type,el){
   document.getElementById('cmTypePicker').querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');cmShirtType=type;
+  // Thumbnails differ by shirt type — re-render design tiles so images match
+  renderCMDesignPickers();
   updateCMSizeColor();updateCMSummary();
+}
+
+function renderCMDesignPickers(){
+  const tileHTML=(side)=>prods.map((p,i)=>{
+    const cat=(p.categories||[]).find(c=>c.category===cmShirtType)||(p.categories||[])[0];
+    const img=cat?(cat.image||''):'';
+    const isOn=(side==='front'?cmSelFront:cmSelBack)===p.name;
+    const safeName=p.name.replace(/"/g,'&quot;');
+    return `<button class="dpick-img${isOn?' on':''}" onclick="cmPickDesign('${side}',${i},this)"><img src="${img}" alt="${safeName}" loading="lazy" onerror="this.style.opacity='0.15'"/><div class="dpick-name">${p.name}</div></button>`;
+  }).join('');
+  document.getElementById('cmDesignFront').innerHTML=tileHTML('front');
+  document.getElementById('cmDesignBack').innerHTML=tileHTML('back');
 }
 
 function cmPickDesign(side,idx,el){
   const container=side==='front'?document.getElementById('cmDesignFront'):document.getElementById('cmDesignBack');
-  container.querySelectorAll('.dpick').forEach(b=>b.classList.remove('on'));
+  container.querySelectorAll('.dpick-img').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   const name=prods[idx]?prods[idx].name:el.textContent;
   if(side==='front'){cmSelFront=name;updateCMSizeColor();}
@@ -2388,6 +2403,19 @@ function updateCMSizeColor() {
   document.getElementById('cmColor').innerHTML = colors.map(c =>
     `<option>${c}</option>`
   ).join('');
+
+  // Render size chart table (chest/length per size) below the size selector
+  if (cat) renderSzChart(cat, sizes[0], 'cmSzChart');
+  else { const el = document.getElementById('cmSzChart'); if (el) el.style.display = 'none'; }
+}
+
+function updateCMSzChartHighlight() {
+  const refName = cmSelFront || (prods.length ? prods[0].name : null);
+  const refProd = prods.find(p => p.name === refName) || prods[0];
+  const cat = refProd ? (refProd.categories.find(c => c.category === cmShirtType) || refProd.categories[0]) : null;
+  if (!cat) return;
+  const sel = document.getElementById('cmSize');
+  renderSzChart(cat, sel ? sel.value : null, 'cmSzChart');
 }
 
 function getCMBasePrice(){

@@ -7740,68 +7740,224 @@ function admToggleCRMDetail(id){
 
 
 // ══════════════════════════════════════════════════════════
-// INVENTORY TAB — Stock Tracking (Step 5)
-// Stock stored as JSON in settings table: key = 'inventory_stock'
-// Structure: { "ProductName|Category|Size|Color": qty, ... }
+// INVENTORY TAB — Stock Tracking (supplier-first)
+// Stock stored as JSON in settings.inventory_stock
+// Two key formats coexist in same object:
+//   Supplier-level: "_sup|<supplier>|<catKey>|<size>|<color>": qty
+//   Product-level (legacy): "<product>|<category>|<size>|<color>": qty
+// Both decrement on order confirm.
 // ══════════════════════════════════════════════════════════
 
 const INV_LOW_THRESHOLD = 3;
-let invStock = {}; // loaded from settings
+let invStock = {};
 let invEditing = false;
 let invEditDraft = {};
+let invSelectedSupplier = '';
+let invShowProductDetail = false;
 
-// ── Load stock from settings into invStock ─────────────
+const INV_CAT_MAP = {
+  'Drop Shoulder':'Drop','Drop':'Drop',
+  'Hoodie Back':'Hoodie','Hoodie':'Hoodie',
+  'Regular':'Regular'
+};
+function invCatKey(displayCat){ return INV_CAT_MAP[displayCat]||displayCat||'Regular'; }
+function invSupKey(supplier, catKey, size, color){ return `_sup|${supplier}|${catKey}|${size}|${color}`; }
+function invKey(product, category, size, color){ return `${product}|${category}|${size}|${color}`; }
+
 function invLoadFromData(){
   const cfg = {};
   (ADM_DATA.rawSettings||[]).forEach(s=>cfg[s.key]=s.value);
   try{ invStock = JSON.parse(cfg.inventory_stock||'{}'); }catch(e){ invStock={}; }
 }
 
-// ── Save invStock to settings table ───────────────────
 async function invSaveStock(stock){
   const{error}=await sbAdmin.from('settings').upsert({key:'inventory_stock',value:JSON.stringify(stock)},{onConflict:'key'});
   if(error)throw error;
   invStock=stock;
 }
 
-// ── Stock key format ───────────────────────────────────
-function invKey(product, category, size, color){
-  return `${product}|${category}|${size}|${color}`;
-}
-
-// ── Auto-deduct stock on order confirm ─────────────────
+// Auto-deduct on order confirm: decrement both supplier-level and product-level keys
 async function invDeductStock(order){
   try{
-    // Re-read latest stock from DB first
     const{data:settRow}=await sbAdmin.from('settings').select('value').eq('key','inventory_stock').single();
     let stock={};
     try{ stock=JSON.parse(settRow?.value||'{}'); }catch(e){}
-
     const items=order.items_json||[];
     let changed=false;
     items.forEach(i=>{
-      if(i.type==='bothsides'){
-        // Both sides counts as 1 shirt
-        const k=invKey(i.shirtType||i.name||'?','Drop Shoulder',i.size||'?',i.color||'?');
-        if(typeof stock[k]==='number'){ stock[k]=Math.max(0,stock[k]-(i.qty||1)); changed=true; }
-      } else {
-        const k=invKey(i.name||'?',i.category||'?',i.size||'?',i.color||'?');
-        if(typeof stock[k]==='number'){ stock[k]=Math.max(0,stock[k]-(i.qty||1)); changed=true; }
-      }
+      const supplier = i.supplier || 'T-Shirt Hub';
+      const cat = i.type==='bothsides' ? 'Drop Shoulder' : (i.category||'?');
+      const catK = invCatKey(cat);
+      const size = i.size||'?', color = i.color||'?';
+      const qty = i.qty||1;
+      // Product-level (legacy)
+      const pk = i.type==='bothsides'
+        ? invKey(i.shirtType||i.name||'?','Drop Shoulder',size,color)
+        : invKey(i.name||'?',cat,size,color);
+      if(typeof stock[pk]==='number'){ stock[pk]=Math.max(0,stock[pk]-qty); changed=true; }
+      // Supplier-level
+      const sk = invSupKey(supplier, catK, size, color);
+      if(typeof stock[sk]==='number'){ stock[sk]=Math.max(0,stock[sk]-qty); changed=true; }
     });
     if(changed) await invSaveStock(stock);
   }catch(e){ console.warn('Stock deduct failed:',e.message); }
 }
 
-// ── Render the Inventory tab ───────────────────────────
+let _admInvHash='';
 function admRenderInventory(){
+  // Skip render while editing an input in this tab (prevents poll wipe)
+  const _ae=document.activeElement;
+  if(_ae && _ae.tagName==='INPUT' && _ae.closest && _ae.closest('#adm-inventory'))return;
+
   invLoadFromData();
+  const suppliers = ADM_DATA.suppliersRaw||[];
+  if(!suppliers.length){
+    document.getElementById('adm-inventory').innerHTML = '<div class="adm-empty">No suppliers configured. Add a supplier in the Suppliers tab first.</div>';
+    return;
+  }
+  if(!invSelectedSupplier || !suppliers.find(s=>s.name===invSelectedSupplier)){
+    invSelectedSupplier = suppliers[0].name;
+  }
+  const sup = suppliers.find(s=>s.name===invSelectedSupplier);
+  const categories = sup.categories || {};
+
+  // Hash: bail if nothing changed (avoids 5s flicker)
+  const _hashSrc=JSON.stringify({s:invSelectedSupplier,e:invEditing,p:invShowProductDetail,k:invStock,c:categories});
+  if(_hashSrc===_admInvHash && !invEditing)return;
+  _admInvHash=_hashSrc;
+
+  // Supplier-level KPIs (current supplier only)
+  let totalUnits=0, outCount=0, lowCount=0, untrackedCount=0, totalCells=0;
+  Object.entries(categories).forEach(([catK, catData])=>{
+    if(catData && catData.active===false) return;
+    const colors = catData.colors||[];
+    const sizes = Object.keys(catData.sizes||{});
+    colors.forEach(color=>{
+      sizes.forEach(size=>{
+        totalCells++;
+        const k = invSupKey(sup.name, catK, size, color);
+        const q = invStock[k];
+        if(typeof q==='number'){
+          totalUnits += q;
+          if(q===0) outCount++;
+          else if(q<=INV_LOW_THRESHOLD) lowCount++;
+        } else {
+          untrackedCount++;
+        }
+      });
+    });
+  });
+
+  let html = `
+  <div class="adm-kpi-row" style="margin-bottom:20px">
+    <div class="adm-kpi highlight">
+      <div class="adm-kpi-label">📦 Total Units In Stock</div>
+      <div class="adm-kpi-val c-white">${totalUnits}</div>
+      <div class="adm-kpi-sub">${invSelectedSupplier}</div>
+      <div class="adm-kpi-accent"></div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🔴 Out of Stock</div>
+      <div class="adm-kpi-val ${outCount>0?'c-red':'c-green'}">${outCount}</div>
+      <div class="adm-kpi-sub">Variants at zero</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">🟡 Low Stock</div>
+      <div class="adm-kpi-val ${lowCount>0?'c-gold':'c-green'}">${lowCount}</div>
+      <div class="adm-kpi-sub">≤ ${INV_LOW_THRESHOLD} units left</div>
+    </div>
+    <div class="adm-kpi">
+      <div class="adm-kpi-label">❓ Untracked</div>
+      <div class="adm-kpi-val ${untrackedCount>0?'c-gold':'c-green'}">${untrackedCount}</div>
+      <div class="adm-kpi-sub">No quantity set</div>
+    </div>
+  </div>
+
+  <div style="background:#0f1a0f;border:1px solid rgba(39,174,96,0.2);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.7">
+    <strong style="color:rgba(255,255,255,0.7)">How it works:</strong>
+    Stock tracked per supplier × category × color × size. Pick a supplier below, then click <b>Edit Stock</b> to set quantities. Stock auto-deducts when an order is confirmed. Untracked variants (—) are ignored on deduct.
+  </div>
+
+  <!-- Supplier pills -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+    ${suppliers.map(s=>{
+      const sel=s.name===invSelectedSupplier;
+      return `<button onclick="invSelectSupplier('${(s.name||'').replace(/'/g,"\\'")}')" style="background:${sel?'rgba(201,168,76,0.22)':'rgba(255,255,255,0.05)'};border:1px solid ${sel?'rgba(201,168,76,0.5)':'rgba(255,255,255,0.1)'};color:${sel?'#C9A84C':'rgba(255,255,255,0.6)'};padding:8px 18px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;cursor:pointer;">${s.name}</button>`;
+    }).join('')}
+  </div>
+
+  <!-- Edit toolbar -->
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+    <button class="adm-tx-btn" onclick="invToggleEdit()" id="invEditBtn" style="${invEditing?'background:rgba(39,174,96,0.3);border-color:rgba(39,174,96,0.5)':''}">${invEditing?'✕ Cancel Editing':'✏️ Edit Stock Quantities'}</button>
+    ${invEditing?`<button class="adm-tx-btn" onclick="invSaveSupplierEdits()" style="background:rgba(39,174,96,0.3);border-color:rgba(39,174,96,0.5)">✓ Save All Changes</button>`:''}
+    <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">${totalCells} variant${totalCells!==1?'s':''} for ${invSelectedSupplier}</div>
+  </div>
+
+  <!-- Category matrix cards -->
+  ${Object.entries(categories).filter(([k,v])=>v && v.active!==false).map(([catK, catData])=>{
+    const colors = catData.colors||[];
+    const sizes = Object.keys(catData.sizes||{});
+    const catLabel = catK==='Drop'?'Drop Shoulder':catK==='Hoodie'?'Hoodie':catK;
+    if(!colors.length || !sizes.length){
+      return `<div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;margin-bottom:8px;">${catLabel}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">No colors or sizes defined for this category in the Suppliers tab.</div>
+      </div>`;
+    }
+    let catTotal=0;
+    const rowsHtml = colors.map(color=>{
+      let rowTotal=0;
+      const cells = sizes.map(size=>{
+        const k = invSupKey(sup.name, catK, size, color);
+        const q = invStock[k];
+        const tracked = typeof q==='number';
+        if(tracked) rowTotal += q;
+        const isOut = tracked && q===0;
+        const isLow = tracked && q>0 && q<=INV_LOW_THRESHOLD;
+        const cellColor = isOut?'#c0392b':isLow?'#C9A84C':tracked?'#27ae60':'rgba(255,255,255,0.18)';
+        const cellBg = isOut?'rgba(192,57,43,0.05)':isLow?'rgba(201,168,76,0.05)':'';
+        const editCell = invEditing
+          ? `<input type="number" min="0" value="${tracked?q:''}" style="width:54px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:4px 6px;border-radius:4px;font-family:'Poppins',sans-serif;font-size:12px;text-align:center" placeholder="—" oninput="invEditDraft['${k.replace(/'/g,"\\'")}']=(this.value===''?null:parseInt(this.value))"/>`
+          : (tracked?q:'<span style="opacity:0.4">—</span>');
+        return `<td style="text-align:center;color:${cellColor};font-weight:700;background:${cellBg};padding:8px 6px;">${editCell}</td>`;
+      }).join('');
+      catTotal += rowTotal;
+      return `<tr>
+        <td style="color:rgba(255,255,255,0.7);font-weight:600;padding:8px 12px;">${color}</td>
+        ${cells}
+        <td style="text-align:center;color:rgba(255,255,255,0.5);font-weight:700;border-left:1px solid rgba(255,255,255,0.08);padding:8px 6px;">${rowTotal}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="background:#141414;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C9A84C;">${catLabel}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);">Total: <b style="color:#fff">${catTotal}</b> units</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.03);">
+            <th style="text-align:left;padding:8px 12px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:1px;font-size:10px;text-transform:uppercase;">Color</th>
+            ${sizes.map(s=>`<th style="text-align:center;padding:8px 6px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:1px;font-size:10px;">${s}</th>`).join('')}
+            <th style="text-align:center;padding:8px 6px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:1px;font-size:10px;border-left:1px solid rgba(255,255,255,0.08);">Total</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+  }).join('')}
+
+  <!-- Product-level toggle -->
+  <div style="margin-top:24px;">
+    <button onclick="invToggleProductDetail()" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);padding:9px 16px;border-radius:7px;font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;">${invShowProductDetail?'▲ Hide':'▼ Show'} Product-Level SKUs (from orders)</button>
+  </div>
+  ${invShowProductDetail ? _invRenderProductSkus() : ''}
+  `;
+  document.getElementById('adm-inventory').innerHTML = html;
+}
+
+function _invRenderProductSkus(){
   const orders = ADM_DATA.orders||[];
   const confirmed = orders.filter(o=>o.isConfirmed);
-
-  // Build product+category+size+color combos from product_categories
-  // We use confirmed orders as the source of truth for what SKUs exist
-  // Plus any manually added entries in invStock
   const skuSet = new Set();
   confirmed.forEach(o=>{
     const items=o.items_json||[];
@@ -7813,120 +7969,37 @@ function admRenderInventory(){
       }
     });
   });
-  // Also include any keys that are already in stock (manually added)
-  Object.keys(invStock).forEach(k=>skuSet.add(k));
-
-  // Parse SKUs into structured rows
+  Object.keys(invStock).forEach(k=>{ if(!k.startsWith('_sup|')) skuSet.add(k); });
   const skus = [...skuSet].map(k=>{
     const [product,category,size,color]=k.split('|');
     return {k, product:product||'?', category:category||'?', size:size||'?', color:color||'?',
       qty: typeof invStock[k]==='number' ? invStock[k] : null };
   }).sort((a,b)=>a.product.localeCompare(b.product)||a.category.localeCompare(b.category)||a.size.localeCompare(b.size)||a.color.localeCompare(b.color));
-
-  // KPIs
-  const tracked = skus.filter(s=>s.qty!==null);
-  const totalUnits = tracked.reduce((s,r)=>s+r.qty,0);
-  const outOfStock = tracked.filter(r=>r.qty===0).length;
-  const lowStock = tracked.filter(r=>r.qty>0&&r.qty<=INV_LOW_THRESHOLD).length;
-  const untracked = skus.filter(s=>s.qty===null).length;
-
-  // Group by product+category for display
-  const groups={};
-  skus.forEach(s=>{
-    const gk=`${s.product}||${s.category}`;
-    if(!groups[gk])groups[gk]={product:s.product,category:s.category,rows:[]};
-    groups[gk].rows.push(s);
-  });
-
-  document.getElementById('adm-inventory').innerHTML=`
-  <!-- ── KPIs ── -->
-  <div class="adm-kpi-row" style="margin-bottom:20px">
-    <div class="adm-kpi highlight">
-      <div class="adm-kpi-label">📦 Total Units In Stock</div>
-      <div class="adm-kpi-val c-white">${totalUnits}</div>
-      <div class="adm-kpi-sub">${tracked.length} SKUs tracked</div>
-      <div class="adm-kpi-accent"></div>
-    </div>
-    <div class="adm-kpi">
-      <div class="adm-kpi-label">🔴 Out of Stock</div>
-      <div class="adm-kpi-val ${outOfStock>0?'c-red':'c-green'}">${outOfStock}</div>
-      <div class="adm-kpi-sub">SKUs at zero</div>
-    </div>
-    <div class="adm-kpi">
-      <div class="adm-kpi-label">🟡 Low Stock</div>
-      <div class="adm-kpi-val ${lowStock>0?'c-gold':'c-green'}">${lowStock}</div>
-      <div class="adm-kpi-sub">≤ ${INV_LOW_THRESHOLD} units left</div>
-    </div>
-    <div class="adm-kpi">
-      <div class="adm-kpi-label">❓ Untracked SKUs</div>
-      <div class="adm-kpi-val ${untracked>0?'c-gold':'c-green'}">${untracked}</div>
-      <div class="adm-kpi-sub">Set quantities below</div>
-    </div>
-  </div>
-
-  <!-- ── INFO BANNER ── -->
-  <div style="background:#0f1a0f;border:1px solid rgba(39,174,96,0.2);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.4);line-height:1.7">
-    <strong style="color:rgba(255,255,255,0.7)">How it works:</strong>
-    Stock is deducted automatically when you confirm an order. SKUs are discovered from confirmed orders — set their quantities once after a restock. Untracked SKUs (no quantity set) are shown in grey and will not be deducted.
-  </div>
-
-  <!-- ── TOOLBAR ── -->
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-    <button class="adm-tx-btn" onclick="invToggleEdit()" id="invEditBtn" style="${invEditing?'background:rgba(39,174,96,0.3);border-color:rgba(39,174,96,0.5)':''}">
-      ${invEditing?'✕ Cancel Editing':'✏️ Edit Stock Quantities'}
-    </button>
-    ${invEditing?`
-    <button class="adm-tx-btn" onclick="invSaveEdits()" style="background:rgba(39,174,96,0.3);border-color:rgba(39,174,96,0.5)">✓ Save All Changes</button>
-    `:''}
-    <div style="font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px">${skus.length} SKU${skus.length!==1?'s':''} total</div>
-  </div>
-
-  <!-- ── STOCK TABLE ── -->
-  ${skus.length?`
-  <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr>
-      <th>Product</th>
-      <th>Category</th>
-      <th>Size</th>
-      <th>Color</th>
-      <th>In Stock</th>
-      <th>Status</th>
-    </tr></thead>
-    <tbody>${skus.map(s=>{
-      const isUntracked = s.qty===null;
-      const isOut = !isUntracked && s.qty===0;
-      const isLow = !isUntracked && s.qty>0 && s.qty<=INV_LOW_THRESHOLD;
-      const statusLabel = isUntracked?'Untracked':isOut?'Out of Stock':isLow?`Low (${s.qty})`: 'OK';
-      const statusClass = isUntracked?'adm-badge-gray':isOut?'adm-badge-red':isLow?'adm-badge-gold':'adm-badge-green';
-      const displayQty = isUntracked ? '<span style="color:rgba(255,255,255,0.15)">—</span>' : s.qty;
-      const editCell = invEditing
-        ? `<input type="number" min="0" value="${isUntracked?'':s.qty}"
-             style="width:70px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:5px 8px;border-radius:5px;font-family:'Poppins',sans-serif;font-size:12px;text-align:center"
-             oninput="invEditDraft['${s.k.replace(/'/g,"\\'")}']=(this.value===''?null:parseInt(this.value))"
-             placeholder="qty"/>`
-        : displayQty;
-      return`<tr style="${isOut?'background:rgba(192,57,43,0.04)':isLow?'background:rgba(201,168,76,0.04)':''}">
-        <td class="adm-white">${s.product}</td>
-        <td style="color:rgba(255,255,255,0.4)">${s.category}</td>
-        <td style="color:rgba(255,255,255,0.6);font-weight:700">${s.size}</td>
-        <td style="color:rgba(255,255,255,0.4)">${s.color}</td>
-        <td style="font-weight:700;color:${isOut?'#c0392b':isLow?'#C9A84C':isUntracked?'rgba(255,255,255,0.15)':'#27ae60'}">${editCell}</td>
-        <td><span class="adm-badge ${statusClass}">${statusLabel}</span></td>
-      </tr>`;
-    }).join('')}
-    </tbody>
-  </table></div></div>
-  `:'<div class="adm-empty">No SKUs discovered yet — confirm an order first, or stock will appear once orders are confirmed</div>'}
-  `;
+  if(!skus.length) return '<div style="margin-top:14px;background:#0a0a0a;border:1px dashed rgba(255,255,255,0.08);border-radius:10px;padding:18px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">No product-level SKUs from confirmed orders yet.</div>';
+  return `<div style="margin-top:14px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:10px;">Product-Level SKUs (discovered from orders) — informational</div>
+    <table class="adm-tbl" style="width:100%;font-size:11px;">
+      <thead><tr><th>Product</th><th>Category</th><th>Size</th><th>Color</th><th>In Stock</th></tr></thead>
+      <tbody>${skus.map(s=>{
+        const isUntracked = s.qty===null;
+        const displayQty = isUntracked ? '<span style="opacity:0.3">—</span>' : s.qty;
+        return `<tr>
+          <td class="adm-white">${s.product}</td>
+          <td style="color:rgba(255,255,255,0.4)">${s.category}</td>
+          <td style="color:rgba(255,255,255,0.6);font-weight:700">${s.size}</td>
+          <td style="color:rgba(255,255,255,0.4)">${s.color}</td>
+          <td style="color:rgba(255,255,255,0.5)">${displayQty}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  </div>`;
 }
 
-function invToggleEdit(){
-  invEditing=!invEditing;
-  invEditDraft={};
-  admRenderInventory();
-}
+function invSelectSupplier(name){ invSelectedSupplier=name; _admInvHash=''; admRenderInventory(); }
+function invToggleProductDetail(){ invShowProductDetail=!invShowProductDetail; _admInvHash=''; admRenderInventory(); }
+function invToggleEdit(){ invEditing=!invEditing; invEditDraft={}; _admInvHash=''; admRenderInventory(); }
 
-async function invSaveEdits(){
+async function invSaveSupplierEdits(){
   try{
     const newStock={...invStock};
     Object.entries(invEditDraft).forEach(([k,v])=>{
@@ -7936,16 +8009,18 @@ async function invSaveEdits(){
     await invSaveStock(newStock);
     invEditing=false;
     invEditDraft={};
-    // Patch ADM_DATA rawSettings so re-render picks up new value
     if(ADM_DATA.rawSettings){
       const s=ADM_DATA.rawSettings.find(r=>r.key==='inventory_stock');
       if(s)s.value=JSON.stringify(newStock);
       else ADM_DATA.rawSettings.push({key:'inventory_stock',value:JSON.stringify(newStock)});
     }
+    _admInvHash='';
     toast('Stock saved ✓');
     admRenderInventory();
   }catch(e){toast('Failed: '+e.message);}
 }
+// Legacy alias kept for backward compatibility
+const invSaveEdits = invSaveSupplierEdits;
 
 function srchToggle(){
   const inp=document.getElementById('srchInput');

@@ -4242,11 +4242,16 @@ function admRenderAffiliates(){
   </table></div></div>`;
 }
 function admRenderOwners(){
+  const _ae=document.activeElement;
+  if(_ae && _ae.tagName==='INPUT' && _ae.closest && _ae.closest('#adm-owners'))return;
   if(!sessionStorage.getItem('owners_unlocked')){
-    document.getElementById('adm-owners').innerHTML=`
+    // Only render if locked-prompt not already there (avoid wiping input on re-render)
+    const cur=document.getElementById('adm-owners');
+    if(cur && cur.querySelector('#owners-pass'))return;
+    cur.innerHTML=`
       <div style="padding:60px;text-align:center">
         <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase">Owners Tab — Restricted</div>
-        <input id="owners-pass" type="password" placeholder="Enter password" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:10px 16px;border-radius:6px;outline:none;margin-right:8px;font-size:13px;"/>
+        <input id="owners-pass" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')admUnlockOwners()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:10px 16px;border-radius:6px;outline:none;margin-right:8px;font-size:13px;"/>
         <button onclick="admUnlockOwners()" style="background:#6D001A;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;letter-spacing:1px">UNLOCK</button>
       </div>`;
     return;

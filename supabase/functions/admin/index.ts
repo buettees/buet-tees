@@ -123,23 +123,22 @@ Deno.serve(async (req: Request) => {
       const sep = '━━━━━━━━━━━━━━━━━━'
       let text = ''
       if (event === 'activated') {
-        text = `✅ <b>Affiliate Activated</b>\n${sep}\n` +
-          `👤 <b>${d.full_name}</b>\n` +
-          `🔑 Code: <code>${d.code}</code>\n` +
-          `🎁 Discount: ${d.discount_pct}%\n\n` +
-          `<i>Welcome aboard! Start sharing the code.</i>`
+        text = `<b>AFFILIATE ACTIVATED</b>\n${sep}\n` +
+          `<b>Name:</b> ${d.full_name}\n` +
+          `<b>Code:</b> <code>${d.code}</code>\n` +
+          `<b>Customer discount:</b> ${d.discount_pct}%\n\n` +
+          `<i>Welcome to the team. Start sharing your code today.</i>`
       } else if (event === 'deactivated') {
-        text = `🚫 <b>Affiliate Deactivated</b>\n${sep}\n` +
-          `👤 <b>${d.full_name}</b>\n` +
-          `🔑 Code: <code>${d.code}</code>`
+        text = `<b>AFFILIATE DEACTIVATED</b>\n${sep}\n` +
+          `<b>Name:</b> ${d.full_name}\n` +
+          `<b>Code:</b> <code>${d.code}</code>`
       } else if (event === 'payment-sent') {
-        text = `💸 <b>Affiliate Payment Sent</b>\n${sep}\n` +
-          `👤 <b>${d.full_name}</b>\n` +
-          `🔑 Code: <code>${d.code}</code>\n` +
-          `💰 Amount: ৳${d.amount}\n` +
-          (d.method ? `🏦 Method: ${d.method}\n` : '') +
-          (d.orderId ? `📦 Order: <b>${d.orderId}</b>\n` : '') +
-          `\n<i>Thank you for the hustle.</i>`
+        text = `<b>COMMISSION PAID — ${String(d.full_name || '').toString().toUpperCase()}</b>\n${sep}\n` +
+          `<b>Code:</b> <code>${d.code}</code>\n` +
+          `<b>Amount:</b> ৳${d.amount}\n` +
+          (d.method ? `<b>Method:</b> ${d.method}\n` : '') +
+          (d.orderId ? `<b>Order:</b> ${d.orderId}\n` : '') +
+          `\n<i>Thank you for the work. Keep it coming.</i>`
       } else {
         return json({ error: 'Unknown event' }, 400)
       }

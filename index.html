@@ -4756,29 +4756,32 @@ async function notifyNewOrder(order){
   const items = order.items_json || [];
 
   // ── 1. Summary message (always sent first) ──────────────────
-  const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const affLine = order.affiliate_code ? `\n<b>Affiliate code:</b> <code>${order.affiliate_code}</code>` : '';
   const dispatchBy = formatDeadline(addWorkingDays(new Date(), 5));
   const deliverBy = formatDeadline(addWorkingDays(new Date(), 6));
   const summaryText =
-`🛒 <b>NEW ORDER — ${order.id}</b>
+`<b>NEW ORDER — ${order.id}</b>
+━━━━━━━━━━━━━━━━━━
+<b>Customer:</b> ${order.name}
+<b>Phone:</b> ${order.phone}
+<b>Zone:</b> ${order.zone}
+<b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+<b>Dispatch by:</b> ${dispatchBy}
+<b>Deliver by:</b> ${deliverBy}
 
-👤 <b>${order.name}</b>  📞 ${order.phone}
-📍 <b>Zone:</b> ${order.zone}
-💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
-⏰ <b>Dispatch by:</b> ${dispatchBy}  |  <b>Deliver by:</b> ${deliverBy}
-
-📦 <b>${items.length} item(s):</b>
+<b>Items (${items.length})</b>
 ${items.map((it,i)=>{
   if(it.type==='bothsides'){
-    return `  ${i+1}. ↔️ Both Sides — <b>${it.shirtType||''}</b>\n      Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+    return `${i+1}. Both Sides — <b>${it.shirtType||''}</b>\n    Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n    Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
   }
-  const side = it.side ? (it.side==='front'?' 〔front〕':' 〔back〕') : '';
-  return `  ${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+  const side = it.side ? (it.side==='front'?' [front]':' [back]') : '';
+  return `${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n    Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
 }).join('\n')}
 
-💰 Subtotal: ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`  |  Discount: −৳${order.discount_amt}`:''}
-🚚 Delivery: ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
-✅ <b>Total: ৳${order.total}</b>`;
+<b>Subtotal:</b> ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`\n<b>Discount:</b> −৳${order.discount_amt}`:''}
+<b>Delivery:</b> ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
+━━━━━━━━━━━━━━━━━━
+<b>Total: ৳${order.total}</b>`;
 
   for(const cid of chatIds) await sendTelegram(token, cid, summaryText);
 
@@ -4817,7 +4820,16 @@ ${items.map((it,i)=>{
 }
 
 async function notifyAffiliateRegistered(aff){
-  const tgText = `📋 <b>New Affiliate Application</b>\n👤 ${aff.name} · ID: ${aff.student_id}\n🏠 ${aff.hall} · 📞 ${aff.whatsapp}\n💾 ${aff.storage_type}\n🔑 Code (inactive): <code>${aff.code}</code>`;
+  const tgText =
+    `<b>NEW AFFILIATE APPLICATION</b>\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `<b>Name:</b> ${aff.name}\n` +
+    `<b>Student ID:</b> ${aff.student_id}\n` +
+    `<b>Hall:</b> ${aff.hall}\n` +
+    `<b>Contact:</b> ${aff.whatsapp}\n` +
+    `<b>Storage:</b> ${aff.storage_type}\n` +
+    `<b>Code (inactive):</b> <code>${aff.code}</code>\n\n` +
+    `<i>Pending admin review.</i>`;
   await notifyOwnersTelegram(tgText);
 }
 
@@ -4892,28 +4904,30 @@ async function notifyAffiliateActivated(aff){
 async function notifyOrderConfirmed(order){
   const sup = getSupplier();
   const items = order.items_json || [];
-  const affLine = order.affiliate_code ? `\n🔗 <b>Affiliate:</b> <code>${order.affiliate_code}</code>` : '';
+  const affLine = order.affiliate_code ? `\n<b>Affiliate code:</b> <code>${order.affiliate_code}</code>` : '';
   const dispatchBy = formatDeadline(addWorkingDays(new Date(), 5));
   const tgText =
-`✅ <b>Order Confirmed — ${order.id}</b>
+`<b>ORDER CONFIRMED — ${order.id}</b>
+━━━━━━━━━━━━━━━━━━
+<b>Customer:</b> ${order.name}
+<b>Phone:</b> ${order.phone}
+<b>Zone:</b> ${order.zone}
+<b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
+<b>Dispatch deadline:</b> ${dispatchBy} (5 working days, Fri off)
 
-👤 <b>${order.name}</b>  📞 ${order.phone}
-📍 <b>Zone:</b> ${order.zone}
-💳 <b>bKash TrxID:</b> ${order.trx_id||'—'}${affLine}
-⏰ <b>Dispatch deadline:</b> ${dispatchBy} (5 working days, Fri off)
-
-📦 <b>${items.length||1} item(s):</b>
+<b>Items (${items.length||1})</b>
 ${items.length ? items.map((it,i)=>{
   if(it.type==='bothsides'){
-    return `  ${i+1}. ↔️ Both Sides — <b>${it.shirtType||''}</b>\n      Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+    return `${i+1}. Both Sides — <b>${it.shirtType||''}</b>\n    Front: ${it.frontName||'—'}  |  Back: ${it.backName||'—'}\n    Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
   }
-  const side = it.side ? (it.side==='front'?' 〔front〕':' 〔back〕') : '';
-  return `  ${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n      Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
-}).join('\n') : `  ${order.items||'—'}`}
+  const side = it.side ? (it.side==='front'?' [front]':' [back]') : '';
+  return `${i+1}. <b>${it.name||''}</b> — ${it.category||''}${side}\n    Size: ${it.size||'?'}  Color: ${it.color||'?'}  Qty: ${it.qty||1}`;
+}).join('\n') : `${order.items||'—'}`}
 
-💰 Subtotal: ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`  |  Discount: −৳${order.discount_amt}`:''}
-🚚 Delivery: ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
-✅ <b>Total: ৳${order.total}</b>${order.notes?`\n📝 ${order.notes}`:''}`;
+<b>Subtotal:</b> ৳${order.subtotal||order.total}${parseFloat(order.discount_amt||0)>0?`\n<b>Discount:</b> −৳${order.discount_amt}`:''}
+<b>Delivery:</b> ${parseFloat(order.delivery_fee||0)===0?'Free':'৳'+order.delivery_fee}
+━━━━━━━━━━━━━━━━━━
+<b>Total: ৳${order.total}</b>${order.notes?`\n<b>Notes:</b> ${order.notes}`:''}`;
 
   await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
 
@@ -5037,9 +5051,9 @@ async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
       if(ord && calcFn){
         const bd = calcFn(supplierName, ord.detected_cat||ord.category||'', ord.items_json||[]);
         if(bd&&bd.suborders&&bd.suborders.length){
-          breakdownText = '\n\n📋 <b>Cost Breakdown:</b>\n';
+          breakdownText = '\n\n<b>Cost Breakdown</b>\n';
           bd.suborders.forEach((so,si)=>{
-            breakdownText += `\n<b>Sub-order ${si+1} · ${so.label}</b>\n`;
+            breakdownText += `\n<b>Sub-order ${si+1} — ${so.label}</b>\n`;
             so.lines.forEach(l=>{ breakdownText += `  ${l.label}: ৳${Math.round(l.amount*10)/10}\n`; });
             breakdownText += `  <b>Subtotal: ৳${Math.round(so.subtotal*10)/10}</b>\n`;
           });
@@ -5048,7 +5062,7 @@ async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
       }
     }catch(e){ console.warn('Breakdown fetch failed:',e); }
 
-    const tgText=`💸 <b>Payment Sent — ${orderId}</b>\n\nAmount: ${amtStr}\nMethod: ${method}${breakdownText}\n\nThank you for your service!`;
+    const tgText=`<b>PAYMENT SENT — ${orderId}</b>\n━━━━━━━━━━━━━━━━━━\n<b>Amount:</b> ${amtStr}\n<b>Method:</b> ${method}${breakdownText}\n\n<i>Thank you for your service.</i>`;
     await sendTelegram(sup.telegram_token, sup.telegram_chat_id, tgText);
     await notifyPrintGroup(tgText);
     if(sup.email){

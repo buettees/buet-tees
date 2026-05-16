@@ -1,3 +1,8 @@
 # Service account credentials — never commit
 buettees-sheets-*.json
 *-service-account*.json
+
+# Local CLI binaries (synced via Drive, not committed)
+supabase.exe
+desktop.ini
+**/desktop.ini

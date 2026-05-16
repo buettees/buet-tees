@@ -3713,7 +3713,7 @@ function admRenderOrders(){
       
     </div>
     <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
-    <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Gross</th><th>Net Profit</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Items</th><th>Supplier</th><th>Revenue</th><th>Gross</th><th>Net Profit</th><th>Status</th><th>Sup. Pay</th><th>Aff. Pay</th><th>Actions</th></tr></thead>
     <tbody>${rows.map(o=>{
       const margin=o.total>0?(o.netProfit/o.total*100).toFixed(1):0;
       const mc=parseFloat(margin)>=0?"adm-badge-green":"adm-badge-red";
@@ -3876,6 +3876,29 @@ function admRenderOrders(){
         <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Delivered At</div>${fmtDt(o.deliveredAt)}</div>
         ${deadlineDetail}
         ${o.notes?`<div style="grid-column:1/-1"><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Notes</div>${o.notes}</div>`:''}`;
+      // Supplier + Affiliate payment cells (mirror Suppliers/Affiliates tab logic)
+      const _supName=(o.supplier||'T-Shirt Hub').replace(/'/g,"\\'");
+      const _supCost=Math.round(o.supplierCost||0);
+      let supPayCell='<span style="color:rgba(255,255,255,0.15);font-size:9px">—</span>';
+      if(o.status==='Delivered'){
+        if(within24h) supPayCell='<span style="color:#C9A84C;font-size:9px;letter-spacing:1px;font-weight:700">WAIT</span>';
+        else if(o.supplierPaid) supPayCell='<span style="color:#2ecc71;font-size:9px;letter-spacing:1px;font-weight:700">✓ PAID</span>';
+        else if(_supCost>0) supPayCell=`<button onclick="event.stopPropagation();admOpenSupPayModal('${_supName}',${_supCost},null,'${o.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:4px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">৳${_supCost} Due</button>`;
+        else supPayCell='<span style="color:#C9A84C;font-size:9px">⚠ No cost</span>';
+      } else if(o.status==='Returned'&&o.supplierFault){
+        supPayCell='<span style="color:#e74c3c;font-size:9px;letter-spacing:1px;font-weight:700">FAULT</span>';
+      }
+      let affPayCell='<span style="color:rgba(255,255,255,0.15);font-size:9px">—</span>';
+      if(o.affiliateCode&&(o.affCommission||0)>0){
+        const _affAmt=Math.round(o.affCommission||0);
+        const _affCode=(o.affiliateCode||'').replace(/'/g,"\\'");
+        const _affName=(o.affiliateName||'').replace(/'/g,"\\'");
+        if(o.status==='Delivered'){
+          if(within24h) affPayCell='<span style="color:#C9A84C;font-size:9px;letter-spacing:1px;font-weight:700">WAIT</span>';
+          else if(o.affiliatePaid) affPayCell='<span style="color:#2ecc71;font-size:9px;letter-spacing:1px;font-weight:700">✓ PAID</span>';
+          else affPayCell=`<button onclick="event.stopPropagation();admOpenPayoutModal('${_affCode}','${_affName}',${_affAmt},'${o.orderId}')" style="background:#1a1200;border:1px solid rgba(201,168,76,0.4);color:#C9A84C;border-radius:4px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">৳${_affAmt} Due</button>`;
+        }
+      }
       return`<tr style="cursor:pointer" onclick="admToggleOrderDetail('${o.orderId}')">
         <td class="adm-id">${o.orderId}${deadlineBadge}</td>
         <td style="white-space:nowrap;font-size:10px;color:rgba(255,255,255,0.25)">${datePart}</td>
@@ -3886,10 +3909,12 @@ function admRenderOrders(){
         <td class="${o.grossProfit>=0?"adm-green":"adm-red"}">${admFmt(o.grossProfit)}</td>
         <td class="${o.netProfit>=0?"adm-gold":"adm-red"}">${admFmt(o.netProfit)}</td>
         <td><span class="adm-badge ${statusColor}">${o.status}</span></td>
+        <td style="white-space:nowrap">${supPayCell}</td>
+        <td style="white-space:nowrap">${affPayCell}</td>
         <td style="white-space:nowrap" onclick="event.stopPropagation()">${actionBtns}</td>
       </tr>
       <tr id="ord-detail-${o.orderId}" style="display:${_admOpenRows.has('ord-detail-'+o.orderId)?'table-row':'none'}">
-        <td colspan="10" style="padding:0">
+        <td colspan="12" style="padding:0">
           <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
             ${detailHtml}
           </div>

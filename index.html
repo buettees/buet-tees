@@ -1418,7 +1418,7 @@ body { max-width: 100vw; overflow-x: clip; }
       <div class="aff-modal-body">
         <div class="aff-modal-sec" style="margin-top:0">Your Details</div>
         <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="affName" placeholder="Rahim Uddin" type="text"/></div>
-        <div class="fg"><label class="fl">WhatsApp Number *</label><input class="fi" id="affWa" placeholder="01XXXXXXXXX" type="tel"/></div>
+        <div class="fg"><label class="fl">Telegram Number *</label><input class="fi" id="affWa" placeholder="01XXXXXXXXX (Telegram-enabled)" type="tel"/></div>
         <div class="fg"><label class="fl">Student ID *</label><input class="fi" id="affId" placeholder="2005001" type="text"/></div>
         <div class="fg"><label class="fl">Hall *</label>
           <select class="fi" id="affHall">
@@ -1492,8 +1492,8 @@ body { max-width: 100vw; overflow-x: clip; }
           </div>
         </div>
         <div style="background:var(--w2);border-radius:10px;padding:16px;margin-bottom:24px;text-align:left;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate WhatsApp group</div>
-          <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen?mode=gi_t" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join WhatsApp Group →</a>
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--black);margin-bottom:8px;">Join our affiliate Telegram group</div>
+          <a href="https://t.me/+lPa5fLUJbMg2N2Fl" target="_blank" style="display:inline-block;background:var(--burg);color:var(--w);padding:10px 20px;border-radius:8px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">Join Telegram Group →</a>
         </div>
         <button class="pbtn" onclick="closeAffModal()" style="margin-top:0;">Close</button>
       </div>
@@ -4077,7 +4077,7 @@ function admRenderAffiliates(){
       <td colspan="10" style="padding:0">
         <div style="background:rgba(255,255,255,0.03);border-left:3px solid #6D001A;padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;font-size:11px;color:#fff;">
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Email</div>${a.email||'—'}</div>
-          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">WhatsApp</div>${a.whatsapp||'—'}</div>
+          <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Telegram</div>${a.whatsapp||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Student ID</div>${a.student_id||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Hall</div>${a.hall||'—'}</div>
           <div><div style="font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:3px">Payment</div>${a.payment_method||'—'} — ${a.payment_details||'—'}</div>
@@ -4821,7 +4821,12 @@ async function notifyAffiliateRegistered(aff){
   await notifyOwnersTelegram(tgText);
 }
 
+async function tgAffNotify(event, data){
+  try{ await adminFetch({action:'tg-aff-notify', event, data}); }catch(_){}
+}
+
 async function notifyAffiliateActivated(aff){
+  tgAffNotify('activated', {full_name:aff.full_name||aff.name||aff.code, code:aff.code, discount_pct:aff.discount_pct||10});
   if(!aff.email) return;
   const firstName=(aff.full_name||aff.name||'there').trim().split(' ')[0];
   const html = emailBase(`
@@ -4875,8 +4880,8 @@ async function notifyAffiliateActivated(aff){
       </td></tr>
     </table>
     <div style="margin-top:28px;text-align:center;">
-      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#444;margin-bottom:14px;">Join our affiliate WhatsApp group for updates &amp; tips:</div>
-      <a href="https://chat.whatsapp.com/I3NDa5D4DdE1cFcaa7qNen" style="display:inline-block;background:#25D366;color:#fff;font-size:13px;font-weight:800;letter-spacing:1px;padding:16px 36px;border-radius:8px;text-decoration:none;">📲 Join WhatsApp Group →</a>
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;color:#444;margin-bottom:14px;">Join our affiliate Telegram group for updates &amp; tips:</div>
+      <a href="https://t.me/+lPa5fLUJbMg2N2Fl" style="display:inline-block;background:#229ED9;color:#fff;font-size:13px;font-weight:800;letter-spacing:1px;padding:16px 36px;border-radius:8px;text-decoration:none;">📲 Join Telegram Group →</a>
     </div>
     <div style="margin-top:20px;background:#f7f5f2;border:1px solid #e8e4e0;border-radius:4px;padding:14px;font-size:12px;color:#888;text-align:center;">
       Questions? WhatsApp <b style="color:#1a1a1a;">01515637637</b>
@@ -5065,9 +5070,8 @@ async function notifySupplierPaymentSent(supplierName, amount, orderId, method){
 async function notifyAffiliatePaymentSent(aff, amount, orderId, method){
   try{
     const amtStr='৳'+Math.round(amount).toLocaleString();
-    const tgText=`💰 Commission Paid!\n\nOrder: ${orderId}\nAmount: ${amtStr}\nMethod: ${method}\n\nKeep sharing your code 🎉`;
-    // Affiliate telegram (if they have a chat id stored)
-    if(aff.telegram_chat_id) await sendTelegram(ownerTelegramToken(), aff.telegram_chat_id, tgText);
+    // Group brand-style post (server-side via admin edge function)
+    tgAffNotify('payment-sent', {full_name:aff.full_name||aff.code, code:aff.code, amount:Math.round(amount), method, orderId});
     if(aff.email){
       const html=emailBase(`
         <div style="font-size:10px;font-weight:700;letter-spacing:4px;color:#2e7d32;text-transform:uppercase;margin-bottom:6px;">Commission Paid</div>
@@ -5155,6 +5159,9 @@ async function admToggleAffiliate(code,currentStatus){
     if(newStatus==='active'){
       const{data:aff}=await sbAdmin.from('affiliates').select('*').eq('code',code).single();
       if(aff) notifyAffiliateActivated(aff);
+    } else {
+      const{data:aff}=await sbAdmin.from('affiliates').select('full_name,code').eq('code',code).single();
+      if(aff) tgAffNotify('deactivated', {full_name:aff.full_name||aff.code, code:aff.code});
     }
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}

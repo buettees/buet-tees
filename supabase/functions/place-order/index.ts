@@ -64,6 +64,30 @@ Deno.serve(async (req: Request) => {
     })
     if (oe) throw oe
 
+    // Affiliate group notification — non-fatal
+    if (affiliate_code) {
+      try {
+        const affToken = Deno.env.get('TELEGRAM_BOT_TOKEN')
+        const affGroup = Deno.env.get('TELEGRAM_AFF_GROUP_CHAT_ID')
+        if (affToken && affGroup) {
+          const { data: affRow } = await sb.from('affiliates')
+            .select('full_name').eq('code', affiliate_code).maybeSingle()
+          const affName = affRow?.full_name || affiliate_code
+          await sendTelegram(
+            affToken,
+            affGroup,
+            `🛒 <b>New Sale via Affiliate</b>\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `🏷️ <b>${affName}</b> (<code>${affiliate_code}</code>)\n` +
+            `📦 Order: <b>${orderId}</b>\n` +
+            `💰 Amount: ৳${total}\n` +
+            (discount_amt ? `🎁 Discount applied: ৳${discount_amt}\n` : '') +
+            `\n<i>Commission pending delivery.</i>`
+          )
+        }
+      } catch { /**/ }
+    }
+
     // Telegram notification to owners (non-fatal — order is already saved)
     try {
       const [ownersRes, supRes] = await Promise.all([

@@ -113,6 +113,48 @@ Deno.serve(async (req: Request) => {
       return json(await sb.rpc(body.fn, body.params ?? {}))
     }
 
+    // ── tg-aff-notify — post brand-style message to affiliate group ─
+    if (action === 'tg-aff-notify') {
+      const token = Deno.env.get('TELEGRAM_BOT_TOKEN')
+      const chatId = Deno.env.get('TELEGRAM_AFF_GROUP_CHAT_ID')
+      if (!token || !chatId) return json({ skipped: true, reason: 'tg env vars missing' })
+      const { event, data } = body as { event: string; data: Record<string, unknown> }
+      const d = data || {}
+      const sep = '━━━━━━━━━━━━━━━━━━'
+      let text = ''
+      if (event === 'activated') {
+        text = `✅ <b>Affiliate Activated</b>\n${sep}\n` +
+          `👤 <b>${d.full_name}</b>\n` +
+          `🔑 Code: <code>${d.code}</code>\n` +
+          `🎁 Discount: ${d.discount_pct}%\n\n` +
+          `<i>Welcome aboard! Start sharing the code.</i>`
+      } else if (event === 'deactivated') {
+        text = `🚫 <b>Affiliate Deactivated</b>\n${sep}\n` +
+          `👤 <b>${d.full_name}</b>\n` +
+          `🔑 Code: <code>${d.code}</code>`
+      } else if (event === 'payment-sent') {
+        text = `💸 <b>Affiliate Payment Sent</b>\n${sep}\n` +
+          `👤 <b>${d.full_name}</b>\n` +
+          `🔑 Code: <code>${d.code}</code>\n` +
+          `💰 Amount: ৳${d.amount}\n` +
+          (d.method ? `🏦 Method: ${d.method}\n` : '') +
+          (d.orderId ? `📦 Order: <b>${d.orderId}</b>\n` : '') +
+          `\n<i>Thank you for the hustle.</i>`
+      } else {
+        return json({ error: 'Unknown event' }, 400)
+      }
+      try {
+        const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+        })
+        return json({ ok: r.ok })
+      } catch (e) {
+        return json({ ok: false, error: e instanceof Error ? e.message : String(e) })
+      }
+    }
+
     // ── load-all ─────────────────────────────────────────────
     if (action === 'load-all') {
       const [ordRes, affRes, txRes, settRes, supRes, payoutRes, supPayRes, prodCatRes] =

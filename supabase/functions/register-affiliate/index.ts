@@ -17,6 +17,24 @@ function json(data: unknown, status = 200) {
   })
 }
 
+async function tgPostGroup(text: string) {
+  const token = Deno.env.get('TELEGRAM_BOT_TOKEN')
+  const chatId = Deno.env.get('TELEGRAM_AFF_GROUP_CHAT_ID')
+  if (!token || !chatId) return
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+      }),
+    })
+  } catch (_) { /* non-blocking */ }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -55,6 +73,18 @@ Deno.serve(async (req: Request) => {
     )
 
     if (error) throw error
+
+    // Brand-style group post — pending activation
+    await tgPostGroup(
+      `🆕 <b>New Affiliate Application</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `👤 <b>${full_name}</b>\n` +
+      `🏠 ${hall} · 🎓 ${student_id}\n` +
+      `📞 ${whatsapp}\n` +
+      `💾 ${storage_type === 'storage' ? 'With Storage' : 'No Storage'}\n` +
+      `🔑 Code: <code>${code}</code>\n\n` +
+      `<i>Pending admin activation.</i>`
+    )
 
     return json({ code, success: true })
   } catch (e: unknown) {

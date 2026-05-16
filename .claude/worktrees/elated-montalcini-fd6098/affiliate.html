@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Affiliate Dashboard — buettees</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--burg:#8B0020;--burg2:#6D001A;--w:#FFFFFF;--w2:#F7F7F7;--w3:#EBEBEB;--black:#1a1a1a;--black2:#2a2a2a;--black3:#333333;--gold:#C9A84C;--green:#22c55e;--g2:#888;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--black2);color:var(--w);font-family:'Nunito',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* ── HEADER ── */
+.hdr{background:var(--black);border-bottom:2px solid var(--burg);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+.logo{text-decoration:none;display:flex;align-items:center;}.logo-img{height:30px;display:block;}
+.logo em{color:var(--burg);font-style:normal;}
+.hdr-tag{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);}
+@media(max-width:500px){.hdr{padding:0 16px;}.hdr-tag{display:none;}}
+
+/* ── LOGIN SCREEN ── */
+#screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:32px 20px;}
+.login-box{background:var(--black3);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:40px 36px;width:100%;max-width:420px;}
+.login-eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--burg);margin-bottom:12px;}
+.login-title{font-size:22px;font-weight:900;letter-spacing:-0.5px;text-transform:uppercase;margin-bottom:8px;}
+.login-sub{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:32px;line-height:1.6;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:8px;}
+.field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--w);padding:12px 16px;border-radius:8px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;outline:none;transition:border-color 0.15s;}
+.field input:focus{border-color:var(--burg);}
+.field input::placeholder{color:rgba(255,255,255,0.2);font-weight:400;}
+.login-btn{width:100%;background:var(--burg);border:none;color:var(--w);padding:14px;cursor:pointer;border-radius:8px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;transition:background 0.15s;margin-top:4px;}
+.login-btn:hover{background:var(--burg2);}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.login-err{display:none;margin-top:16px;padding:12px 16px;background:rgba(180,20,20,0.15);border:1px solid rgba(180,20,20,0.3);border-radius:8px;font-size:12px;color:#ff6b6b;font-weight:600;}
+.login-err.on{display:block;}
+
+/* ── DASHBOARD SCREEN ── */
+#screen-dashboard{display:none;padding:0;}
+
+/* ── TOP BAR ── */
+.dash-topbar{background:var(--black);border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.dash-who{display:flex;align-items:center;gap:12px;}
+.dash-avatar{width:38px;height:38px;background:var(--burg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;}
+.dash-name{font-size:13px;font-weight:800;letter-spacing:0.5px;}
+.dash-code{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:2px;}
+.dash-status-badge{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.dash-status-badge.active{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.25);}
+.dash-status-badge.inactive{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1);}
+.dash-logout{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:7px 16px;border-radius:6px;font-family:'Nunito',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;}
+.dash-logout:hover{border-color:rgba(255,255,255,0.25);color:var(--w);}
+@media(max-width:500px){.dash-topbar{padding:12px 16px;}}
+
+/* ── MAIN CONTENT ── */
+.dash-main{padding:32px;max-width:1000px;margin:0 auto;}
+@media(max-width:640px){.dash-main{padding:20px 16px;}}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
+.kpi{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 22px;}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:10px;}
+.kpi-val{font-size:26px;font-weight:900;line-height:1;}
+.kpi-val.gold{color:var(--gold);}
+.kpi-val.green{color:var(--green);}
+.kpi-val.white{color:var(--w);}
+.kpi-val.red{color:#ff6b6b;}
+.kpi-sub{font-size:10px;color:rgba(255,255,255,0.25);margin-top:6px;font-weight:600;}
+
+/* ── CODE SHARE CARD ── */
+.code-card{background:linear-gradient(135deg,var(--burg) 0%,var(--burg2) 100%);border-radius:12px;padding:24px 28px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.code-card-left .code-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.code-big{font-size:28px;font-weight:900;letter-spacing:4px;text-transform:uppercase;}
+.code-card-left .code-note{font-size:11px;color:rgba(255,255,255,0.5);margin-top:6px;}
+.code-copy-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:var(--w);padding:10px 22px;border-radius:8px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;white-space:nowrap;}
+.code-copy-btn:hover{background:rgba(255,255,255,0.25);}
+.code-copy-btn.copied{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.4);color:var(--green);}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.07);}
+
+/* ── COMMISSION RATES ── */
+.rates-row{display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;}
+.rate-chip{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 20px;flex:1;min-width:120px;}
+.rate-chip-type{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:6px;}
+.rate-chip-amt{font-size:20px;font-weight:900;color:var(--gold);}
+.rate-chip-discount{font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;}
+
+/* ── ORDERS TABLE ── */
+.tbl-wrap{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:32px;}
+.tbl-head{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.tbl-head-title{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.tbl-filter{display:flex;gap:8px;flex-wrap:wrap;}
+.tbl-pill{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.35);background:transparent;font-family:'Nunito',sans-serif;transition:all 0.15s;}
+.tbl-pill.on{background:var(--burg);border-color:var(--burg);color:var(--w);}
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);text-align:left;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.05);}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);}
+tbody tr:last-child{border:none;}
+tbody td{padding:12px 16px;font-size:12px;font-weight:600;}
+.ord-id{color:var(--gold);font-weight:800;font-size:11px;white-space:nowrap;}
+.ord-name{color:var(--w);}
+.ord-item{font-size:10px;color:rgba(255,255,255,0.35);}
+.ord-total{color:var(--w);font-weight:800;}
+.ord-comm{color:var(--gold);font-weight:800;}
+.status-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.status-Pending{background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.2);}
+.status-Confirmed{background:rgba(59,130,246,0.1);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);}
+.status-Dispatched{background:rgba(168,85,247,0.1);color:#c084fc;border:1px solid rgba(168,85,247,0.2);}
+.status-Delivered{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.status-Cancelled{background:rgba(255,107,107,0.1);color:#ff6b6b;border:1px solid rgba(255,107,107,0.2);}
+.status-Returned{background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);}
+.tbl-empty{padding:40px;text-align:center;color:rgba(255,255,255,0.2);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.ord-date{font-size:10px;color:rgba(255,255,255,0.3);white-space:nowrap;}
+
+/* ── PAYOUTS TABLE ── */
+.payout-row{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.payout-row:last-child{border:none;}
+.payout-date{font-size:11px;color:rgba(255,255,255,0.3);font-weight:600;}
+.payout-method{font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;}
+.payout-note{font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px;}
+.payout-amt{font-size:16px;font-weight:900;color:var(--green);}
+.payout-empty{padding:32px;text-align:center;color:rgba(255,255,255,0.2);font-size:11px;letter-spacing:2px;text-transform:uppercase;}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:32px;}
+.info-cell{background:var(--black3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 18px;}
+.info-cell-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:6px;}
+.info-cell-val{font-size:12px;font-weight:700;color:var(--w);}
+
+/* ── LOADING ── */
+.loading-spin{width:36px;height:36px;border:3px solid rgba(255,255,255,0.07);border-top-color:var(--burg);border-radius:50%;animation:spin 0.7s linear infinite;margin:60px auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── DUE PAYMENT SECTION ── */
+.due-section{margin-bottom:32px;}
+.due-banner{background:linear-gradient(135deg,rgba(201,168,76,0.1),rgba(201,168,76,0.05));border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px 24px;}
+.due-banner-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.due-eyebrow{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.7);margin-bottom:6px;}
+.due-amt{font-size:32px;font-weight:900;color:var(--gold);letter-spacing:-1px;line-height:1;}
+.due-note{font-size:11px;color:rgba(255,255,255,0.35);margin-top:6px;line-height:1.6;}
+.due-orders-list{margin-top:16px;border-top:1px solid rgba(201,168,76,0.15);padding-top:12px;display:flex;flex-direction:column;gap:0;}
+.due-order-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:12px;}
+.due-order-row:last-child{border:none;}
+.due-order-left .due-order-id{color:var(--gold);font-weight:800;font-size:12px;}
+.due-order-left .due-order-items{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.due-order-comm{color:var(--gold);font-weight:800;font-size:14px;white-space:nowrap;flex-shrink:0;}
+.in-return-window-banner{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px;margin-top:10px;}
+.in-return-window-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px;}
+.in-rw-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;gap:12px;}
+.in-rw-row:last-child{border:none;}
+
+/* ── EXPANDABLE ORDER ROWS ── */
+tbody tr.ord-main-row{cursor:pointer;transition:background 0.12s;}
+tbody tr.ord-main-row:hover td{background:rgba(255,255,255,0.025);}
+tbody tr.ord-main-row.expanded td{background:rgba(201,168,76,0.04);}
+.expand-arrow{display:inline-block;font-size:9px;color:rgba(255,255,255,0.25);transition:transform 0.2s;margin-left:4px;vertical-align:middle;}
+.expanded .expand-arrow{transform:rotate(90deg);color:var(--gold);}
+tr.ord-detail-row td{padding:0!important;background:rgba(0,0,0,0.4)!important;border-bottom:1px solid rgba(255,255,255,0.06)!important;}
+tr.ord-detail-row{display:none;}
+tr.ord-detail-row.open{display:table-row;}
+.ord-breakdown{padding:16px 22px 18px;border-left:3px solid var(--burg);}
+.breakdown-section{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;}
+.breakdown-item-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;gap:12px;}
+.breakdown-item-row:last-child{border:none;}
+.breakdown-item-name{color:rgba(255,255,255,0.65);font-weight:600;flex:1;}
+.breakdown-item-name span{display:block;font-size:10px;color:rgba(255,255,255,0.3);font-weight:500;margin-top:2px;}
+.breakdown-item-comm{color:var(--gold);font-weight:800;white-space:nowrap;flex-shrink:0;}
+.breakdown-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 0;margin-top:6px;border-top:1px solid rgba(201,168,76,0.2);}
+.breakdown-total-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+.breakdown-total-amt{font-size:17px;font-weight:900;color:var(--gold);}
+.bd-divider{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:14px 0;}
+/* payouts linked inside order row */
+.payout-linked-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;gap:12px;}
+.payout-linked-row:last-child{border:none;}
+.payout-linked-date{color:rgba(255,255,255,0.55);font-weight:700;}
+.payout-linked-date span{display:block;font-size:10px;color:rgba(255,255,255,0.25);font-weight:500;margin-top:2px;}
+.payout-linked-amt{color:var(--green);font-weight:800;white-space:nowrap;flex-shrink:0;}
+.bd-status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 14px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.bd-status.paid{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.bd-status.due{background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25);}
+.bd-status.waiting{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.08);}
+.bd-status.cancelled{background:rgba(255,107,107,0.07);color:#ff6b6b;border:1px solid rgba(255,107,107,0.15);}
+.bd-status.in-window{background:rgba(168,85,247,0.08);color:#c084fc;border:1px solid rgba(168,85,247,0.2);}
+
+/* ── PAYOUT ROWS ── */
+.payout-row{border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.12s;}
+.payout-row:last-child{border:none;}
+.payout-row:hover{background:rgba(255,255,255,0.02);}
+.payout-row.expanded{background:rgba(34,197,94,0.03);}
+.payout-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;gap:12px;}
+.payout-expand-arrow{display:inline-block;font-size:9px;color:rgba(255,255,255,0.2);transition:transform 0.2s;margin-left:5px;vertical-align:middle;}
+.payout-row.expanded .payout-expand-arrow{transform:rotate(90deg);color:var(--green);}
+.payout-detail{display:none;padding:12px 22px 16px;border-left:3px solid var(--green);background:rgba(0,0,0,0.3);}
+.payout-detail.open{display:block;}
+.payout-covered-section{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:10px;}
+.payout-covered-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;gap:12px;}
+.payout-covered-row:last-child{border:none;}
+.payout-covered-id{color:var(--gold);font-weight:800;white-space:nowrap;}
+.payout-covered-items{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px;}
+.payout-covered-comm{color:var(--green);font-weight:800;white-space:nowrap;flex-shrink:0;}
+
+/* ── FOOTER ── */
+.dash-footer{background:var(--black);border-top:1px solid rgba(255,255,255,0.06);padding:20px 32px;text-align:center;font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;}
+.dash-footer a{color:rgba(255,255,255,0.3);text-decoration:none;}
+.dash-footer a:hover{color:var(--w);}
+
+/* ══ AFFILIATE DASHBOARD — MOBILE RESPONSIVE ══ */
+* { -webkit-tap-highlight-color: transparent; }
+html, body { max-width: 100vw; overflow-x: hidden; }
+
+/* ── Tablet ── */
+@media (max-width: 768px) {
+  .hdr { padding: 0 20px; height: 54px; }
+  .logo { font-size: 13px; letter-spacing: 4px; }
+  .hdr-tag { display: none; }
+  .dash-topbar { padding: 12px 20px; }
+  .dash-main { padding: 20px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 24px; }
+  .code-card { padding: 18px 20px; }
+  .code-big { font-size: 22px; letter-spacing: 3px; }
+  .info-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .rates-row { gap: 8px; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 500px) {
+  .hdr { padding: 0 14px; height: 50px; }
+  .logo { font-size: 12px; letter-spacing: 4px; gap: 6px; }
+
+  /* Login screen */
+  #screen-login { padding: 24px 14px; min-height: calc(100vh - 50px); }
+  .login-box { padding: 28px 20px; border-radius: 12px; }
+  .login-title { font-size: 18px; }
+  .login-sub { font-size: 11px; margin-bottom: 24px; }
+
+  /* Topbar */
+  .dash-topbar { padding: 10px 14px; gap: 8px; }
+  .dash-avatar { width: 32px; height: 32px; font-size: 12px; }
+  .dash-name { font-size: 12px; }
+  .dash-code { font-size: 9px; }
+  .dash-logout { padding: 6px 12px; font-size: 9px; letter-spacing: 1px; }
+  .dash-status-badge { padding: 4px 10px; font-size: 9px; }
+
+  /* Main */
+  .dash-main { padding: 14px; }
+
+  /* KPI */
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .kpi { padding: 14px 16px; border-radius: 10px; }
+  .kpi-val { font-size: 20px; }
+  .kpi-label { font-size: 8px; letter-spacing: 2px; }
+  .kpi-sub { font-size: 9px; }
+
+  /* Code card */
+  .code-card { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    padding: 16px 18px; 
+    border-radius: 10px;
+    gap: 12px;
+  }
+  .code-big { font-size: 20px; letter-spacing: 3px; }
+  .code-copy-btn { width: 100%; text-align: center; padding: 10px 16px; font-size: 10px; }
+
+  /* Rates */
+  .rates-row { flex-wrap: wrap; gap: 8px; }
+  .rate-chip { min-width: calc(50% - 4px); padding: 12px 14px; border-radius: 8px; }
+  .rate-chip-amt { font-size: 17px; }
+
+  /* Section title */
+  .sec-title { font-size: 9px; letter-spacing: 2px; }
+
+  /* Orders table */
+  .tbl-wrap { border-radius: 10px; }
+  .tbl-head { padding: 14px 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .tbl-head-title { font-size: 10px; }
+  .tbl-filter { gap: 6px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; scrollbar-width: none; }
+  .tbl-filter::-webkit-scrollbar { display: none; }
+  .tbl-pill { white-space: nowrap; flex-shrink: 0; font-size: 9px; padding: 4px 10px; }
+  .tbl-scroll { -webkit-overflow-scrolling: touch; }
+  thead th { padding: 8px 10px; font-size: 8px; letter-spacing: 1.5px; }
+  tbody td { padding: 10px 10px; font-size: 11px; }
+  .ord-id { font-size: 10px; }
+  .ord-item { font-size: 9px; }
+  .status-chip { font-size: 8px; padding: 2px 8px; letter-spacing: 1px; }
+
+  /* Due section */
+  .due-banner { padding: 16px 18px; border-radius: 10px; }
+  .due-amt { font-size: 26px; }
+  .due-note { font-size: 10px; }
+  .due-order-left .due-order-items { max-width: 180px; }
+  .due-order-comm { font-size: 12px; }
+
+  /* Breakdown detail */
+  .ord-breakdown { padding: 12px 14px 14px; }
+  .breakdown-item-row { font-size: 10px; }
+  .breakdown-total-amt { font-size: 15px; }
+  .breakdown-item-name { font-size: 10px; }
+
+  /* Payouts */
+  .payout-inner { padding: 12px 16px; }
+  .payout-amt { font-size: 14px; }
+  .payout-date { font-size: 10px; }
+  .payout-method { font-size: 10px; }
+  .payout-note { font-size: 9px; }
+  .payout-detail { padding: 10px 14px 14px; }
+
+  /* Info grid */
+  .info-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .info-cell { padding: 12px 14px; border-radius: 8px; }
+  .info-cell-label { font-size: 8px; }
+  .info-cell-val { font-size: 11px; }
+
+  /* Footer */
+  .dash-footer { padding: 16px 14px; font-size: 9px; }
+
+  /* In-return-window banner */
+  .in-return-window-banner { padding: 12px 14px; }
+  .in-rw-row { font-size: 10px; }
+}
+
+/* ── Very small ── */
+@media (max-width: 360px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .rate-chip { min-width: 100%; }
+  .code-big { font-size: 18px; letter-spacing: 2px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a href="/" class="logo"><img src="/logo.png" alt="buettees" class="logo-img"></a>
+  <span class="hdr-tag">Affiliate Portal</span>
+</header>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-eyebrow">Affiliate Portal</div>
+    <div class="login-title">Your Dashboard</div>
+    <div class="login-sub">Enter your registered WhatsApp number and affiliate code to access your earnings and order history.</div>
+    <div class="field">
+      <label>WhatsApp Number</label>
+      <input type="tel" id="inp-phone" placeholder="e.g. 01711234567" autocomplete="off" oninput="clearErr()" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="field">
+      <label>Affiliate Code</label>
+      <input type="text" id="inp-code" placeholder="e.g. RAHIM123" autocomplete="off" oninput="clearErr()" onkeydown="if(event.key==='Enter')doLogin()" style="text-transform:uppercase;"/>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Access Dashboard</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD SCREEN -->
+<div id="screen-dashboard">
+  <!-- TOP BAR -->
+  <div class="dash-topbar">
+    <div class="dash-who">
+      <div class="dash-avatar" id="d-avatar">?</div>
+      <div>
+        <div class="dash-name" id="d-name">—</div>
+        <div class="dash-code" id="d-code">—</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span class="dash-status-badge" id="d-status">active</span>
+      <button class="dash-logout" onclick="doLogout()">Log Out</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="dash-main">
+    <div id="dash-loading"><div class="loading-spin"></div></div>
+    <div id="dash-content" style="display:none;">
+
+      <!-- CODE SHARE CARD -->
+      <div class="code-card">
+        <div class="code-card-left">
+          <div class="code-eyebrow">Your Affiliate Code</div>
+          <div class="code-big" id="d-code-big">—</div>
+          <div class="code-note">Share this code with buyers — they get a discount, you earn commission.</div>
+        </div>
+        <button class="code-copy-btn" id="copy-btn" onclick="copyCode()">Copy Code</button>
+      </div>
+
+      <!-- KPI ROW -->
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-val white" id="d-total-orders">0</div>
+          <div class="kpi-sub">via your code</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Total Earned</div>
+          <div class="kpi-val gold" id="d-total-earned">৳0</div>
+          <div class="kpi-sub">from delivered orders</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Already Paid Out</div>
+          <div class="kpi-val green" id="d-total-paid">৳0</div>
+          <div class="kpi-sub">received so far</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Pending Balance</div>
+          <div class="kpi-val gold" id="d-pending">৳0</div>
+          <div class="kpi-sub">yet to be paid</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Discount Given</div>
+          <div class="kpi-val white" id="d-discount-pct">0%</div>
+          <div class="kpi-sub">to buyers using your code</div>
+        </div>
+      </div>
+
+      <!-- COMMISSION RATES -->
+      <div class="sec-title">Your Commission Rates</div>
+      <div class="rates-row" id="d-rates-row"></div>
+
+      <!-- DUE PAYMENT SECTION -->
+      <div id="due-section" style="display:none;margin-bottom:32px;"></div>
+
+      <!-- ORDERS TABLE -->
+      <div class="sec-title">Order History</div>
+      <div class="tbl-wrap">
+        <div class="tbl-head">
+          <div class="tbl-head-title">Orders via Your Code</div>
+          <div class="tbl-filter" id="ord-filter">
+            <button class="tbl-pill on" onclick="filterOrders('all',this)">All</button>
+            <button class="tbl-pill" onclick="filterOrders('Delivered',this)">Delivered</button>
+            <button class="tbl-pill" onclick="filterOrders('Pending',this)">Pending</button>
+            <button class="tbl-pill" onclick="filterOrders('Confirmed',this)">Confirmed</button>
+          </div>
+        </div>
+        <div class="tbl-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Order Total</th>
+                <th>Your Commission</th>
+                <th>Status</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="ord-tbody"></tbody>
+          </table>
+        </div>
+        <div style="padding:10px 22px 14px;font-size:10px;color:rgba(255,255,255,0.2);">&#9660; Click any row to see full commission breakdown &amp; linked payouts</div>
+      </div>
+
+      <!-- PAYOUTS -->
+      <div class="sec-title">Payout History</div>
+      <div class="tbl-wrap" id="payout-wrap">
+        <div id="payout-list"></div>
+      </div>
+
+      <!-- ACCOUNT INFO -->
+      <div class="sec-title">Account Details</div>
+      <div class="info-grid" id="d-info-grid"></div>
+
+    </div><!-- /dash-content -->
+  </div><!-- /dash-main -->
+
+  <div class="dash-footer">
+    <a href="/">← Back to buettees</a> &nbsp;·&nbsp; © 2025 buettees
+  </div>
+</div><!-- /screen-dashboard -->
+
+<script>
+const SUPABASE_URL = "https://kgjrnmlheqwhlmwkcvns.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnanJubWxoZXF3aGxtd2tjdm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzk0NzYsImV4cCI6MjA5MDg1NTQ3Nn0.wyJ_V0n_uMcWoohRKjyCEjgySK5JPh8Sushu7e-rxu4";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentAffiliate = null;
+let allOrders = [];
+let allPayouts = [];
+let currentFilter = 'all';
+let returnWindowVal = '0';
+let returnWindowChangedAt = '';
+
+const C = '৳';
+const fmt = n => C + (parseFloat(n)||0).toLocaleString('en-BD', {minimumFractionDigits:0});
+
+// ── LOGIN ──
+async function doLogin() {
+  const phone = document.getElementById('inp-phone').value.trim();
+  const code = document.getElementById('inp-code').value.trim().toUpperCase();
+  if (!phone || !code) { showErr('Please enter both your phone number and affiliate code.'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  try {
+    const { data, error } = await sb.rpc('get_affiliate_dashboard', { p_code: code, p_phone: phone });
+
+    if (error || !data) {
+      showErr('Code or phone number not recognised. Please check and try again.');
+      return;
+    }
+
+    currentAffiliate = data.affiliate;
+    openDashboard(data);
+  } catch(e) {
+    showErr('Something went wrong. Please try again.');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Access Dashboard';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = msg;
+  el.classList.add('on');
+}
+function clearErr() {
+  document.getElementById('login-err').classList.remove('on');
+}
+
+// ── OPEN DASHBOARD ──
+function openDashboard(dashData) {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-dashboard').style.display = 'block';
+
+  const a = currentAffiliate;
+  const initials = (a.full_name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('d-avatar').textContent = initials;
+  document.getElementById('d-name').textContent = a.full_name || '—';
+  document.getElementById('d-code').textContent = a.code;
+  document.getElementById('d-code-big').textContent = a.code;
+
+  const statusEl = document.getElementById('d-status');
+  statusEl.textContent = a.status || 'active';
+  statusEl.className = 'dash-status-badge ' + (a.status === 'active' ? 'active' : 'inactive');
+
+  // Data arrived with the RPC call — unpack directly, no second round-trip needed
+  allOrders = dashData.orders || [];
+  allPayouts = dashData.payouts || [];
+
+  const settMap = {};
+  (dashData.settings || []).forEach(s => settMap[s.key] = s.value);
+  returnWindowVal = settMap['return_window'] || '0';
+  returnWindowChangedAt = settMap['return_window_changed_at'] || '';
+
+  document.getElementById('dash-loading').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+
+  renderAll();
+}
+
+// ── RENDER HELPERS ──
+
+function commissionForOrder(order) {
+  const a = currentAffiliate;
+  const items = Array.isArray(order.items_json) ? order.items_json : [];
+  if (items.length > 0) {
+    return items.reduce((sum, item) => {
+      const cat = (item.category || item.shirtType || '').toLowerCase();
+      const qty = parseInt(item.qty) || 1;
+      let comm = parseFloat(a.commission_regular) || 20;
+      if (cat.includes('drop')) comm = parseFloat(a.commission_drop) || 25;
+      else if (cat.includes('hoodie')) comm = parseFloat(a.commission_hoodie) || 35;
+      return sum + comm * qty;
+    }, 0);
+  }
+  return parseFloat(a.commission_regular) || 20;
+}
+
+function itemsLabel(order) {
+  const items = Array.isArray(order.items_json) ? order.items_json : [];
+  if (items.length > 0) {
+    return items.map(i => i.type === 'bothsides'
+      ? `Both Sides (${i.shirtType||''}) ×${i.qty||1}`
+      : `${i.name||''} [${i.category||''}] ×${i.qty||1}`
+    ).join(', ');
+  }
+  return order.items || '—';
+}
+
+// Is a delivered order outside the return window (payable)?
+function isPayable(order) {
+  if (order.status !== 'Delivered') return false;
+  const delivTs = order.delivered_at ? new Date(order.delivered_at).getTime() : 0;
+  if (!delivTs) return true; // if no timestamp, assume payable
+  const rw = returnWindowVal;
+  const changedTs = returnWindowChangedAt ? new Date(returnWindowChangedAt).getTime() : 0;
+  if (rw === '0') return true;
+  if (changedTs && delivTs < changedTs) return true; // delivered before setting changed
+  if (rw === 'always') return false;
+  const ms = rw === '5s' ? 5000 : (parseInt(rw)||1) * 86400000;
+  return (Date.now() - delivTs) >= ms;
+}
+
+// FIFO: build per-order remaining commission after applying all payouts
+function buildFIFOMap() {
+  const earnedOrders = allOrders
+    .filter(o => o.status === 'Delivered')
+    .slice().sort((a,b) => (a.created_at||'').localeCompare(b.created_at||''));
+  const payoutsSorted = allPayouts.slice().sort((a,b) => (a.paid_at||'').localeCompare(b.paid_at||''));
+
+  const remaining = earnedOrders.map(o => ({
+    id: o.id,
+    comm: commissionForOrder(o),
+    rem: commissionForOrder(o),
+    payable: isPayable(o)
+  }));
+
+  // For each payout, record how much it covered per order
+  const payoutCoverage = {}; // payoutId -> [{orderId, amount}]
+  payoutsSorted.forEach(pay => {
+    let budget = parseFloat(pay.amount || 0);
+    const covered = [];
+    for (const r of remaining) {
+      if (budget <= 0.01) break;
+      if (r.rem <= 0.01) continue;
+      const take = Math.min(r.rem, budget);
+      r.rem -= take;
+      budget -= take;
+      covered.push({ orderId: r.id, amount: take });
+    }
+    payoutCoverage[pay.id] = covered;
+  });
+
+  return { remaining, payoutCoverage };
+}
+
+// Which payouts (fully or partially) contributed to a specific order?
+function payoutsForOrder(orderId, payoutCoverage) {
+  const result = [];
+  allPayouts.forEach(p => {
+    const covered = (payoutCoverage[p.id] || []).find(c => c.orderId === orderId);
+    if (covered) result.push({ payout: p, amount: covered.amount });
+  });
+  return result;
+}
+
+function renderAll() {
+  const a = currentAffiliate;
+  const { remaining, payoutCoverage } = buildFIFOMap();
+
+  const deliveredOrders = allOrders.filter(o => o.status === 'Delivered');
+  const totalEarned = deliveredOrders.reduce((s, o) => s + commissionForOrder(o), 0);
+  const totalPaid = allPayouts.reduce((s, p) => s + parseFloat(p.amount||0), 0);
+  const pending = Math.max(0, totalEarned - totalPaid);
+
+  document.getElementById('d-total-orders').textContent = allOrders.length;
+  document.getElementById('d-total-earned').textContent = fmt(totalEarned);
+  document.getElementById('d-total-paid').textContent = fmt(totalPaid);
+  document.getElementById('d-pending').textContent = fmt(pending);
+  document.getElementById('d-discount-pct').textContent = (a.discount_pct || 0) + '%';
+
+  // Commission rates
+  document.getElementById('d-rates-row').innerHTML = [
+    { label: 'Regular Tee', amt: a.commission_regular || 20 },
+    { label: 'Drop Shoulder', amt: a.commission_drop || 25 },
+    { label: 'Hoodie', amt: a.commission_hoodie || 35 },
+  ].map(r => `<div class="rate-chip">
+    <div class="rate-chip-type">${r.label}</div>
+    <div class="rate-chip-amt">${fmt(r.amt)}</div>
+    <div class="rate-chip-discount">per piece sold</div>
+  </div>`).join('');
+
+  renderDueSection(remaining);
+  renderOrders(payoutCoverage);
+  renderPayouts(payoutCoverage);
+
+  document.getElementById('d-info-grid').innerHTML = [
+    { label: 'Hall', val: a.hall || '—' },
+    { label: 'Student ID', val: a.student_id || '—' },
+    { label: 'Email', val: a.email || '—' },
+    { label: 'Payment Method', val: a.payment_method || '—' },
+    { label: 'Payment Details', val: a.payment_details || '—' },
+    { label: 'Joined', val: a.created_at ? new Date(a.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—' },
+  ].map(i => `<div class="info-cell"><div class="info-cell-label">${i.label}</div><div class="info-cell-val">${i.val}</div></div>`).join('');
+}
+
+// ── DUE PAYMENT SECTION ──
+function renderDueSection(remaining) {
+  const sec = document.getElementById('due-section');
+
+  // Payable & still owed
+  const dueRows = remaining.filter(r => r.payable && r.rem > 0.01);
+  // Delivered but still in return window
+  const inWindowOrders = allOrders.filter(o =>
+    o.status === 'Delivered' && !isPayable(o)
+  );
+
+  if (!dueRows.length && !inWindowOrders.length) {
+    sec.style.display = 'none';
+    return;
+  }
+  sec.style.display = 'block';
+
+  const totalDue = dueRows.reduce((s, r) => s + r.rem, 0);
+
+  // Build due orders rows
+  let dueOrdersHtml = '';
+  if (dueRows.length) {
+    dueOrdersHtml = dueRows.map(r => {
+      const o = allOrders.find(x => x.id === r.id);
+      return `<div class="due-order-row">
+        <div class="due-order-left">
+          <div class="due-order-id">${r.id}</div>
+          <div class="due-order-items">${o ? itemsLabel(o) : '—'}</div>
+        </div>
+        <div class="due-order-comm">${fmt(r.rem)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // In-window block
+  let inWindowHtml = '';
+  if (inWindowOrders.length) {
+    inWindowHtml = `<div class="in-return-window-banner">
+      <div class="in-return-window-title">⏳ In Return Window — Not Yet Payable</div>
+      ${inWindowOrders.map(o => {
+        const comm = commissionForOrder(o);
+        return `<div class="in-rw-row">
+          <div>
+            <span style="color:rgba(255,255,255,0.5);font-weight:700">${o.id}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,0.25);margin-left:8px">${itemsLabel(o)}</span>
+          </div>
+          <span style="color:rgba(201,168,76,0.5);font-weight:700">${fmt(comm)}</span>
+        </div>`;
+      }).join('')}
+      <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:8px;font-style:italic">These will become payable once the return window closes.</div>
+    </div>`;
+  }
+
+  sec.innerHTML = `
+    <div class="sec-title">Payments Due to You</div>
+    ${dueRows.length ? `<div class="due-banner">
+      <div class="due-banner-top">
+        <div>
+          <div class="due-eyebrow">Commission Owed</div>
+          <div class="due-amt">${fmt(totalDue)}</div>
+          <div class="due-note">These delivered orders have cleared the return window.<br>Payment will be sent to your <strong>${currentAffiliate.payment_method||'bKash'}</strong>: <strong>${currentAffiliate.payment_details||'—'}</strong></div>
+        </div>
+        <span style="background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.35);border-radius:6px;padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;align-self:flex-start">Due</span>
+      </div>
+      <div class="due-orders-list">${dueOrdersHtml}</div>
+    </div>` : ''}
+    ${inWindowHtml}`;
+}
+
+// ── ORDERS TABLE ──
+function renderOrders(payoutCoverage) {
+  const filtered = currentFilter === 'all' ? allOrders : allOrders.filter(o => o.status === currentFilter);
+  const tbody = document.getElementById('ord-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="tbl-empty">No orders found</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map((o, idx) => {
+    const a = currentAffiliate;
+    const comm = commissionForOrder(o);
+    const isDelivered = o.status === 'Delivered';
+    const isCancelled = o.status === 'Cancelled' || o.status === 'Returned';
+    const items = Array.isArray(o.items_json) ? o.items_json : [];
+    const itemsStr = itemsLabel(o);
+    const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
+    const commColor = isCancelled ? 'color:rgba(255,255,255,0.2)' : !isDelivered ? 'color:rgba(255,255,255,0.35)' : '';
+    const commText = isCancelled ? '—' : fmt(comm) + (!isDelivered ? '*' : '');
+    const detailId = `ord-det-${idx}`;
+
+    // Per-item commission breakdown
+    let itemRowsHtml = '';
+    if (items.length > 0) {
+      itemRowsHtml = items.map(item => {
+        const cat = (item.category || item.shirtType || '').toLowerCase();
+        const qty = parseInt(item.qty) || 1;
+        let rate = parseFloat(a.commission_regular) || 20;
+        let catLabel = 'Regular';
+        if (cat.includes('drop')) { rate = parseFloat(a.commission_drop) || 25; catLabel = 'Drop Shoulder'; }
+        else if (cat.includes('hoodie')) { rate = parseFloat(a.commission_hoodie) || 35; catLabel = 'Hoodie'; }
+        const lineComm = rate * qty;
+        let nameHtml, subHtml;
+        if (item.type === 'bothsides') {
+          nameHtml = `Both Sides — ${item.shirtType||catLabel}`;
+          subHtml = `Front: ${item.frontName||'—'} · Back: ${item.backName||'—'} · ${[item.size,item.color].filter(Boolean).join(' · ')} · Qty ${qty}`;
+        } else {
+          nameHtml = `${item.name||''} <span style="opacity:0.6">[${item.category||catLabel}]</span>`;
+          subHtml = `${[item.size,item.color].filter(Boolean).join(' · ')}${item.side?' · '+item.side+' print':''} · Qty ${qty}`;
+        }
+        return `<div class="breakdown-item-row">
+          <div class="breakdown-item-name">${nameHtml}<span>${subHtml}</span></div>
+          <div class="breakdown-item-comm">${fmt(rate)} × ${qty} = <strong>${fmt(lineComm)}</strong></div>
+        </div>`;
+      }).join('');
+    } else {
+      itemRowsHtml = `<div class="breakdown-item-row">
+        <div class="breakdown-item-name">${o.items||'—'}<span>Based on Regular T-Shirt rate</span></div>
+        <div class="breakdown-item-comm">${fmt(comm)}</div>
+      </div>`;
+    }
+
+    // Status badge for the order
+    let statusBadge = '';
+    const payable = isPayable(o);
+    if (isCancelled) {
+      statusBadge = `<span class="bd-status cancelled">✕ Cancelled — No Commission</span>`;
+    } else if (!isDelivered) {
+      statusBadge = `<span class="bd-status waiting">⏳ Awaiting Delivery</span>`;
+    } else if (!payable) {
+      statusBadge = `<span class="bd-status in-window">🔄 In Return Window</span>`;
+    } else if (o.affiliate_paid) {
+      statusBadge = `<span class="bd-status paid">✓ Commission Paid</span>`;
+    } else {
+      statusBadge = `<span class="bd-status due">● Commission Due</span>`;
+    }
+
+    // Linked payouts for this order
+    let linkedPayoutsHtml = '';
+    if (payoutCoverage) {
+      const linked = payoutsForOrder(o.id, payoutCoverage);
+      if (linked.length > 0) {
+        linkedPayoutsHtml = `<hr class="bd-divider">
+          <div class="breakdown-section">Payments Received for This Order</div>
+          ${linked.map(lp => {
+            const dateStr2 = lp.payout.paid_at ? new Date(lp.payout.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+            return `<div class="payout-linked-row">
+              <div class="payout-linked-date">${dateStr2} · ${lp.payout.method||'bKash'}
+                ${lp.payout.note ? `<span>${lp.payout.note}</span>` : ''}
+              </div>
+              <div class="payout-linked-amt">+${fmt(lp.amount)}</div>
+            </div>`;
+          }).join('')}`;
+      }
+    }
+
+    return `<tr class="ord-main-row" onclick="toggleOrderDetail('${detailId}', this)">
+      <td class="ord-id">${o.id} <span class="expand-arrow">▶</span></td>
+      <td class="ord-name">${o.name || '—'}</td>
+      <td class="ord-item" style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${itemsStr}">${itemsStr}</td>
+      <td class="ord-total">${fmt(o.total)}</td>
+      <td class="ord-comm" style="${commColor}">${commText}</td>
+      <td><span class="status-chip status-${o.status||'Pending'}">${o.status||'Pending'}</span></td>
+      <td class="ord-date">${dateStr}</td>
+    </tr>
+    <tr class="ord-detail-row" id="${detailId}">
+      <td colspan="7">
+        <div class="ord-breakdown">
+          <div class="breakdown-section">Commission Breakdown</div>
+          ${itemRowsHtml}
+          <div class="breakdown-total-row">
+            <span class="breakdown-total-label">Total Commission</span>
+            <span class="breakdown-total-amt" style="${isCancelled?'color:rgba(255,255,255,0.2)':''}">${isCancelled ? '—' : fmt(comm)}</span>
+          </div>
+          ${statusBadge}
+          ${linkedPayoutsHtml}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleOrderDetail(id, row) {
+  const det = document.getElementById(id);
+  if (!det) return;
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  row.classList.toggle('expanded', !isOpen);
+}
+
+function filterOrders(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.tbl-pill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  // Re-render with stored payoutCoverage from last buildFIFOMap
+  const { payoutCoverage } = buildFIFOMap();
+  renderOrders(payoutCoverage);
+}
+
+// ── PAYOUT HISTORY ──
+function renderPayouts(payoutCoverage) {
+  const list = document.getElementById('payout-list');
+  if (!allPayouts.length) {
+    list.innerHTML = `<div class="payout-empty">No payouts recorded yet</div>`;
+    return;
+  }
+  list.innerHTML = allPayouts.map((p, idx) => {
+    const dateStr = p.paid_at ? new Date(p.paid_at).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const covered = payoutCoverage ? (payoutCoverage[p.id] || []) : [];
+    const detailId = `payout-det-${idx}`;
+
+    // Build covered order rows
+    const coveredHtml = covered.length
+      ? covered.map(c => {
+          const o = allOrders.find(x => x.id === c.orderId);
+          return `<div class="payout-covered-row">
+            <div>
+              <div class="payout-covered-id">${c.orderId}</div>
+              <div class="payout-covered-items">${o ? itemsLabel(o) : '—'}</div>
+            </div>
+            <div class="payout-covered-comm">+${fmt(c.amount)}</div>
+          </div>`;
+        }).join('')
+      : `<div style="font-size:11px;color:rgba(255,255,255,0.25);font-style:italic;padding:4px 0">General payment — not matched to specific order</div>`;
+
+    return `<div class="payout-row" id="payout-row-${idx}" onclick="togglePayoutDetail('${detailId}','payout-row-${idx}')">
+      <div class="payout-inner">
+        <div>
+          <div class="payout-date" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.7)">
+            ${dateStr} · ${p.method||'bKash'}
+            <span class="payout-expand-arrow">▶</span>
+          </div>
+          ${p.note ? `<div class="payout-note" style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:2px">${p.note}</div>` : ''}
+          <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-top:3px">${covered.length > 0 ? `Covers ${covered.length} order${covered.length>1?'s':''}` : 'General payment'}</div>
+        </div>
+        <div class="payout-amt">+${fmt(p.amount)}</div>
+      </div>
+      <div class="payout-detail" id="${detailId}">
+        <div class="payout-covered-section">Orders Covered by This Payment</div>
+        ${coveredHtml}
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:8px;border-top:1px solid rgba(34,197,94,0.15);">
+          <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3)">Total Paid</span>
+          <span style="font-size:15px;font-weight:900;color:var(--green)">+${fmt(p.amount)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePayoutDetail(detailId, rowId) {
+  const det = document.getElementById(detailId);
+  const row = document.getElementById(rowId);
+  if (!det || !row) return;
+  const isOpen = det.classList.contains('open');
+  det.classList.toggle('open', !isOpen);
+  row.classList.toggle('expanded', !isOpen);
+}
+
+// ── COPY CODE ──
+function copyCode() {
+  const code = currentAffiliate?.code || '';
+  const msg = `Use my code *${code}* on buettees (buettees.shop) to get ${currentAffiliate?.discount_pct||10}% off your order! 🎽`;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Code'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+// ── LOGOUT ──
+function doLogout() {
+  currentAffiliate = null;
+  allOrders = [];
+  allPayouts = [];
+  document.getElementById('screen-dashboard').style.display = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('inp-phone').value = '';
+  document.getElementById('inp-code').value = '';
+  clearErr();
+}
+
+// Auto-uppercase affiliate code input
+document.getElementById('inp-code').addEventListener('input', function() {
+  const pos = this.selectionStart;
+  this.value = this.value.toUpperCase();
+  this.setSelectionRange(pos, pos);
+});
+</script>
+</body>
+</html>

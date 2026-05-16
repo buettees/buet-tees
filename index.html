@@ -2841,6 +2841,11 @@ function admJumpToOrder(orderId){
 let ADM_DATA=null;
 let _admLoadInProgress=false;
 const _admOpenRows=new Set();
+window._inlinePayState=window._inlinePayState||{};
+window._setInlinePay=function(key,fld,val){
+  if(!window._inlinePayState[key])window._inlinePayState[key]={};
+  window._inlinePayState[key][fld]=val;
+};
 async function admLoadData(){
   if(_admLoadInProgress)return;
   _admLoadInProgress=true;
@@ -4175,15 +4180,22 @@ function admRenderAffiliates(){
       }
 
       function _buildAffPayForm(r, rowId){
+        const _key='aff:'+(r.orderId||rowId);
+        const _st=(window._inlinePayState=window._inlinePayState||{})[_key]||{};
+        const _amt=_st.amt!=null?_st.amt:Math.round(r.due);
+        const _method=_st.method||'bKash';
+        const _note=_st.note!=null?_st.note:('Commission for '+(r.orderId||''));
+        const _methodOpts=['bKash','Bank','Cash','Other'].map(m=>`<option${m===_method?' selected':''}>${m}</option>`).join('');
+        const _onIn=`onchange="window._setInlinePay('${_key}',this.dataset.fld,this.value)" oninput="window._setInlinePay('${_key}',this.dataset.fld,this.value)"`;
         return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(201,168,76,0.15)">
           <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px">Record Payout</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px">
             <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Amount (\u09f3)</label>
-              <input class="adm-fi" id="iap-amt-${rowId}" type="number" min="1" value="${Math.round(r.due)}" style="font-size:12px;font-weight:700"/></div>
+              <input class="adm-fi" id="iap-amt-${rowId}" data-fld="amt" ${_onIn} type="number" min="1" value="${_amt}" style="font-size:12px;font-weight:700"/></div>
             <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Method</label>
-              <select class="adm-fi" id="iap-method-${rowId}"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+              <select class="adm-fi" id="iap-method-${rowId}" data-fld="method" ${_onIn}>${_methodOpts}</select></div>
             <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Note</label>
-              <input class="adm-fi" id="iap-note-${rowId}" value="Commission for ${r.orderId||''}"/></div>
+              <input class="adm-fi" id="iap-note-${rowId}" data-fld="note" ${_onIn} value="${_note}"/></div>
           </div>
           <div style="display:flex;gap:8px">
             <button onclick="admSavePayoutInline('${(r.affiliateCode||'').replace(/'/g,"\\'")}','${(r.affiliateName||'').replace(/'/g,"\\'")}','${r.orderId||''}','${rowId}')" style="background:#1a1200;border:1px solid rgba(201,168,76,0.4);color:#C9A84C;border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">\u2713 Confirm Payout</button>
@@ -5545,15 +5557,22 @@ function admRenderCosts(){
           }
 
           function _buildPayForm(r,rowId){
+            const _key=r.orderId||rowId;
+            const _st=(window._inlinePayState=window._inlinePayState||{})[_key]||{};
+            const _amt=_st.amt!=null?_st.amt:Math.round(r.due);
+            const _method=_st.method||'bKash';
+            const _note=_st.note!=null?_st.note:('Payment for '+(r.orderId||''));
+            const _methodOpts=['bKash','Bank','Cash','Other'].map(m=>`<option${m===_method?' selected':''}>${m}</option>`).join('');
+            const _onIn=`onchange="window._setInlinePay('${_key}',this.dataset.fld,this.value)" oninput="window._setInlinePay('${_key}',this.dataset.fld,this.value)"`;
             return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(39,174,96,0.15)">
               <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px">Record Payment</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px">
                 <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Amount (\u09f3)</label>
-                  <input class="adm-fi" id="isp-amt-${rowId}" type="number" min="1" value="${Math.round(r.due)}" style="font-size:12px;font-weight:700"/></div>
+                  <input class="adm-fi" id="isp-amt-${rowId}" data-fld="amt" ${_onIn} type="number" min="1" value="${_amt}" style="font-size:12px;font-weight:700"/></div>
                 <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Method</label>
-                  <select class="adm-fi" id="isp-method-${rowId}"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+                  <select class="adm-fi" id="isp-method-${rowId}" data-fld="method" ${_onIn}>${_methodOpts}</select></div>
                 <div><label style="display:block;font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:4px">Note</label>
-                  <input class="adm-fi" id="isp-note-${rowId}" value="Payment for ${r.orderId||''}"/></div>
+                  <input class="adm-fi" id="isp-note-${rowId}" data-fld="note" ${_onIn} value="${_note}"/></div>
               </div>
               <div style="display:flex;gap:8px">
                 <button onclick="admSaveSupPayInline('${(r.supplier||'').replace(/'/g,"\\'")}','${r.orderId||''}','${rowId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:6px;padding:7px 16px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">\u2713 Confirm Payment</button>
@@ -7363,6 +7382,7 @@ async function admSaveSupPayInline(supplier, orderId, rowId){
       category:'Supplier Payment'
     });
     if(orderId) await notifySupplierPaymentSent(supplier,amt,orderId,method);
+    if(window._inlinePayState) delete window._inlinePayState[orderId||rowId];
     toast('Supplier payment recorded \u2713');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
@@ -7430,6 +7450,7 @@ async function admSavePayoutInline(code, name, orderId, rowId){
       category:'Affiliate Payment'
     });
     if(orderId && aff) await notifyAffiliatePaymentSent(aff, amt, orderId, method);
+    if(window._inlinePayState) delete window._inlinePayState['aff:'+(orderId||rowId)];
     toast('Payout recorded \u2713');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}

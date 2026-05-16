@@ -3216,8 +3216,8 @@ async function admLoadData(){
     try{ ownersRaw=JSON.parse(cfg.owners_json||'[]'); }catch(e){}
     if(!ownersRaw.length){
       ownersRaw=[
-        {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:ashikShare,telegram_chat_id:'-4899351679'},
-        {name:'Kawsar',email:'',share:kawsarShare,telegram_chat_id:'-4899351679'}
+        {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:ashikShare,telegram_chat_id:'-1003042573269'},
+        {name:'Kawsar',email:'',share:kawsarShare,telegram_chat_id:'-1003042573269'}
       ];
     }
     const ownerShares=ownersRaw.map(o=>({name:o.name,share:parseFloat(o.share||0),amount:totalNetProfit*parseFloat(o.share||0)/100}));
@@ -4522,8 +4522,8 @@ async function getOwners(){
     throw new Error('no admin data');
   }catch(e){
     return[
-      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-4899351679'},
-      {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-4899351679'}
+      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-1003042573269'},
+      {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-1003042573269'}
     ];
   }
 }
@@ -4535,7 +4535,7 @@ function getSupplier(){
       name:'T-Shirt Hub',
       email:'buettees@gmail.com',
       telegram_token:'8698121676:AAGZh3zr_5B36YfYPTqooDrQFztzWI3p_70',
-      telegram_chat_id:'-4996642816'
+      telegram_chat_id:'-1003971214286'
     };
   }catch(e){return{};}
 }
@@ -4544,7 +4544,7 @@ function ownerTelegramToken(){ return '8698121676:AAGZh3zr_5B36YfYPTqooDrQFztzWI
 
 // Print group — @buettees_supplier_bot in "buettees Print" group
 const PRINT_BOT_TOKEN = '7973336287:AAE9DEukBhLUtolCMqYRw_39v8SwVO2dcnY';
-const PRINT_GROUP_CHAT_ID = '-4996642816';
+const PRINT_GROUP_CHAT_ID = '-1003971214286';
 async function notifyPrintGroup(text){ try{ await sendTelegram(PRINT_BOT_TOKEN, PRINT_GROUP_CHAT_ID, text); }catch(e){ console.error('Print group notify failed:',e); } }
 
 async function notifyOwnersTelegram(text){
@@ -5296,7 +5296,7 @@ function admRenderCosts(){
           </div>
           <div>
             <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Telegram Chat ID</div>
-            <input class="adm-tx-input" id="supTgChat" placeholder="-4996642816"/>
+            <input class="adm-tx-input" id="supTgChat" placeholder="-1003971214286"/>
           </div>
           <div>
             <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">Supplier Status</div>

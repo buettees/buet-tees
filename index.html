@@ -1715,6 +1715,40 @@ body { max-width: 100vw; overflow-x: clip; }
     <div class="adm-content" id="adm-crm"><div class="adm-loading">Loading customers...</div></div>
     <div class="adm-content" id="adm-inventory"><div class="adm-loading">Loading inventory...</div></div>
   </div>
+
+  <!-- Floating Supplier Payment modal (body-level, survives section re-renders) -->
+  <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:18px 20px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Record Supplier Payment</div>
+    <input type="hidden" id="finSupPayOrderId"/>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 207"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
+        <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="auto-filled"/></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Confirm Payment</button>
+      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="_admCloseFloatModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Floating Affiliate Payout modal (body-level, survives section re-renders) -->
+  <div id="finPayoutModal" style="display:none;background:#1a1200;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:18px 20px;">
+    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Record Affiliate Payout</div>
+    <input type="hidden" id="finPayoutCode"/>
+    <input type="hidden" id="finPayoutOrderId"/>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1"/></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label><select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
+      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSavePayout()">✓ Confirm Payout</button>
+      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="_admCloseFloatModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 
@@ -3896,7 +3930,7 @@ function admRenderOrders(){
         if(o.status==='Delivered'){
           if(within24h) affPayCell='<span style="color:#C9A84C;font-size:9px;letter-spacing:1px;font-weight:700">WAIT</span>';
           else if(o.affiliatePaid) affPayCell='<span style="color:#2ecc71;font-size:9px;letter-spacing:1px;font-weight:700">✓ PAID</span>';
-          else affPayCell=`<button onclick="event.stopPropagation();admOpenPayoutModal('${_affCode}','${_affName}',${_affAmt},'${o.orderId}')" style="background:#1a1200;border:1px solid rgba(201,168,76,0.4);color:#C9A84C;border-radius:4px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">৳${_affAmt} Due</button>`;
+          else affPayCell=`<button onclick="event.stopPropagation();admOpenPayoutModal('${_affCode}','${_affName}',${_affAmt},'${o.orderId}')" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:4px;padding:3px 8px;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">৳${_affAmt} Due</button>`;
         }
       }
       return`<tr style="cursor:pointer" onclick="admToggleOrderDetail('${o.orderId}')">
@@ -4154,22 +4188,6 @@ function admRenderAffiliates(){
   </div>
   <div style="margin-bottom:12px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);">Only Delivered orders with return window closed</div>
 
-  <!-- Inline payout form -->
-  <div id="finPayoutModal" style="display:none;background:#1a1200;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
-    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Record Affiliate Payout</div>
-    <input type="hidden" id="finPayoutCode"/>
-    <input type="hidden" id="finPayoutOrderId"/>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Affiliate</label><input class="adm-fi" id="finPayoutName" readonly style="color:rgba(255,255,255,0.5)"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (\u09f3)</label><input class="adm-fi" id="finPayoutAmt" type="number" min="1"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label><select class="adm-fi" id="finPayoutMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finPayoutNote" placeholder="e.g. April commission"/></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="adm-tx-btn" style="background:#1a1200;border-color:rgba(201,168,76,0.4);color:#C9A84C" onclick="admSavePayout()">\u2713 Confirm Payout</button>
-      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finPayoutModal').style.display='none'">Cancel</button>
-    </div>
-  </div>
 
   <div class="adm-tbl-wrap"><div class="adm-tbl-scroll"><table class="adm-tbl">
     <thead><tr>
@@ -5535,23 +5553,6 @@ function admRenderCosts(){
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:28px;margin-bottom:14px;">
     <div class="adm-sec" style="margin:0;">Supplier Payments</div>
     ${_totalDueAll>0?`<button onclick="admOpenSupPayModal('T-Shirt Hub',${Math.round(_totalDueAll)},null,null)" style="background:#1a3a1a;border:1px solid rgba(39,174,96,0.4);color:#2ecc71;border-radius:7px;padding:8px 18px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">Pay All Due &middot; ৳${Math.round(_totalDueAll)}</button>`:''}
-  </div>
-
-  <!-- Inline pay form -->
-  <div id="finSupPayModal" style="display:none;background:#0f1a0f;border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:18px 20px;margin-bottom:16px;">
-    <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:12px;">Record Payment</div>
-    <input type="hidden" id="finSupPayOrderId"/>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Supplier</label><input class="adm-fi" id="finSupPayName" readonly style="color:rgba(255,255,255,0.5)"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Amount (৳)</label><input class="adm-fi" id="finSupPayAmt" type="number" min="1" placeholder="e.g. 207"/></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Method</label>
-        <select class="adm-fi" id="finSupPayMethod"><option>bKash</option><option>Bank</option><option>Cash</option><option>Other</option></select></div>
-      <div><label style="display:block;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-bottom:5px">Note</label><input class="adm-fi" id="finSupPayNote" placeholder="auto-filled"/></div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="adm-tx-btn" style="background:#1a3a1a;border-color:rgba(39,174,96,0.4);color:#2ecc71" onclick="admSaveSupPay()">✓ Confirm Payment</button>
-      <button class="adm-tx-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3)" onclick="document.getElementById('finSupPayModal').style.display='none'">Cancel</button>
-    </div>
   </div>
 
   <!-- Unified table -->
@@ -7378,14 +7379,30 @@ function admToggleSupPayDetail(id){
   if(arrow) arrow.style.transform=visible?'rotate(0deg)':'rotate(90deg)';
 }
 
+function _admFloatModal(id){
+  const m=document.getElementById(id);if(!m)return;
+  if(!document.getElementById('_admModalBackdrop')){
+    const bd=document.createElement('div');
+    bd.id='_admModalBackdrop';
+    bd.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;';
+    bd.onclick=()=>_admCloseFloatModal();
+    document.body.appendChild(bd);
+  }
+  m.style.position='fixed';m.style.top='50%';m.style.left='50%';m.style.transform='translate(-50%,-50%)';
+  m.style.zIndex='9999';m.style.maxWidth='640px';m.style.width='90%';m.style.maxHeight='90vh';m.style.overflow='auto';m.style.display='block';
+  document.body.appendChild(m);
+}
+function _admCloseFloatModal(){
+  const bd=document.getElementById('_admModalBackdrop');if(bd)bd.remove();
+  ['finSupPayModal','finPayoutModal'].forEach(id=>{const m=document.getElementById(id);if(m)m.style.display='none';});
+}
 function admOpenSupPayModal(supplier, owed, method, orderId){
   document.getElementById('finSupPayName').value=supplier;
   document.getElementById('finSupPayAmt').value=Math.round(owed);
   document.getElementById('finSupPayNote').value=orderId?'Payment for '+orderId:'';
   document.getElementById('finSupPayOrderId').value=orderId||'';
   if(method){const sel=document.getElementById('finSupPayMethod');if(sel)sel.value=method;}
-  document.getElementById('finSupPayModal').style.display='block';
-  document.getElementById('finSupPayModal').scrollIntoView({behavior:'smooth',block:'nearest'});
+  _admFloatModal('finSupPayModal');
 }
 
 async function admSaveSupPayInline(supplier, orderId, rowId){
@@ -7439,7 +7456,7 @@ async function admSaveSupPay(){
     });
     // Notify supplier: payment sent
     if(orderId) await notifySupplierPaymentSent(supplier, amt, orderId, method);
-    document.getElementById('finSupPayModal').style.display='none';
+    _admCloseFloatModal();
     toast('Supplier payment recorded ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}
@@ -7451,8 +7468,7 @@ function admOpenPayoutModal(code, name, owed, orderId){
   document.getElementById('finPayoutAmt').value=Math.round(owed);
   document.getElementById('finPayoutNote').value=orderId?'Commission for '+orderId:'';
   document.getElementById('finPayoutOrderId').value=orderId||'';
-  document.getElementById('finPayoutModal').style.display='block';
-  document.getElementById('finPayoutModal').scrollIntoView({behavior:'smooth',block:'nearest'});
+  _admFloatModal('finPayoutModal');
 }
 
 async function admSavePayoutInline(code, name, orderId, rowId){
@@ -7511,7 +7527,7 @@ async function admSavePayout(){
     });
     // Notify affiliate: payment sent
     if(orderId && aff) await notifyAffiliatePaymentSent(aff, amt, orderId, method);
-    document.getElementById('finPayoutModal').style.display='none';
+    _admCloseFloatModal();
     toast('Payout recorded ✓');
     admLoadData();
   }catch(e){toast('Failed: '+e.message);}

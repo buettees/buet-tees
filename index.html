@@ -5192,6 +5192,16 @@ async function admRemoveAffiliate(code,name){
 }
 
 function admRenderCosts(){
+  // Skip re-render if user is editing a form inside this section.
+  // Avoids 5s poll wiping in-progress supplier edits.
+  const _ae=document.activeElement;
+  if(_ae){
+    const inCosts=document.getElementById('adm-costs')?.contains(_ae);
+    if(inCosts && (_ae.tagName==='INPUT'||_ae.tagName==='SELECT'||_ae.tagName==='TEXTAREA')) return;
+  }
+  // If supplier edit form has data different from defaults, also skip
+  const _supEditing=document.getElementById('supFormTitle')?.textContent?.startsWith('Edit Supplier');
+  if(_supEditing) return;
   const suppliers=ADM_DATA.suppliersRaw||[];
   const CATS=['Regular','Drop','Hoodie'];
   const SIZE_ORDER=['S','M','L','XL','XXL'];

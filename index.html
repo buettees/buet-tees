@@ -3216,8 +3216,8 @@ async function admLoadData(){
     try{ ownersRaw=JSON.parse(cfg.owners_json||'[]'); }catch(e){}
     if(!ownersRaw.length){
       ownersRaw=[
-        {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:ashikShare,telegram_chat_id:'-1003042573269'},
-        {name:'Kawsar',email:'',share:kawsarShare,telegram_chat_id:'-1003042573269'}
+        {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:ashikShare,telegram_chat_id:'-1003942573269'},
+        {name:'Kawsar',email:'',share:kawsarShare,telegram_chat_id:'-1003942573269'}
       ];
     }
     const ownerShares=ownersRaw.map(o=>({name:o.name,share:parseFloat(o.share||0),amount:totalNetProfit*parseFloat(o.share||0)/100}));
@@ -4522,8 +4522,8 @@ async function getOwners(){
     throw new Error('no admin data');
   }catch(e){
     return[
-      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-1003042573269'},
-      {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-1003042573269'}
+      {name:'Ashik',email:'ashikul04@gmail.com,ashikul2015150053@gmail.com',share:50,telegram_chat_id:'-1003942573269'},
+      {name:'Kawsar',email:'emmaoliva6753@gmail.com',share:50,telegram_chat_id:'-1003942573269'}
     ];
   }
 }
